@@ -74,7 +74,7 @@ exports.up = (pgm) => {
       IF target_status <> 'draft' THEN RAISE EXCEPTION 'Allocations on posted or cancelled supplier payments are immutable' USING ERRCODE = '55000'; END IF;
       RETURN CASE WHEN TG_OP = 'DELETE' THEN OLD ELSE NEW END;
     END; $$;
-    CREATE TRIGGER supplier_payment_allocation_guard BEFORE UPDATE OR DELETE ON supplier_payment_allocations FOR EACH ROW EXECUTE FUNCTION ledgerloop_guard_supplier_payment_allocation();
+    CREATE TRIGGER supplier_payment_allocation_guard BEFORE INSERT OR UPDATE OR DELETE ON supplier_payment_allocations FOR EACH ROW EXECUTE FUNCTION ledgerloop_guard_supplier_payment_allocation();
   `);
 };
 
