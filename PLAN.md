@@ -6,7 +6,7 @@
 - Default branch: `main`
 - Inspection date: 2026-10-15
 - Observed state at initial inspection: repository was empty; this is a greenfield implementation, not a refactor.
-- Verification: merged increments have been verified through GitHub Actions for migrations, tenant RLS integration, TypeScript type-checking, build, and unit tests. The current auth HTTP endpoint branch must pass its own latest-head workflow before it is considered verified. Direct local execution is not available in this session.
+- Verification: merged increments have been verified through GitHub Actions for migrations, tenant RLS integration, TypeScript type-checking, build, and unit tests. PR #8 must pass its own latest-head workflow before it is considered verified. Direct local execution is not available in this session.
 - Local setup constraint: Docker is optional and intentionally deferred. GitHub Actions uses a temporary PostgreSQL service for integration tests; local database work can use native PostgreSQL on Windows later.
 
 ## Product and engineering principles
@@ -37,7 +37,7 @@
 ### Phase 1 — Tenant and identity foundation
 - [x] Users, companies, memberships, branches, and audit-log schema.
 - [x] Forced RLS and transaction-scoped tenant context; PostgreSQL integration coverage.
-- [x] PostgreSQL pool lifecycle management, active-membership tenant transactions, and transaction-aware audit writes.
+- [x] PostgreSQL pool lifecycle management, active-membership tenant transactions, and transaction-aware audit service.
 - [x] Argon2id password hashing, refresh-token hashing/rotation, and replay-triggered session-family revocation.
 - [x] Email/password sign-up, sign-in, refresh, and logout HTTP endpoints; HttpOnly refresh cookie, CSRF checks, origin validation, credentialed CORS, short-lived signed access tokens, and endpoint throttling.
 - [x] Global access-token authorization guard, explicit public-route metadata, and protected current-user endpoint.
@@ -84,7 +84,8 @@
 4. **Completed:** database runtime, active-membership tenant resolution, transaction-aware audit service, and unit tests.
 5. **Completed:** Argon2id password hashing, opaque refresh-token hashing, session persistence, transactional refresh rotation, replay-triggered family revocation, and unit tests.
 6. **Completed:** HTTP authentication endpoints, CSRF/origin protections, short-lived access tokens, CORS, and rate limiting; latest-head CI passed before merge.
-7. **In review:** global access-token guard, public-route metadata, protected current-user endpoint, company onboarding, company-role checks, owner/admin-only branch creation, audit writes, and guard unit tests. Do not mark complete until the current PR's latest-head CI passes.
+7. **Completed:** global access-token guard, explicit public-route metadata, protected current-user endpoint, company onboarding, company-role checks, owner/admin-only branch creation, audit writes, and guard unit tests; latest-head CI passed before merge.
+8. **In review:** authenticated company directory and branch listing APIs, user-scoped membership RLS directory policy, and unit/database integration coverage. Do not mark complete until the current PR's latest-head CI passes.
 
 ## Acceptance gates
 
