@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { Pool, PoolClient } from 'pg';
+import type { PoolClient } from 'pg';
 import type { CompanyMembership } from './tenant-transaction';
 import { withAuthorizedTenantTransaction } from './tenant-transaction';
 import { DatabaseService } from './database.service';
@@ -14,7 +14,7 @@ export class TenantAccessService {
     work: (client: PoolClient, membership: CompanyMembership) => Promise<T>,
   ): Promise<T> {
     return withAuthorizedTenantTransaction(
-      this.database.pool as Pool,
+      this.database.pool,
       authenticatedUserId,
       requestedCompanyId,
       work,
