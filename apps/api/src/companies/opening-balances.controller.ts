@@ -108,7 +108,7 @@ export class OpeningBalancesController {
         }
 
         const entryId = randomUUID();
-        const inserted = await client.query(
+        await client.query(
           `INSERT INTO journal_entries (id, company_id, entry_number, entry_date, memo, status, source_type, created_by)
            VALUES ($1, $2, $3, $4::date, $5, 'draft', 'opening_balance', $6)
            RETURNING id, company_id, entry_number, entry_date, memo, status, source_type, created_by, posted_by, posted_at, created_at, updated_at`,
@@ -129,7 +129,7 @@ export class OpeningBalancesController {
           actorUserId: userId, action: 'OPENING_BALANCES_POSTED', entityType: 'journal_entry', entityId: entryId,
           metadata: { companyId, entryNumber: data.entryNumber.toUpperCase(), lineCount: data.lines.length },
         });
-        return { entry: { ...posted.rows[0], lines: data.lines.map((line, index) => ({ ...line, lineNumber: index + 1 })) }, insertedDraft: inserted.rows[0] };
+        return { entry: { ...posted.rows[0], lines: data.lines.map((line, index) => ({ ...line, lineNumber: index + 1 })) } };
       });
     } catch (error) {
       if (isUniqueViolation(error)) throw new ConflictException('An entry with this number already exists, or these opening balances have already been recorded.');
