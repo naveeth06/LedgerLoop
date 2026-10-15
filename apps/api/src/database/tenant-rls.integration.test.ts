@@ -29,9 +29,6 @@ integrationDescribe('PostgreSQL tenant row-level security', () => {
       await client.query('INSERT INTO companies (id, legal_name, display_name) VALUES ($1, $2, $3)', [companyA, 'Company A Legal', 'Company A']);
       await client.query("SELECT set_config('app.current_company_id', $1, true)", [companyB]);
       await client.query('INSERT INTO companies (id, legal_name, display_name) VALUES ($1, $2, $3)', [companyB, 'Company B Legal', 'Company B']);
-      await client.query('COMMIT');
-      await client.query('BEGIN');
-      await client.query('SET LOCAL ROLE ledgerloop_app');
       await client.query("SELECT set_config('app.current_company_id', $1, true)", [companyA]);
       const visible = await client.query<{ id: string }>('SELECT id FROM companies ORDER BY id');
       expect(visible.rows.map((row) => row.id)).toEqual([companyA]);
