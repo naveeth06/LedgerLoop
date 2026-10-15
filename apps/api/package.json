@@ -18,7 +18,8 @@
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
     "zod": "^4.1.5",
-    "dotenv": "^16.6.1"
+    "dotenv": "^16.6.1",
+    "argon2": "^0.44.0"
   },
   "devDependencies": {
     "@types/node": "^22.18.6",
