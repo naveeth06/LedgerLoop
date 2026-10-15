@@ -16,11 +16,9 @@ exports.up = (pgm) => {
       created_by uuid REFERENCES app_users(id) ON DELETE SET NULL,
       created_at timestamptz NOT NULL DEFAULT now(),
       UNIQUE(company_id, id),
-      FOREIGN KEY(company_id, item_id) REFERENCES items(company_id, id) ON DELETE RESTRICT,
-      FOREIGN KEY(company_id, warehouse_id) REFERENCES warehouses(company_id, id) ON DELETE RESTRICT,
-      FOREIGN KEY(company_id, journal_entry_id) REFERENCES journal_entries(company_id, id) ON DELETE RESTRICT,
-      CHECK ((quantity > 0 AND movement_type IN ('opening','purchase','return_in','adjustment')) OR
-             (quantity < 0 AND movement_type IN ('sale','return_out','adjustment')))
+      FOREIGN KEY(company_id, item_id) REFERENCES company_items(company_id, id) ON DELETE RESTRICT,
+      FOREIGN KEY(company_id, warehouse_id) REFERENCES company_warehouses(company_id, id) ON DELETE RESTRICT,
+      FOREIGN KEY(company_id, journal_entry_id) REFERENCES journal_entries(company_id, id) ON DELETE RESTRICT
     );
     ALTER TABLE inventory_movements ENABLE ROW LEVEL SECURITY;
     ALTER TABLE inventory_movements FORCE ROW LEVEL SECURITY;
@@ -30,6 +28,7 @@ exports.up = (pgm) => {
     GRANT SELECT, INSERT ON inventory_movements TO ledgerloop_app;
     CREATE INDEX inventory_movements_company_item_warehouse_date_idx ON inventory_movements(company_id, item_id, warehouse_id, movement_date, created_at);
     CREATE INDEX inventory_movements_company_source_idx ON inventory_movements(company_id, source_type, source_id);
+    CREATE INDEX inventory_movements_company_journal_idx ON inventory_movements(company_id, journal_entry_id);
   `);
 };
 exports.down = (pgm) => { pgm.sql('DROP TABLE IF EXISTS inventory_movements'); };
