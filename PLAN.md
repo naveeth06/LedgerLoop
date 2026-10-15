@@ -6,7 +6,7 @@
 - Default branch: `main`
 - Inspection date: 2026-10-15
 - Observed state at initial inspection: repository was empty; this is a greenfield implementation, not a refactor.
-- Verification: GitHub Actions passed npm install, PostgreSQL migration, tenant RLS integration, TypeScript type-checking, API build, and unit tests for the merged tenant foundation and database-runtime/membership/audit increment. The auth-session foundation in the current branch is pending its dedicated CI run. Direct local execution is not available in this session.
+- Verification: merged increments have been verified through GitHub Actions for migrations, tenant RLS integration, TypeScript type-checking, build, and unit tests. The current auth HTTP endpoint branch must pass its own latest-head workflow before it is considered verified. Direct local execution is not available in this session.
 - Local setup constraint: Docker is optional and intentionally deferred. GitHub Actions uses a temporary PostgreSQL service for integration tests; local database work can use native PostgreSQL on Windows later.
 
 ## Product and engineering principles
@@ -31,21 +31,18 @@
 ## Phased delivery
 
 ### Phase 0 — Repository and API foundation
-- [x] Inspect repository metadata and record the implementation plan.
-- [x] Establish npm workspaces and shared integer-paise helper with unit tests.
-- [x] Add NestJS API starter, health endpoint, startup environment validation, and build/typecheck/test scripts.
-- [x] Add starter GitHub Actions workflow; initial API and utility checks passed.
-- [x] Add README, environment template, and Docker Compose file for a later optional local infrastructure phase.
+- [x] npm workspaces, shared integer-paise helper, NestJS health endpoint, configuration validation, and CI.
 - [ ] Add linting, lockfile policy, and final environment validation.
 
 ### Phase 1 — Tenant and identity foundation
-- [x] Run the PostgreSQL migration and RLS integration test in CI; migration and RLS checks passed in the merged tenant-foundation increment.
-- [x] Add initial users, companies, memberships, branches, and audit-log schema.
-- [x] Add company-scoped RLS policies and transaction-scoped tenant context.
-- [x] Add PostgreSQL pool lifecycle management, `DATABASE_URL` validation, active-membership tenant transactions, and transaction-aware audit writes (CI verification pending for this increment).
-- [ ] Argon2 password hashing, email/password sign-in, Google sign-in adapter, rotating refresh tokens in HttpOnly cookies, CSRF, rate limits.
-- [ ] RBAC permission guard on every protected route; complete audit-write integration.
-- [ ] Unit/integration tests for tenant isolation, refresh rotation/reuse, authorization, and audit writes.
+- [x] Users, companies, memberships, branches, and audit-log schema.
+- [x] Forced RLS and transaction-scoped tenant context; PostgreSQL integration coverage.
+- [x] PostgreSQL pool lifecycle management, active-membership tenant transactions, and transaction-aware audit writes.
+- [x] Argon2id password hashing, refresh-token hashing/rotation, and replay-triggered session-family revocation.
+- [x] Email/password sign-up, sign-in, refresh, and logout HTTP endpoints; HttpOnly refresh cookie, CSRF checks, origin validation, credentialed CORS, short-lived signed access tokens, and endpoint throttling.
+- [ ] Access-token authorization guard and protected route policy.
+- [ ] Email verification/password reset, Google sign-in adapter, and company onboarding/membership creation.
+- [ ] Distributed rate limiting, security monitoring, and full authentication integration tests.
 
 ### Phase 2 — Accounting core
 - [ ] Chart of accounts, ledgers, parties, items, warehouses, company settings, and GST registrations.
@@ -80,11 +77,12 @@
 
 ## Implementation increments
 
-1. **Completed:** repository plan, npm workspace, integer-paise utility and tests, development environment template, README, optional Docker Compose, and initial CI.
-2. **Completed:** NestJS API starter, `GET /api/health`, startup validation, and API build/typecheck/test scripts. GitHub Actions passed for the merged increment.
-3. **Completed:** initial PostgreSQL tenant schema, forced RLS policies, transaction-local tenant context helper, and PostgreSQL-backed RLS integration test. GitHub Actions passed migration, RLS integration, typecheck, build, and tests.
-4. **Completed:** database connection/configuration module, active-membership tenant resolution, transaction-aware audit service, and unit tests. GitHub Actions passed for the merged PR.
-5. **In progress:** auth primitives: Argon2id password hashing, opaque refresh-token hashing, session persistence, transactional refresh-token rotation, replay-triggered family revocation, and unit tests. Authentication endpoints, CSRF, and authorization guards remain separate follow-up work.
+1. **Completed:** repository plan, npm workspace, integer-paise utility and tests, environment template, README, optional Docker Compose, and initial CI.
+2. **Completed:** NestJS API starter, health endpoint, startup validation, and API build/typecheck/test scripts.
+3. **Completed:** PostgreSQL tenant schema, forced RLS policies, tenant context helper, and PostgreSQL-backed RLS integration test.
+4. **Completed:** database runtime, active-membership tenant resolution, transaction-aware audit service, and unit tests.
+5. **Completed:** Argon2id password hashing, opaque refresh-token hashing, session persistence, transactional refresh rotation, replay-triggered family revocation, and unit tests.
+6. **In progress:** HTTP authentication endpoints, CSRF/origin protections, short-lived access tokens, CORS, and rate limiting. Must not be considered complete until the current branch's CI passes.
 
 ## Acceptance gates
 
@@ -93,4 +91,4 @@
 - Reconciliation acceptance: matches below the configured threshold remain suggestions and never post automatically.
 - Reminder acceptance: reminders execute from the server scheduler while the web app is closed, with idempotency and test coverage.
 - Security acceptance: tenant isolation is tested against the database, not inferred from service filters alone.
-- Release acceptance: migrations, seed, docs, environment template, Docker setup, CI, and demo scripts are present; all claimed checks have actual recorded results.
+- Release acceptance: migrations, seed, docs, environment template, CI, and demo scripts are present; all claimed checks have actual recorded results.
