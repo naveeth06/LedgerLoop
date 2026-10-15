@@ -129,4 +129,64 @@ integrationDescribe('PostgreSQL tenant row-level security', () => {
       client.release();
     }
   });
+
+  it('isolates opening inventory snapshots by company under forced RLS', async () => {
+    if (!pool) throw new Error('DATABASE_URL is required for this integration test.');
+    const client = await pool.connect();
+    const openingItemIds: string[] = [];
+    try {
+      await client.query('BEGIN');
+      await client.query('SET LOCAL ROLE ledgerloop_app');
+      for (const [companyId, suffix] of [[companyA, 'A'], [companyB, 'B']] as const) {
+        await client.query("SELECT set_config('app.current_company_id', $1, true)", [companyId]);
+        const asset = await client.query<{ id: string }>(
+          "INSERT INTO ledger_accounts (company_id, account_code, name, account_type, created_by) VALUES ($1, $2, $3, 'asset', $4) RETURNING id",
+          [companyId, `CI-${suffix}-OPEN-ASSET`, `Company ${suffix} Inventory Asset`, userA],
+        );
+        const equity = await client.query<{ id: string }>(
+          "INSERT INTO ledger_accounts (company_id, account_code, name, account_type, created_by) VALUES ($1, $2, $3, 'equity', $4) RETURNING id",
+          [companyId, `CI-${suffix}-OPEN-EQUITY`, `Company ${suffix} Opening Equity`, userA],
+        );
+        const item = await client.query<{ id: string }>(
+          "INSERT INTO company_items (company_id, item_code, name) VALUES ($1, $2, $3) RETURNING id",
+          [companyId, `CI-${suffix}-OPEN-SKU`, `Company ${suffix} Opening Item`],
+        );
+        const warehouse = await client.query<{ id: string }>(
+          "INSERT INTO company_warehouses (company_id, warehouse_code, name) VALUES ($1, $2, $3) RETURNING id",
+          [companyId, `CI-${suffix}-OPEN-WH`, `Company ${suffix} Opening Warehouse`],
+        );
+        const entry = await client.query<{ id: string }>(
+          "INSERT INTO journal_entries (company_id, entry_number, entry_date, status, source_type, created_by) VALUES ($1, $2, '2026-04-01', 'draft', 'opening_balance', $3) RETURNING id",
+          [companyId, `CI-${suffix}-OPEN-JV`, userA],
+        );
+        await client.query(
+          "INSERT INTO journal_lines (company_id, journal_entry_id, line_number, account_id, debit_paise, credit_paise) VALUES ($1, $2, 1, $3, 100, 0), ($1, $2, 2, $4, 0, 100)",
+          [companyId, entry.rows[0].id, asset.rows[0].id, equity.rows[0].id],
+        );
+        await client.query("UPDATE journal_entries SET status = 'posted', posted_by = $3, posted_at = now() WHERE company_id = $1 AND id = $2",
+          [companyId, entry.rows[0].id, userA]);
+        await client.query(
+          "INSERT INTO opening_inventory (company_id, item_id, warehouse_id, journal_entry_id, opening_date, quantity, unit_cost_paise, total_value_paise, created_by) VALUES ($1, $2, $3, $4, '2026-04-01', 1, 100, 100, $5)",
+          [companyId, item.rows[0].id, warehouse.rows[0].id, entry.rows[0].id, userA],
+        );
+        openingItemIds.push(item.rows[0].id);
+      }
+      await client.query('COMMIT');
+      await client.query('BEGIN');
+      await client.query('SET LOCAL ROLE ledgerloop_app');
+      await client.query("SELECT set_config('app.current_company_id', $1, true)", [companyA]);
+      const visible = await client.query<{ item_id: string }>(
+        "SELECT item_id FROM opening_inventory WHERE item_id = ANY($1::uuid[]) ORDER BY item_id",
+        [openingItemIds],
+      );
+      expect(visible.rows.map((row) => row.item_id)).toEqual([openingItemIds[0]]);
+      await client.query('ROLLBACK');
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  });
+
 });
