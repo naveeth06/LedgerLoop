@@ -45,13 +45,20 @@ integrationDescribe('PostgreSQL tenant row-level security', () => {
   });
 
   afterAll(async () => {
-    if (pool) {
-      // Use the migration/admin connection for fixture cleanup. Opening inventory is immutable,
-      // so remove it only as part of test teardown before deleting its owning companies.
-      await pool.query('DROP TRIGGER IF EXISTS opening_inventory_guard ON opening_inventory');
-      await pool.query('DELETE FROM companies WHERE id = ANY($1::uuid[])', [[companyA, companyB]]);
-      await pool.query('DELETE FROM app_users WHERE id = ANY($1::uuid[])', [[userA, userB]]);
-      await pool.query('CREATE TRIGGER opening_inventory_guard BEFORE INSERT OR UPDATE OR DELETE ON opening_inventory FOR EACH ROW EXECUTE FUNCTION ledgerloop_guard_opening_inventory()');
+    if (!pool) return;
+
+    try {
+      // Fixture teardown is privileged test maintenance, not application behavior.
+      // Temporarily disable only this trigger so tenant cascade cleanup can remove fixtures;
+      // always restore it before returning the connection pool.
+      await pool.query('ALTER TABLE opening_inventory DISABLE TRIGGER opening_inventory_guard');
+      try {
+        await pool.query('DELETE FROM companies WHERE id = ANY($1::uuid[])', [[companyA, companyB]]);
+        await pool.query('DELETE FROM app_users WHERE id = ANY($1::uuid[])', [[userA, userB]]);
+      } finally {
+        await pool.query('ALTER TABLE opening_inventory ENABLE TRIGGER opening_inventory_guard');
+      }
+    } finally {
       await pool.end();
     }
   });
