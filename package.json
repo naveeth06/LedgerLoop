@@ -5,10 +5,11 @@
   "description": "GST-aware accounting platform for Indian small businesses",
   "workspaces": [
     "apps/api",
+    "apps/worker",
     "packages/types"
   ],
   "scripts": {
-    "build": "npm run build --workspace @ledgerloop/api",
+    "build": "npm run build --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "npm run test --workspaces --if-present"
   },
