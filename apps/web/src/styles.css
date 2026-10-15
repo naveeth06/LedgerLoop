@@ -1,0 +1,200 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+:root {
+  --ll-bg: #09090d;
+  --ll-surface: #101017;
+  --ll-surface-elevated: #15151d;
+  --ll-text: #f4f4f5;
+  --ll-text-muted: #9a9aa7;
+  --ll-border: rgba(255, 255, 255, 0.08);
+  --ll-primary: #8b5cf6;
+  --ll-secondary: #d946ef;
+  --ll-success: #34d399;
+  --ll-warning: #fbbf24;
+  --ll-danger: #fb7185;
+}
+
+html {
+  min-width: 320px;
+  background: var(--ll-bg);
+  color-scheme: dark;
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  background: var(--ll-bg);
+  color: var(--ll-text);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+a,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+:focus-visible {
+  outline: 2px solid rgb(167 139 250 / 0.85);
+  outline-offset: 2px;
+}
+
+.ll-card {
+  border: 1px solid var(--ll-border);
+  border-radius: 1rem;
+  background: linear-gradient(145deg, rgb(255 255 255 / 0.045), rgb(255 255 255 / 0.018));
+  box-shadow: 0 20px 60px rgb(0 0 0 / 0.18);
+  backdrop-filter: blur(18px);
+}
+
+.ll-eyebrow {
+  color: #a78bfa;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  line-height: 1rem;
+  text-transform: uppercase;
+}
+
+.ll-nav-label {
+  margin: 0 0 0.5rem 0.75rem;
+  color: #6f6f7d;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.ll-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 2.5rem;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid transparent;
+  border-radius: 0.75rem;
+  color: #9a9aa7;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 160ms ease, background-color 160ms ease, border-color 160ms ease;
+}
+
+.ll-nav-item:hover {
+  color: #f4f4f5;
+  background: rgb(255 255 255 / 0.04);
+}
+
+.ll-nav-active {
+  color: #fff;
+  border-color: rgb(139 92 246 / 0.18);
+  background: linear-gradient(90deg, rgb(139 92 246 / 0.16), rgb(217 70 239 / 0.06));
+}
+
+.ll-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 1px solid var(--ll-border);
+  border-radius: 0.75rem;
+  color: #a1a1aa;
+  background: rgb(255 255 255 / 0.025);
+  cursor: pointer;
+  transition: color 160ms ease, background-color 160ms ease, border-color 160ms ease;
+}
+
+.ll-icon-button:hover {
+  color: #fff;
+  border-color: rgb(167 139 250 / 0.22);
+  background: rgb(255 255 255 / 0.05);
+}
+
+.ll-button-primary,
+.ll-button-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 2.5rem;
+  border-radius: 0.75rem;
+  padding: 0.625rem 0.875rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 160ms ease, background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.ll-button-primary {
+  border: 1px solid rgb(167 139 250 / 0.3);
+  color: #fff;
+  background: linear-gradient(135deg, #7c3aed, #c026d3);
+  box-shadow: 0 8px 28px rgb(124 58 237 / 0.22);
+}
+
+.ll-button-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 34px rgb(124 58 237 / 0.3);
+}
+
+.ll-button-secondary {
+  border: 1px solid var(--ll-border);
+  color: #c4c4cc;
+  background: rgb(255 255 255 / 0.025);
+}
+
+.ll-button-secondary:hover {
+  border-color: rgb(167 139 250 / 0.2);
+  color: #fff;
+  background: rgb(255 255 255 / 0.05);
+}
+
+.ll-ambient {
+  position: absolute;
+  width: 38rem;
+  height: 38rem;
+  border-radius: 9999px;
+  filter: blur(100px);
+  opacity: 0.11;
+}
+
+.ll-ambient-purple {
+  top: -18rem;
+  left: 28%;
+  background: #7c3aed;
+}
+
+.ll-grid {
+  position: absolute;
+  inset: 0;
+  opacity: 0.055;
+  background-image: linear-gradient(rgb(167 139 250 / 0.45) 1px, transparent 1px), linear-gradient(90deg, rgb(167 139 250 / 0.45) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: linear-gradient(to bottom, black, transparent 55%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
