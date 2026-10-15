@@ -30,28 +30,26 @@ exports.up = (pgm) => {
       FOREIGN KEY(company_id, item_id) REFERENCES company_items(company_id, id) ON DELETE RESTRICT,
       FOREIGN KEY(company_id, warehouse_id) REFERENCES company_warehouses(company_id, id) ON DELETE RESTRICT
     );
-
     ALTER TABLE inventory_valuation_balances ENABLE ROW LEVEL SECURITY;
     ALTER TABLE inventory_valuation_balances FORCE ROW LEVEL SECURITY;
     CREATE POLICY inventory_valuation_balances_tenant_isolation ON inventory_valuation_balances
       USING (company_id = NULLIF(current_setting('app.current_company_id', true), '')::uuid)
       WITH CHECK (company_id = NULLIF(current_setting('app.current_company_id', true), '')::uuid);
     GRANT SELECT, INSERT, UPDATE ON inventory_valuation_balances TO ledgerloop_app;
-
-    CREATE INDEX inventory_valuation_balances_company_item_idx
-      ON inventory_valuation_balances(company_id, item_id);
-    CREATE INDEX inventory_valuation_balances_company_warehouse_idx
-      ON inventory_valuation_balances(company_id, warehouse_id);
+    CREATE INDEX inventory_valuation_balances_company_item_idx ON inventory_valuation_balances(company_id, item_id);
+    CREATE INDEX inventory_valuation_balances_company_warehouse_idx ON inventory_valuation_balances(company_id, warehouse_id);
 
     CREATE TABLE inventory_posting_accounts (
       company_id uuid PRIMARY KEY REFERENCES companies(id) ON DELETE CASCADE,
       inventory_asset_account_id uuid NOT NULL,
       cogs_account_id uuid NOT NULL,
+      default_warehouse_id uuid NOT NULL,
       created_by uuid REFERENCES app_users(id) ON DELETE SET NULL,
       created_at timestamptz NOT NULL DEFAULT now(),
       updated_at timestamptz NOT NULL DEFAULT now(),
       FOREIGN KEY(company_id, inventory_asset_account_id) REFERENCES ledger_accounts(company_id, id) ON DELETE RESTRICT,
-      FOREIGN KEY(company_id, cogs_account_id) REFERENCES ledger_accounts(company_id, id) ON DELETE RESTRICT
+      FOREIGN KEY(company_id, cogs_account_id) REFERENCES ledger_accounts(company_id, id) ON DELETE RESTRICT,
+      FOREIGN KEY(company_id, default_warehouse_id) REFERENCES company_warehouses(company_id, id) ON DELETE RESTRICT
     );
     ALTER TABLE inventory_posting_accounts ENABLE ROW LEVEL SECURITY;
     ALTER TABLE inventory_posting_accounts FORCE ROW LEVEL SECURITY;
