@@ -46,8 +46,12 @@ integrationDescribe('PostgreSQL tenant row-level security', () => {
 
   afterAll(async () => {
     if (pool) {
+      // Use the migration/admin connection for fixture cleanup. Opening inventory is immutable,
+      // so remove it only as part of test teardown before deleting its owning companies.
+      await pool.query('DROP TRIGGER IF EXISTS opening_inventory_guard ON opening_inventory');
       await pool.query('DELETE FROM companies WHERE id = ANY($1::uuid[])', [[companyA, companyB]]);
       await pool.query('DELETE FROM app_users WHERE id = ANY($1::uuid[])', [[userA, userB]]);
+      await pool.query('CREATE TRIGGER opening_inventory_guard BEFORE INSERT OR UPDATE OR DELETE ON opening_inventory FOR EACH ROW EXECUTE FUNCTION ledgerloop_guard_opening_inventory()');
       await pool.end();
     }
   });
@@ -76,8 +80,9 @@ integrationDescribe('PostgreSQL tenant row-level security', () => {
     try {
       await client.query('BEGIN');
       await client.query('SET LOCAL ROLE ledgerloop_app');
-      await client.query('INSERT INTO company_memberships (company_id, user_id, role, status) VALUES ($1, $2, \'owner\', \'active\')', [companyA, userA]);
-      await client.query('SELECT set_config(\'app.current_company_id\', $1, true)', [companyB]);
+      await client.query("SELECT set_config('app.current_company_id', $1, true)", [companyA]);
+      await client.query("INSERT INTO company_memberships (company_id, user_id, role, status) VALUES ($1, $2, 'owner', 'active')", [companyA, userA]);
+      await client.query("SELECT set_config('app.current_company_id', $1, true)", [companyB]);
       await client.query("INSERT INTO company_memberships (company_id, user_id, role, status) VALUES ($1, $2, 'admin', 'active'), ($1, $3, 'viewer', 'active')", [companyB, userA, userB]);
       await client.query("SELECT set_config('app.current_company_id', '', true)");
       await client.query("SELECT set_config('app.current_user_id', $1, true)", [userA]);
