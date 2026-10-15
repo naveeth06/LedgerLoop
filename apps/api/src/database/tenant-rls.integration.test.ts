@@ -53,6 +53,14 @@ integrationDescribe('PostgreSQL tenant row-level security', () => {
       // always restore it before returning the connection pool.
       await pool.query('ALTER TABLE opening_inventory DISABLE TRIGGER opening_inventory_guard');
       try {
+        // Remove child records before parent companies; journal-line/account references are restrictive.
+        await pool.query('DELETE FROM journal_lines WHERE company_id = ANY($1::uuid[])', [[companyA, companyB]]);
+        await pool.query('DELETE FROM opening_inventory WHERE company_id = ANY($1::uuid[])', [[companyA, companyB]]);
+        await pool.query('DELETE FROM journal_entries WHERE company_id = ANY($1::uuid[])', [[companyA, companyB]]);
+        await pool.query('DELETE FROM ledger_accounts WHERE company_id = ANY($1::uuid[])', [[companyA, companyB]]);
+        await pool.query('DELETE FROM company_items WHERE company_id = ANY($1::uuid[])', [[companyA, companyB]]);
+        await pool.query('DELETE FROM company_warehouses WHERE company_id = ANY($1::uuid[])', [[companyA, companyB]]);
+        await pool.query('DELETE FROM company_memberships WHERE company_id = ANY($1::uuid[])', [[companyA, companyB]]);
         await pool.query('DELETE FROM companies WHERE id = ANY($1::uuid[])', [[companyA, companyB]]);
         await pool.query('DELETE FROM app_users WHERE id = ANY($1::uuid[])', [[userA, userB]]);
       } finally {
