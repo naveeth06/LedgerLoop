@@ -19,6 +19,8 @@ import { PurchaseDocumentsController } from './companies/purchase-documents.cont
 import { PurchaseBillPostingController } from './companies/purchase-bill-posting.controller';
 import { SupplierPaymentsController } from './companies/supplier-payments.controller';
 import { InventoryController } from './companies/inventory.controller';
+import { InventoryValuationController } from './companies/inventory-valuation.controller';
+import { InventoryValuationService } from './companies/inventory-valuation.service';
 import { BankAccountsController } from './companies/bank-accounts.controller';
 import { BankStatementImportsController } from './companies/bank-statement-imports.controller';
 import { BankReconciliationController } from './companies/bank-reconciliation.controller';
@@ -34,12 +36,13 @@ import { SalesGstService } from './companies/sales-gst.service';
     PartiesController, ItemsController, WarehousesController, JournalEntriesController,
     OpeningBalancesController, SalesDocumentsController, SalesInvoicePostingController,
     SalesReceiptsController, PurchaseDocumentsController, PurchaseBillPostingController,
-    SupplierPaymentsController, InventoryController, BankAccountsController,
+    SupplierPaymentsController, InventoryController, InventoryValuationController, BankAccountsController,
     BankStatementImportsController, BankReconciliationController, ReportsController,
     FinancialReportsController, ReceivablesGstReportsController,
   ],
   providers: [
     SalesGstService,
+    InventoryValuationService,
     { provide: APP_GUARD, useClass: AccessTokenGuard },
     { provide: APP_GUARD, useClass: CompanyRoleGuard },
   ],
