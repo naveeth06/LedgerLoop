@@ -54,7 +54,7 @@
 - [ ] Reversal workflow.
 - [x] Tests for balance, rollback, GST tax, rounding, immutability and tenant boundaries covered by completed increments.
 
-### Phase 3 — Sales and purchases
+## Phase 3 — Sales and purchases
 - [x] Sales quotations and sales invoice draft schemas with tenant-scoped lines, automatic numbering, GST totals and audit events.
 - [x] Invoice issue/posting to receivables, sales and output GST. Inventory deduction remains deferred until inventory movement/valuation is implemented.
 - [x] Customer receipts, automatic receipt numbering, bank/cash account selection, atomic receipt posting, multi-invoice/partial allocation, outstanding balance checks, forced RLS, immutability and audit events.
@@ -71,7 +71,8 @@
 - [x] Deterministic reconciliation confidence bands; low-confidence matches remain explicit user-approved suggestions and never auto-post.
 - [ ] Secure statement import with size/type limits and scanning.
 - [x] Trial balance from posted journal entries with tenant-scoped as-of-date reporting and deterministic paise balances.
-- [ ] P&L, balance sheet, receivables ageing and GST summary from posted journals.
+- [x] Profit & Loss and Balance Sheet from posted journal entries with deterministic date boundaries and paise balances.
+- [ ] Receivables ageing and GST summary from posted journals.
 - [ ] Statement-import demo and Playwright e2e.
 
 ## Phase 5 — Reminders and AI
@@ -100,7 +101,8 @@
 22. **Completed:** tenant-scoped bank accounts and statement import batches/transactions with external-id deduplication.
 23. **Completed:** bank statement reconciliation against posted journal lines, tenant-safe composite matching, one-match-per-journal-line protection, audit events and reconciled immutability.
 24. **Completed:** reconciliation hardening with transaction update timestamps and deterministic confidence bands for user-facing suggestions; no low-confidence auto-posting.
-25. **In progress:** reporting foundation with a tenant-scoped Trial Balance endpoint derived only from posted journal entries and an explicit as-of date.
+25. **Completed:** reporting foundation with tenant-scoped Trial Balance endpoint derived only from posted journal entries and an explicit as-of date.
+26. **In progress:** Profit & Loss and Balance Sheet endpoints derived from posted journal entries with deterministic period/as-of boundaries and integer-paise balances.
 
 ## Acceptance gates
 

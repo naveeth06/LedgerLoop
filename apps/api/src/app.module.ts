@@ -23,31 +23,19 @@ import { BankAccountsController } from './companies/bank-accounts.controller';
 import { BankStatementImportsController } from './companies/bank-statement-imports.controller';
 import { BankReconciliationController } from './companies/bank-reconciliation.controller';
 import { ReportsController } from './companies/reports.controller';
+import { FinancialReportsController } from './companies/financial-reports.controller';
 import { SalesGstService } from './companies/sales-gst.service';
 
 @Module({
   imports: [DatabaseModule, AuthModule],
   controllers: [
-    AppController,
-    CompaniesController,
-    AccountsController,
-    CompanySettingsController,
-    PartiesController,
-    ItemsController,
-    WarehousesController,
-    JournalEntriesController,
-    OpeningBalancesController,
-    SalesDocumentsController,
-    SalesInvoicePostingController,
-    SalesReceiptsController,
-    PurchaseDocumentsController,
-    PurchaseBillPostingController,
-    SupplierPaymentsController,
-    InventoryController,
-    BankAccountsController,
-    BankStatementImportsController,
-    BankReconciliationController,
-    ReportsController,
+    AppController, CompaniesController, AccountsController, CompanySettingsController,
+    PartiesController, ItemsController, WarehousesController, JournalEntriesController,
+    OpeningBalancesController, SalesDocumentsController, SalesInvoicePostingController,
+    SalesReceiptsController, PurchaseDocumentsController, PurchaseBillPostingController,
+    SupplierPaymentsController, InventoryController, BankAccountsController,
+    BankStatementImportsController, BankReconciliationController, ReportsController,
+    FinancialReportsController,
   ],
   providers: [
     SalesGstService,
