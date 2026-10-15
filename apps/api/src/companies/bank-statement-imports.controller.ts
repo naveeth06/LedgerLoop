@@ -56,7 +56,8 @@ export class BankStatementImportsController {
       let skippedCount = 0;
       for (const row of data.rows) {
         const inserted = await client.query(`INSERT INTO bank_statement_transactions (company_id, bank_account_id, import_id, transaction_date, value_date, transaction_type, amount_paise, description, reference, external_id, balance_after_paise) VALUES ($1,$2,$3,$4::date,$5::date,$6,$7::bigint,$8,$9,$10,$11::bigint) ON CONFLICT (company_id, bank_account_id, external_id) WHERE external_id IS NOT NULL DO NOTHING`, [companyId, bankAccountId, importId, row.transactionDate, row.valueDate ?? null, row.transactionType, row.amountPaise, row.description, row.reference ?? null, row.externalId ?? null, row.balanceAfterPaise ?? null]);
-        if (inserted.rowCount) importedCount += inserted.rowCount; else skippedCount++;
+        const rowCount = inserted.rowCount ?? 0;
+        if (rowCount > 0) importedCount += rowCount; else skippedCount++;
       }
 
       await this.audit.record(client, { actorUserId: userId, action: 'BANK_STATEMENT_IMPORTED', entityType: 'bank_statement_import', entityId: importId, metadata: { companyId, bankAccountId, sourceName: data.sourceName ?? null, requestedRows: data.rows.length, importedRows: importedCount, skippedRows: skippedCount } });
