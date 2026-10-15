@@ -138,8 +138,8 @@ export class SalesInvoicePostingController {
 
         const entryId = randomUUID();
         await client.query(
-          `INSERT INTO journal_entries (id, company_id, entry_number, entry_date, memo, status, source_type, created_by, posted_by, posted_at)
-           VALUES ($1,$2,$3,$4::date,$5,'posted','invoice',$6,$6,now())`,
+          `INSERT INTO journal_entries (id, company_id, entry_number, entry_date, memo, status, source_type, created_by)
+           VALUES ($1,$2,$3,$4::date,$5,'draft','invoice',$6)`,
           [entryId, companyId, `SI-${invoice.invoice_number}`, invoice.invoice_date, `Sales invoice ${invoice.invoice_number}`, userId],
         );
         for (let index = 0; index < lines.length; index++) {
@@ -150,6 +150,11 @@ export class SalesInvoicePostingController {
             [companyId, entryId, index + 1, line.accountId, line.description, line.debitPaise, line.creditPaise],
           );
         }
+        await client.query(
+          `UPDATE journal_entries SET status = 'posted', posted_by = $3, posted_at = now(), updated_at = now()
+            WHERE company_id = $1 AND id = $2`,
+          [companyId, entryId, userId],
+        );
 
         await client.query(
           `UPDATE sales_invoices SET status = 'issued', updated_at = now() WHERE company_id = $1 AND id = $2`,
