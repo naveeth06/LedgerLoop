@@ -10,6 +10,7 @@ import { CompaniesController } from './companies/companies.controller';
 import { CompanySettingsController } from './companies/company-settings.controller';
 import { ItemsController, WarehousesController } from './companies/items-warehouses.controller';
 import { JournalEntriesController } from './companies/journal-entries.controller';
+import { JournalReversalsController } from './companies/journal-reversals.controller';
 import { OpeningBalancesController } from './companies/opening-balances.controller';
 import { PartiesController } from './companies/parties.controller';
 import { SalesDocumentsController } from './companies/sales-documents.controller';
@@ -35,7 +36,7 @@ import { SalesGstService } from './companies/sales-gst.service';
   controllers: [
     AppController, CompaniesController, AccountsController, CompanySettingsController,
     PartiesController, ItemsController, WarehousesController, JournalEntriesController,
-    OpeningBalancesController, SalesDocumentsController, SalesInvoicePostingV2Controller,
+    JournalReversalsController, OpeningBalancesController, SalesDocumentsController, SalesInvoicePostingV2Controller,
     SalesReceiptsController, PurchaseDocumentsController, PurchaseBillPostingV2Controller,
     SupplierPaymentsController, InventoryController, InventoryValuationController, BankAccountsController,
     BankStatementImportsController, BankReconciliationController, ReportsController,
