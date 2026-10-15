@@ -35,7 +35,7 @@ export function buildReminderEmailTemplate(data: ReminderEmailTemplateData): Rem
     '<html lang="en">',
     '<body style="margin:0;padding:24px;font-family:Arial,sans-serif;line-height:1.5;color:#1f2937;background:#f8fafc;">',
     '<div style="max-width:600px;margin:0 auto;padding:24px;background:#ffffff;border:1px solid #e5e7eb;border-radius:12px;">',
-    `<h2 style="margin:0 0 16px;">Payment reminder</h2>`,
+    '<h2 style="margin:0 0 16px;">Payment reminder</h2>',
     `<p style="margin:0 0 16px;">This is a ${escapeHtml(reminderLabel)} for invoice <strong>${escapeHtml(invoiceNumber)}</strong>.</p>`,
     '<table style="width:100%;border-collapse:collapse;margin:0 0 20px;">',
     `<tr><td style="padding:8px 0;color:#6b7280;">Invoice</td><td style="padding:8px 0;text-align:right;"><strong>${escapeHtml(invoiceNumber)}</strong></td></tr>`,
@@ -62,13 +62,17 @@ export function formatPaise(value: string): string {
 
 function formatIndianInteger(value: string): string {
   if (value.length <= 3) return value;
+  if (value.length <= 5) return `${value.slice(0, -3)},${value.slice(-3)}`;
+
   const lastThree = value.slice(-3);
   let remaining = value.slice(0, -3);
   const groups: string[] = [];
+
   while (remaining.length > 2) {
     groups.unshift(remaining.slice(-2));
     remaining = remaining.slice(0, -2);
   }
+
   if (remaining) groups.unshift(remaining);
   return `${groups.join(',')},${lastThree}`;
 }
