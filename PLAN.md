@@ -79,6 +79,7 @@
 ## Phase 5 — Reminders and AI
 - [x] BullMQ overdue reminder events with retries, idempotency, tenant context and audit.
 - [x] Email reminder delivery foundation with SMTP provider abstraction, party opt-out, delivery state, retry/backoff and audit metadata.
+- [x] Provider-independent delivery monitoring summary with tenant-scoped status counts.
 - [ ] Provider-specific delivery monitoring, bounce handling and richer templates.
 - [ ] Claude-backed categorisation scoped to current-company ledger candidates.
 - [ ] Receipt extraction/reconciliation suggestions with validation and human approval.
@@ -114,7 +115,8 @@
 32. **Completed:** invoice-to-receipt settlement regression covering full settlement, journal balance, receivable zeroing and cash balance; controller/UI Playwright e2e remains deferred until the Angular web app exists.
 33. **Completed:** secure statement-import hardening with a 5MB JSON body cap, explicit JSON content type, statement text safety scanning and focused unit coverage.
 34. **Completed:** overdue-reminder foundation with tenant-scoped settings/events, BullMQ hourly scheduling, idempotent reminder-event creation, tenant-context enforcement, audit events and reminder acknowledgement APIs.
-35. **In progress:** SMTP email reminder delivery with tenant-scoped delivery records, party opt-out, deterministic message IDs, retry/backoff, provider abstraction and delivery audit events.
+35. **Completed:** SMTP email reminder delivery with tenant-scoped delivery records, party opt-out, deterministic message IDs, retry/backoff, provider abstraction and delivery audit events.
+36. **In progress:** provider-independent reminder delivery monitoring summary with tenant-scoped status counts and focused controller coverage.
 
 ## Acceptance gates
 

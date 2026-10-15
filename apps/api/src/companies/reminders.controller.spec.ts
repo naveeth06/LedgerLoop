@@ -37,6 +37,22 @@ describe('RemindersController', () => {
     });
   });
 
+  it('returns delivery status counts for the current company', async () => {
+    const { controller, client } = setup([
+      { status: 'failed', count: 2, oldestCreatedAt: '2026-10-15T10:00:00Z', lastUpdatedAt: '2026-10-16T10:00:00Z' },
+      { status: 'sent', count: 7, oldestCreatedAt: '2026-10-14T10:00:00Z', lastUpdatedAt: '2026-10-16T09:00:00Z' },
+    ]);
+    const result = await controller.deliverySummary(companyId, request);
+    expect(client.query).toHaveBeenCalledWith(expect.stringContaining('FROM reminder_email_deliveries'), [companyId]);
+    expect(result).toEqual({
+      counts: { pending: 0, processing: 0, sent: 7, failed: 2, cancelled: 0 },
+      statuses: [
+        { status: 'failed', count: 2, oldestCreatedAt: '2026-10-15T10:00:00Z', lastUpdatedAt: '2026-10-16T10:00:00Z' },
+        { status: 'sent', count: 7, oldestCreatedAt: '2026-10-14T10:00:00Z', lastUpdatedAt: '2026-10-16T09:00:00Z' },
+      ],
+    });
+  });
+
   it('rejects unsafe reminder settings', async () => {
     const { controller, tenantAccess } = setup();
     await expect(controller.updateSettings(companyId, {
