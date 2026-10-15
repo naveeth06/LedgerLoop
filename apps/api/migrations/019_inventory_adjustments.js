@@ -1,5 +1,8 @@
 exports.up = (pgm) => {
   pgm.sql(`
+    ALTER TABLE company_document_sequences
+      ADD COLUMN inventory_adjustment_next bigint NOT NULL DEFAULT 1;
+
     ALTER TABLE inventory_posting_accounts
       ADD COLUMN inventory_adjustment_account_id uuid;
 
@@ -74,4 +77,5 @@ exports.down = (pgm) => {
   pgm.sql(`DROP TABLE IF EXISTS inventory_adjustments;`);
   pgm.sql(`ALTER TABLE inventory_posting_accounts DROP CONSTRAINT IF EXISTS inventory_posting_accounts_adjustment_account_fk;`);
   pgm.sql(`ALTER TABLE inventory_posting_accounts DROP COLUMN IF EXISTS inventory_adjustment_account_id;`);
+  pgm.sql(`ALTER TABLE company_document_sequences DROP COLUMN IF EXISTS inventory_adjustment_next;`);
 };
