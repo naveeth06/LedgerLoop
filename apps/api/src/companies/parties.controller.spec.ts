@@ -45,19 +45,10 @@ describe('PartiesController', () => {
 
   it('writes the party and audit event in the same transaction', async () => {
     const party = {
-      id: 'a20e6a9d-03f7-4d43-84cb-cb2d8d97b0b2',
-      company_id: companyId,
-      party_code: 'CUST-01',
-      name: 'Customer One',
-      party_type: 'customer',
-      gstin: null,
-      email: null,
-      phone: null,
-      billing_address: {},
-      credit_limit_paise: '0',
-      is_active: true,
-      created_at: new Date(),
-      updated_at: new Date(),
+      id: 'a20e6a9d-03f7-4d43-84cb-cb2d8d97b0b2', company_id: companyId, party_code: 'CUST-01',
+      name: 'Customer One', party_type: 'customer', gstin: null, email: null, phone: null,
+      billing_address: {}, credit_limit_paise: '0', is_active: true, email_reminders_enabled: true,
+      created_at: new Date(), updated_at: new Date(),
     };
     const { controller, audit } = makeController(async (callback) => callback({
       query: vi.fn(async () => ({ rows: [party] })),
@@ -67,11 +58,24 @@ describe('PartiesController', () => {
     }, { user: { sub: userId } } as never);
     expect(result.party).toEqual(party);
     expect(audit.record).toHaveBeenCalledWith(expect.anything(), {
-      actorUserId: userId,
-      action: 'COMPANY_PARTY_CREATED',
-      entityType: 'company_party',
-      entityId: party.id,
+      actorUserId: userId, action: 'COMPANY_PARTY_CREATED', entityType: 'company_party', entityId: party.id,
       metadata: { companyId, partyCode: 'CUST-01', partyType: 'customer' },
+    });
+  });
+
+  it('updates the reminder preference and audits the change', async () => {
+    const updated = { id: 'a20e6a9d-03f7-4d43-84cb-cb2d8d97b0b2', emailRemindersEnabled: false };
+    const { controller, audit } = makeController(async (callback) => callback({
+      query: vi.fn(async () => ({ rows: [updated], rowCount: 1 })),
+    }));
+    const result = await controller.updateReminderPreference(companyId, updated.id, { enabled: false }, { user: { sub: userId } } as never);
+    expect(result).toEqual(updated);
+    expect(audit.record).toHaveBeenCalledWith(expect.anything(), {
+      actorUserId: userId,
+      action: 'PARTY_REMINDER_PREFERENCE_UPDATED',
+      entityType: 'company_party',
+      entityId: updated.id,
+      metadata: { enabled: false },
     });
   });
 });
