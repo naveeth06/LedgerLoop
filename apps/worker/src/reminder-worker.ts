@@ -109,13 +109,7 @@ export async function processReminderEmail(pool: Pool, companyId: string, delive
   const text = `Payment reminder for invoice ${claimed.invoice_number}.\nDue date: ${claimed.due_date}\nOutstanding amount (paise): ${claimed.outstanding_paise}\nReminder ${claimed.reminder_sequence}.`;
   const html = `<p>Payment reminder for invoice <strong>${escapeHtml(claimed.invoice_number)}</strong>.</p><p>Due date: ${escapeHtml(claimed.due_date)}<br>Outstanding amount (paise): ${escapeHtml(claimed.outstanding_paise)}<br>Reminder ${claimed.reminder_sequence}.</p>`;
   try {
-    const sent = await provider.send({
-      to: claimed.recipient_email,
-      subject: claimed.subject,
-      text,
-      html,
-      messageId: `<ledgerloop-reminder-${deliveryId}@ledgerloop.local>`,
-    });
+    const sent = await provider.send({ to: claimed.recipient_email, subject: claimed.subject, text, html, messageId: `<ledgerloop-reminder-${deliveryId}@ledgerloop.local>` });
     await withTransaction(pool, async (client) => {
       await client.query('SELECT set_config($1, $2, true)', ['app.current_company_id', companyId]);
       await client.query(`UPDATE reminder_email_deliveries SET status = 'sent', sent_at = now(), provider_message_id = $2, last_error = NULL, updated_at = now() WHERE id = $1 AND status = 'processing'`, [deliveryId, sent.providerMessageId ?? null]);
@@ -150,7 +144,6 @@ export function parseRedisUrl(value: string) {
 }
 
 export function loadEnvironment(): z.infer<typeof environmentSchema> { return environmentSchema.parse(process.env); }
-
 function escapeHtml(value: string): string { return value.replace(/[&<>"']/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character] ?? character)); }
 
 export async function main(): Promise<void> {
@@ -174,8 +167,15 @@ export async function main(): Promise<void> {
         const created = await runOverdueReminderScan(client);
         await client.query('COMMIT');
         const enqueueClient = await pool.connect();
-        try { await enqueuePendingReminderEmails(enqueueClient, queue); } finally { enqueueClient.release(); }
-        return { created };
+        try {
+          await enqueueClient.query('BEGIN');
+          const queued = await enqueuePendingReminderEmails(enqueueClient, queue);
+          await enqueueClient.query('COMMIT');
+          return { created, queued };
+        } catch (error) {
+          await enqueueClient.query('ROLLBACK').catch(() => undefined);
+          throw error;
+        } finally { enqueueClient.release(); }
       }
       if (job.name === 'dispatch-reminder-emails') {
         const queued = await enqueuePendingReminderEmails(client, queue);
