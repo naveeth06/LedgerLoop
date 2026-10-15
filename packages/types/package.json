@@ -1,0 +1,9 @@
+{
+  "name": "@ledgerloop/types",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": { "./money": "./src/money.ts" },
+  "scripts": { "test": "vitest run", "typecheck": "tsc --noEmit" },
+  "devDependencies": { "typescript": "^5.9.2", "vitest": "^3.2.4" }
+}

@@ -1,0 +1,12 @@
+{
+  "name": "ledgerloop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "GST-aware accounting platform for Indian small businesses",
+  "workspaces": ["packages/types"],
+  "scripts": {
+    "test": "npm run test --workspace @ledgerloop/types",
+    "typecheck": "npm run typecheck --workspace @ledgerloop/types"
+  },
+  "engines": { "node": ">=22" }
+}
