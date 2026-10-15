@@ -30,6 +30,7 @@ import { FinancialReportsController } from './companies/financial-reports.contro
 import { ReceivablesGstReportsController } from './companies/receivables-gst-reports.controller';
 import { ExpensesDebitNotesController } from './companies/expenses-debit-notes.controller';
 import { RemindersController } from './companies/reminders.controller';
+import { DashboardController } from './companies/dashboard.controller';
 import { SalesGstService } from './companies/sales-gst.service';
 
 @Module({
@@ -42,7 +43,7 @@ import { SalesGstService } from './companies/sales-gst.service';
     SupplierPaymentsController, InventoryController, InventoryValuationController, BankAccountsController,
     BankStatementImportsController, BankReconciliationController, ReportsController,
     FinancialReportsController, ReceivablesGstReportsController, ExpensesDebitNotesController,
-    RemindersController,
+    RemindersController, DashboardController,
   ],
   providers: [
     SalesGstService,
