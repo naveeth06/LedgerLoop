@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { Bell, Building2, ChevronDown, LayoutDashboard, LucideAngularModule, Menu, Settings, X } from 'lucide-angular';
+import { Bell, Building2, ChevronDown, LayoutDashboard, LucideAngularModule, Menu, Settings, X } from '@lucide/angular';
 
 @Component({
   selector: 'll-root',
