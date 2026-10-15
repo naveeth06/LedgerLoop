@@ -52,8 +52,10 @@ integrationDescribe('PostgreSQL tenant row-level security', () => {
       // Temporarily disable only this trigger so tenant cascade cleanup can remove fixtures;
       // always restore it before returning the connection pool.
       await pool.query('ALTER TABLE opening_inventory DISABLE TRIGGER opening_inventory_guard');
+      await pool.query('ALTER TABLE journal_lines DISABLE TRIGGER ALL');
+      await pool.query('ALTER TABLE journal_entries DISABLE TRIGGER ALL');
       try {
-        // Remove child records before parent companies; journal-line/account references are restrictive.
+        // Fixture teardown only: clear immutable posting rows and restrictive relationships in dependency order.
         await pool.query('DELETE FROM journal_lines WHERE company_id = ANY($1::uuid[])', [[companyA, companyB]]);
         await pool.query('DELETE FROM opening_inventory WHERE company_id = ANY($1::uuid[])', [[companyA, companyB]]);
         await pool.query('DELETE FROM journal_entries WHERE company_id = ANY($1::uuid[])', [[companyA, companyB]]);
@@ -64,6 +66,8 @@ integrationDescribe('PostgreSQL tenant row-level security', () => {
         await pool.query('DELETE FROM companies WHERE id = ANY($1::uuid[])', [[companyA, companyB]]);
         await pool.query('DELETE FROM app_users WHERE id = ANY($1::uuid[])', [[userA, userB]]);
       } finally {
+        await pool.query('ALTER TABLE journal_entries ENABLE TRIGGER ALL');
+        await pool.query('ALTER TABLE journal_lines ENABLE TRIGGER ALL');
         await pool.query('ALTER TABLE opening_inventory ENABLE TRIGGER opening_inventory_guard');
       }
     } finally {
