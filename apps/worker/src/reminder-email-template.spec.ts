@@ -3,7 +3,8 @@ import { buildReminderEmailTemplate, formatPaise } from './reminder-email-templa
 
 describe('formatPaise', () => {
   it('formats integer paise as Indian rupees', () => {
-    expect(formatPaise('123456789')).toBe('₹1,234,567.89');
+    expect(formatPaise('123456789')).toBe('₹12,34,567.89');
+    expect(formatPaise('1234567890')).toBe('₹1,23,45,678.90');
     expect(formatPaise('0')).toBe('₹0.00');
   });
 
