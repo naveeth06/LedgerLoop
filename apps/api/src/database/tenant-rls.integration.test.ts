@@ -26,20 +26,12 @@ integrationDescribe('PostgreSQL tenant row-level security', () => {
     try {
       await client.query('BEGIN');
       await client.query('SET LOCAL ROLE ledgerloop_app');
-
-      await client.query(
-        "SELECT set_config('app.current_company_id', $1, true)",
-        [companyA],
-      );
+      await client.query("SELECT set_config('app.current_company_id', $1, true)", [companyA]);
       await client.query(
         'INSERT INTO companies (id, legal_name, display_name) VALUES ($1, $2, $3)',
         [companyA, 'Company A Legal', 'Company A'],
       );
-
-      await client.query(
-        "SELECT set_config('app.current_company_id', $1, true)",
-        [companyB],
-      );
+      await client.query("SELECT set_config('app.current_company_id', $1, true)", [companyB]);
       await client.query(
         'INSERT INTO companies (id, legal_name, display_name) VALUES ($1, $2, $3)',
         [companyB, 'Company B Legal', 'Company B'],
@@ -48,13 +40,8 @@ integrationDescribe('PostgreSQL tenant row-level security', () => {
 
       await client.query('BEGIN');
       await client.query('SET LOCAL ROLE ledgerloop_app');
-      await client.query(
-        "SELECT set_config('app.current_company_id', $1, true)",
-        [companyA],
-      );
-      const visible = await client.query<{ id: string }>(
-        'SELECT id FROM companies ORDER BY id',
-      );
+      await client.query("SELECT set_config('app.current_company_id', $1, true)", [companyA]);
+      const visible = await client.query<{ id: string }>('SELECT id FROM companies ORDER BY id');
       expect(visible.rows.map((row) => row.id)).toEqual([companyA]);
       await client.query('ROLLBACK');
     } catch (error) {
@@ -76,7 +63,6 @@ integrationDescribe('PostgreSQL tenant row-level security', () => {
         'INSERT INTO app_users (id, email, display_name) VALUES ($1, $2, $3), ($4, $5, $6)',
         [userA, 'rls-user-a@example.test', 'RLS User A', userB, 'rls-user-b@example.test', 'RLS User B'],
       );
-
       await client.query("SELECT set_config('app.current_company_id', $1, true)", [companyA]);
       await client.query(
         "INSERT INTO company_memberships (company_id, user_id, role, status) VALUES ($1, $2, 'owner', 'active')",
@@ -87,23 +73,57 @@ integrationDescribe('PostgreSQL tenant row-level security', () => {
         "INSERT INTO company_memberships (company_id, user_id, role, status) VALUES ($1, $2, 'admin', 'active'), ($1, $3, 'viewer', 'active')",
         [companyB, userA, userB],
       );
-
       await client.query("SELECT set_config('app.current_company_id', '', true)");
       await client.query("SELECT set_config('app.current_user_id', $1, true)", [userA]);
       const userAMemberships = await client.query<{ company_id: string }>(
         'SELECT company_id FROM company_memberships ORDER BY company_id',
       );
       expect(userAMemberships.rows.map((row) => row.company_id)).toEqual([companyA, companyB]);
-
       await client.query("SELECT set_config('app.current_user_id', $1, true)", [userB]);
       const userBMemberships = await client.query<{ company_id: string }>(
         'SELECT company_id FROM company_memberships ORDER BY company_id',
       );
       expect(userBMemberships.rows.map((row) => row.company_id)).toEqual([companyB]);
-
       const companyRows = await client.query<{ id: string }>('SELECT id FROM companies ORDER BY id');
       expect(companyRows.rows).toEqual([]);
       await client.query('COMMIT');
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  });
+
+  it('isolates ledger accounts to the active company under forced RLS', async () => {
+    if (!pool) throw new Error('DATABASE_URL is required for this integration test.');
+    const client = await pool.connect();
+
+    try {
+      await client.query('BEGIN');
+      await client.query('SET LOCAL ROLE ledgerloop_app');
+      await client.query("SELECT set_config('app.current_company_id', $1, true)", [companyA]);
+      await client.query(
+        `INSERT INTO ledger_accounts (company_id, account_code, name, account_type, created_by)
+         VALUES ($1, 'CI-A-1000', 'Company A Cash', 'asset', $2)`,
+        [companyA, userA],
+      );
+      await client.query("SELECT set_config('app.current_company_id', $1, true)", [companyB]);
+      await client.query(
+        `INSERT INTO ledger_accounts (company_id, account_code, name, account_type, created_by)
+         VALUES ($1, 'CI-B-1000', 'Company B Cash', 'asset', $2)`,
+        [companyB, userA],
+      );
+      await client.query('COMMIT');
+
+      await client.query('BEGIN');
+      await client.query('SET LOCAL ROLE ledgerloop_app');
+      await client.query("SELECT set_config('app.current_company_id', $1, true)", [companyA]);
+      const visible = await client.query<{ account_code: string }>(
+        'SELECT account_code FROM ledger_accounts ORDER BY account_code',
+      );
+      expect(visible.rows.map((row) => row.account_code)).toEqual(['CI-A-1000']);
+      await client.query('ROLLBACK');
     } catch (error) {
       await client.query('ROLLBACK');
       throw error;

@@ -6,7 +6,7 @@
 - Default branch: `main`
 - Inspection date: 2026-10-15
 - Observed state at initial inspection: repository was empty; this is a greenfield implementation, not a refactor.
-- Verification: merged increments have been verified through GitHub Actions for migrations, tenant RLS integration, TypeScript type-checking, build, and unit tests. PR #8 must pass its own latest-head workflow before it is considered verified. Direct local execution is not available in this session.
+- Verification: merged increments have been verified through GitHub Actions for migrations, tenant RLS integration, TypeScript type-checking, build, and unit tests. PR #9 must pass its own latest-head workflow before it is considered verified. Direct local execution is not available in this session.
 - Local setup constraint: Docker is optional and intentionally deferred. GitHub Actions uses a temporary PostgreSQL service for integration tests; local database work can use native PostgreSQL on Windows later.
 
 ## Product and engineering principles
@@ -41,12 +41,15 @@
 - [x] Argon2id password hashing, refresh-token hashing/rotation, and replay-triggered session-family revocation.
 - [x] Email/password sign-up, sign-in, refresh, and logout HTTP endpoints; HttpOnly refresh cookie, CSRF checks, origin validation, credentialed CORS, short-lived signed access tokens, and endpoint throttling.
 - [x] Global access-token authorization guard, explicit public-route metadata, and protected current-user endpoint.
-- [x] Company-scoped role policy backed by active database membership; initial company onboarding and owner/admin-only branch creation with tenant-scoped RLS and audit writes.
+- [x] Company-scoped role policy backed by active database membership; initial company onboarding and owner/admin branch creation with tenant-scoped RLS and audit writes.
+- [x] Authenticated company directory and branch listing APIs with active membership checks and user-scoped membership RLS.
 - [ ] Email verification/password reset and Google sign-in adapter.
 - [ ] Distributed rate limiting, security monitoring, and full authentication integration tests.
 
 ### Phase 2 — Accounting core
-- [ ] Chart of accounts, ledgers, parties, items, warehouses, company settings, and GST registrations.
+- [x] Tenant-scoped chart-of-accounts schema with account types, per-company unique codes, same-company parent constraints, and forced RLS.
+- [x] Authenticated account listing and owner/admin/accountant account creation with validation and audit writes.
+- [ ] Company settings, GST registrations, parties, items, warehouses, and opening balances.
 - [ ] Integer-paise money types and deterministic CGST/SGST/IGST tax calculation, including rounding rules.
 - [ ] Voucher, journal-entry, and journal-line schema with atomic posting and database-enforced balance.
 - [ ] Posted voucher immutability and reversal workflow.
@@ -85,7 +88,8 @@
 5. **Completed:** Argon2id password hashing, opaque refresh-token hashing, session persistence, transactional refresh rotation, replay-triggered family revocation, and unit tests.
 6. **Completed:** HTTP authentication endpoints, CSRF/origin protections, short-lived access tokens, CORS, and rate limiting; latest-head CI passed before merge.
 7. **Completed:** global access-token guard, explicit public-route metadata, protected current-user endpoint, company onboarding, company-role checks, owner/admin-only branch creation, audit writes, and guard unit tests; latest-head CI passed before merge.
-8. **In review:** authenticated company directory and branch listing APIs, user-scoped membership RLS directory policy, and unit/database integration coverage. Do not mark complete until the current PR's latest-head CI passes.
+8. **Completed:** authenticated company directory and branch listing APIs, user-scoped membership RLS, unit/database integration coverage, and documentation. Latest-head CI passed: [run #120](https://github.com/naveeth06/LedgerLoop/actions/runs/38761759245).
+9. **In review:** tenant-scoped chart-of-accounts schema and API, role-gated account creation, account audit events, and unit tests. Do not mark complete until the current PR's latest-head CI passes.
 
 ## Acceptance gates
 
