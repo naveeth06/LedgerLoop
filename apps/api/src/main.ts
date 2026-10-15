@@ -24,6 +24,8 @@ async function bootstrap(): Promise<void> {
   }
 
   const app = await NestFactory.create(AppModule);
+  const httpAdapter = app.getHttpAdapter().getInstance();
+  httpAdapter.use(httpAdapter.json({ limit: '5mb' }));
   app.setGlobalPrefix('api');
   app.enableCors({
     origin: environment.data.WEB_ORIGIN,

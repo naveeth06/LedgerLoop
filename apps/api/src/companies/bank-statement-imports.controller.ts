@@ -1,10 +1,11 @@
-import { BadRequestException, Body, Controller, Get, Param, Post, Req } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Headers, Param, Post, Req } from '@nestjs/common';
 import { z } from 'zod';
 import { randomUUID } from 'node:crypto';
 import { CompanyRoles } from '../auth/roles.decorator';
 import type { AuthenticatedRequest } from '../auth/current-user';
 import { AuditService } from '../database/audit.service';
 import { TenantAccessService } from '../database/tenant-access.service';
+import { assertSafeStatementText } from './statement-import-security';
 
 const rowSchema = z.object({
   transactionDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
@@ -38,12 +39,29 @@ export class BankStatementImportsController {
 
   @Post()
   @CompanyRoles('owner', 'admin', 'accountant')
-  async import(@Param('companyId') companyId: string, @Param('bankAccountId') bankAccountId: string, @Body() body: unknown, @Req() request: AuthenticatedRequest) {
+  async import(
+    @Param('companyId') companyId: string,
+    @Param('bankAccountId') bankAccountId: string,
+    @Headers('content-type') contentType: string | undefined,
+    @Body() body: unknown,
+    @Req() request: AuthenticatedRequest,
+  ) {
     const userId = request.user?.sub;
     if (!userId) throw new BadRequestException('Authenticated user is required.');
+    if (!contentType?.toLowerCase().startsWith('application/json')) {
+      throw new BadRequestException('Statement imports must use application/json.');
+    }
+
     const parsed = importSchema.safeParse(body);
     if (!parsed.success) throw new BadRequestException('Statement import is invalid.');
     const data = parsed.data;
+
+    assertSafeStatementText(data.sourceName ?? '', 'sourceName');
+    for (const row of data.rows) {
+      assertSafeStatementText(row.description, 'description');
+      assertSafeStatementText(row.reference ?? '', 'reference');
+      assertSafeStatementText(row.externalId ?? '', 'externalId');
+    }
 
     return this.tenantAccess.withCompanyTransaction(userId, companyId, async (client) => {
       const account = await client.query('SELECT id FROM bank_accounts WHERE company_id = $1 AND id = $2 AND is_active = true', [companyId, bankAccountId]);

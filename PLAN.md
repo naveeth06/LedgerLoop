@@ -69,7 +69,7 @@
 - [x] Tenant-scoped bank accounts and statement imports with duplicate external-id protection.
 - [x] Bank reconciliation against posted journal lines with tenant-safe matching and immutable reconciled state.
 - [x] Deterministic reconciliation confidence bands; low-confidence matches remain explicit user-approved suggestions and never auto-post.
-- [ ] Secure statement import with size/type limits and scanning.
+- [x] Secure JSON statement import with a 5MB request cap, explicit content-type enforcement and control-character scanning.
 - [x] Trial balance from posted journal entries with tenant-scoped as-of-date reporting and deterministic paise balances.
 - [x] Profit & Loss and Balance Sheet from posted journal entries with deterministic date boundaries and paise balances.
 - [x] Receivables ageing and GST summary from posted journals.
@@ -108,7 +108,9 @@
 28. **Completed:** weighted-average inventory valuation balances, default stock warehouse/account configuration, stock valuation reporting, purchase receipt inventory capitalization, and sales COGS/inventory relief in the same atomic posting transaction.
 29. **Completed:** tenant-scoped inventory adjustment documents with stock increase/decrease posting, immutable posted adjustments, atomic inventory/journal updates, and reversal-safe correction workflow.
 30. **Completed:** tenant-scoped expenses and supplier debit notes with draft/post lifecycle, atomic journal posting, GST-aware expense posting, supplier-bill outstanding protection, immutable posted documents and audit events.
-31. **In progress:** generic posted-journal reversal workflow with explicit reversal linkage, one-reversal guard, balanced debit/credit inversion, forced tenant transaction context and audit events.
+31. **Completed:** generic posted-journal reversal workflow with explicit reversal linkage, one-reversal guard, balanced debit/credit inversion, forced tenant transaction context and audit events.
+32. **Completed:** invoice-to-receipt settlement regression covering full settlement, journal balance, receivable zeroing and cash balance; controller/UI Playwright e2e remains deferred until the Angular web app exists.
+33. **In progress:** secure statement-import hardening with a 5MB JSON body cap, explicit JSON content type, statement text safety scanning and focused unit coverage.
 
 ## Acceptance gates
 
