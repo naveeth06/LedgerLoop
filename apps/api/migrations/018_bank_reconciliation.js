@@ -5,6 +5,15 @@ exports.up = (pgm) => {
     matched_by: { type: 'uuid', references: 'app_users', onDelete: 'restrict' },
   });
 
+  // journal_lines.id is globally unique, but the application uses composite
+  // tenant foreign keys throughout the schema. PostgreSQL requires the
+  // referenced column set itself to be backed by a unique constraint/index.
+  pgm.sql(`
+    ALTER TABLE journal_lines
+      ADD CONSTRAINT journal_lines_company_id_id_unique
+      UNIQUE (company_id, id)
+  `);
+
   pgm.sql(`
     ALTER TABLE bank_statement_transactions
       ADD CONSTRAINT bank_statement_txn_matched_line_company_fk
@@ -67,4 +76,5 @@ exports.down = (pgm) => {
   pgm.dropIndex('bank_statement_transactions', ['company_id', 'bank_account_id', 'status', 'transaction_date']);
   pgm.dropIndex('bank_statement_transactions', ['company_id', 'matched_journal_line_id']);
   pgm.dropColumns('bank_statement_transactions', ['matched_journal_line_id', 'matched_at', 'matched_by']);
+  pgm.sql('ALTER TABLE journal_lines DROP CONSTRAINT IF EXISTS journal_lines_company_id_id_unique');
 };
