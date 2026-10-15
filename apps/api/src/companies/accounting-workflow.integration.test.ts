@@ -60,10 +60,6 @@ integrationDescribe('sales receivable settlement accounting workflow', () => {
         [itemId, companyId, userId],
       );
       await fixtureClient.query(
-        "INSERT INTO sales_posting_accounts (company_id, receivable_account_id, revenue_account_id) VALUES ($1, $2, $3)",
-        [companyId, receivableAccountId, revenueAccountId],
-      );
-      await fixtureClient.query(
         "INSERT INTO sales_invoices (id, company_id, invoice_number, invoice_date, due_date, party_id, seller_gstin, buyer_gstin, place_of_supply_state_code, status, subtotal_paise, discount_paise, taxable_paise, cgst_paise, sgst_paise, igst_paise, total_paise, created_by) VALUES ($1, $2, 'WF-INV-001', '2026-10-01', '2026-10-31', $3, '33AAAAA0000A1Z5', NULL, '33', 'issued', 10000, 0, 10000, 0, 0, 0, 10000, $4)",
         [invoiceId, companyId, customerId, userId],
       );
@@ -86,15 +82,15 @@ integrationDescribe('sales receivable settlement accounting workflow', () => {
       );
 
       await fixtureClient.query(
-        "INSERT INTO sales_receipts (id, company_id, receipt_number, receipt_date, party_id, account_id, amount_paise, status, created_by, journal_entry_id) VALUES ($1, $2, 'WF-RC-001', '2026-10-10', $3, $4, 10000, 'posted', $5, $6)",
-        [receiptId, companyId, customerId, cashAccountId, userId, receiptJournalId],
+        "INSERT INTO sales_receipts (id, company_id, receipt_number, receipt_date, party_id, account_id, amount_paise, status, created_by) VALUES ($1, $2, 'WF-RC-001', '2026-10-10', $3, $4, 10000, 'draft', $5)",
+        [receiptId, companyId, customerId, cashAccountId, userId],
       );
       await fixtureClient.query(
         "INSERT INTO sales_receipt_allocations (id, company_id, receipt_id, invoice_id, allocated_paise) VALUES ($1, $2, $3, $4, 10000)",
         [receiptAllocationId, companyId, receiptId, invoiceId],
       );
       await fixtureClient.query(
-        "INSERT INTO journal_entries (id, company_id, entry_number, entry_date, memo, status, source_type, created_by) VALUES ($1, $2, 'WF-JE-002', '2026-10-10', 'Receipt posting', 'draft', 'sales_receipt', $3)",
+        "INSERT INTO journal_entries (id, company_id, entry_number, entry_date, memo, status, source_type, created_by) VALUES ($1, $2, 'WF-JE-002', '2026-10-10', 'Receipt posting', 'draft', 'receipt', $3)",
         [receiptJournalId, companyId, userId],
       );
       await fixtureClient.query(
@@ -104,6 +100,10 @@ integrationDescribe('sales receivable settlement accounting workflow', () => {
       await fixtureClient.query(
         "UPDATE journal_entries SET status = 'posted', posted_by = $1, posted_at = now() WHERE company_id = $2 AND id = $3",
         [userId, companyId, receiptJournalId],
+      );
+      await fixtureClient.query(
+        "UPDATE sales_receipts SET status = 'posted', journal_entry_id = $3, updated_at = now() WHERE company_id = $1 AND id = $2",
+        [companyId, receiptId, receiptJournalId],
       );
     } catch (error) {
       await fixtureClient.query('ROLLBACK');
