@@ -57,25 +57,25 @@
 ### Phase 3 — Sales and purchases
 - [x] Sales quotations and sales invoice draft schemas with tenant-scoped lines, automatic numbering, GST totals and audit events.
 - [x] Invoice issue/posting to receivables, sales and output GST. Inventory deduction remains deferred until inventory movement/valuation is implemented.
-- [ ] Receipts and receivable allocation.
+- [x] Customer receipts, automatic receipt numbering, bank/cash account selection, atomic receipt posting, multi-invoice/partial allocation, outstanding balance checks, forced RLS, immutability and audit events.
 - [ ] Purchase orders, bills, supplier payments, expenses and debit notes.
 - [ ] Invoice-to-payment demo and Playwright e2e.
 - [x] GST-aware sales numbering, validation and audit trail foundation.
 
-### Phase 4 — Banking and reporting
+## Phase 4 — Banking and reporting
 - [ ] Secure statement import with size/type limits and scanning.
 - [ ] Reconciliation candidates with confidence thresholds; low-confidence matches never auto-post.
 - [ ] Trial balance, P&L, balance sheet, receivables ageing and GST summary from posted journals.
 - [ ] Statement-import demo and Playwright e2e.
 
-### Phase 5 — Reminders and AI
+## Phase 5 — Reminders and AI
 - [ ] BullMQ overdue reminders with retries, idempotency and audit.
 - [ ] Claude-backed categorisation scoped to current-company ledger candidates.
 - [ ] Receipt extraction/reconciliation suggestions with validation and human approval.
 - [ ] Quotas, prompt-injection defense, redaction and AI audit metadata.
 - [ ] Tests for isolation, malformed output, quotas, approval and confidence thresholds.
 
-### Phase 6 — Hardening
+## Phase 6 — Hardening
 - [ ] WCAG 2.2 AA and keyboard/screen-reader review.
 - [ ] Responsive checks at 640/1024/1440px; loading/empty/error/offline states and Ctrl+K.
 - [ ] OpenAPI, seed data, Dockerfiles, docs, CI and demo scripts.
@@ -86,7 +86,8 @@
 1–14. **Completed:** foundation, auth, tenant RLS, company/branch context, chart of accounts, company settings/GST, parties, items/warehouses, journal posting and opening balances/inventory.
 15. **Completed:** sales quotation/invoice draft foundation, deterministic GST engine, automatic numbering, tenant-scoped lines, invoice immutability guard and audit events.
 16. **Completed:** sales invoice issue workflow with tenant-configured receivables, revenue and output GST accounts; balanced atomic journal posting and audit events. Inventory deduction remains intentionally deferred.
-17. **In progress:** customer receipts, automatic receipt numbering, bank/cash account selection, receipt journal posting, multi-invoice/partial receivable allocation, outstanding balance checks, forced RLS, immutability and audit events.
+17. **Completed:** customer receipts, automatic receipt numbering, bank/cash account selection, atomic receipt journal posting, multi-invoice/partial receivable allocation, outstanding balance checks, forced RLS, immutability and audit events.
+18. **In progress:** purchase orders and purchase bills with supplier validation, GST-aware deterministic totals, automatic numbering, tenant-scoped lines, draft audit events, forced RLS and bill immutability. Supplier payments, expense posting, debit notes and bill posting remain separate increments.
 
 ## Acceptance gates
 
