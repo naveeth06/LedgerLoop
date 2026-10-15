@@ -13,6 +13,7 @@ const environmentSchema = z.object({
   ),
   WEB_ORIGIN: z.string().url().default('http://localhost:4200'),
   AUTH_TOKEN_SECRET: z.string().min(32, 'AUTH_TOKEN_SECRET must contain at least 32 characters.'),
+  CSRF_SECRET: z.string().min(32, 'CSRF_SECRET must contain at least 32 characters.'),
   AUTH_ACCESS_TOKEN_TTL_SECONDS: z.coerce.number().int().min(60).max(3600).default(900),
 });
 
