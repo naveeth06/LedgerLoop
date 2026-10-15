@@ -1,6 +1,14 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { Bell, Building2, ChevronDown, LayoutDashboard, LucideAngularModule, Menu, Settings, X } from '@lucide/angular';
+import {
+  LucideBell,
+  LucideBuilding2,
+  LucideChevronDown,
+  LucideLayoutDashboard,
+  LucideMenu,
+  LucideSettings,
+  LucideX,
+} from '@lucide/angular';
 
 @Component({
   selector: 'll-root',
@@ -9,7 +17,13 @@ import { Bell, Building2, ChevronDown, LayoutDashboard, LucideAngularModule, Men
     RouterLink,
     RouterLinkActive,
     RouterOutlet,
-    LucideAngularModule.pick({ Bell, Building2, ChevronDown, LayoutDashboard, Menu, Settings, X }),
+    LucideBell,
+    LucideBuilding2,
+    LucideChevronDown,
+    LucideLayoutDashboard,
+    LucideMenu,
+    LucideSettings,
+    LucideX,
   ],
   template: `
     <div class="min-h-screen bg-[var(--ll-bg)] text-[var(--ll-text)]">
@@ -26,12 +40,12 @@ import { Bell, Building2, ChevronDown, LayoutDashboard, LucideAngularModule, Men
         <div class="flex h-16 items-center justify-between border-b border-white/8 px-5">
           <a routerLink="/dashboard" class="flex items-center gap-3" (click)="closeSidebar()">
             <span class="flex h-9 w-9 items-center justify-center rounded-xl border border-violet-400/30 bg-violet-500/10 text-violet-300">
-              <lucide-icon [img]="Building2" [size]="18"></lucide-icon>
+              <svg lucideBuilding2 [size]="18"></svg>
             </span>
             <span class="text-sm font-semibold tracking-wide text-white">LedgerLoop</span>
           </a>
           <button class="ll-icon-button lg:hidden" type="button" aria-label="Close navigation" (click)="closeSidebar()">
-            <lucide-icon [img]="X" [size]="18"></lucide-icon>
+            <svg lucideX [size]="18"></svg>
           </button>
         </div>
 
@@ -45,7 +59,7 @@ import { Bell, Building2, ChevronDown, LayoutDashboard, LucideAngularModule, Men
               class="ll-nav-item"
               (click)="closeSidebar()"
             >
-              <lucide-icon [img]="LayoutDashboard" [size]="18"></lucide-icon>
+              <svg lucideLayoutDashboard [size]="18"></svg>
               <span>Dashboard</span>
             </a>
           </section>
@@ -53,7 +67,7 @@ import { Bell, Building2, ChevronDown, LayoutDashboard, LucideAngularModule, Men
           <section>
             <p class="ll-nav-label">System</p>
             <a href="#" class="ll-nav-item" (click)="$event.preventDefault()">
-              <lucide-icon [img]="Settings" [size]="18"></lucide-icon>
+              <svg lucideSettings [size]="18"></svg>
               <span>Settings</span>
             </a>
           </section>
@@ -80,7 +94,7 @@ import { Bell, Building2, ChevronDown, LayoutDashboard, LucideAngularModule, Men
         <header class="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-white/8 bg-[var(--ll-bg)]/85 px-4 backdrop-blur-xl sm:px-6">
           <div class="flex min-w-0 items-center gap-3">
             <button class="ll-icon-button lg:hidden" type="button" aria-label="Open navigation" (click)="openSidebar()">
-              <lucide-icon [img]="Menu" [size]="20"></lucide-icon>
+              <svg lucideMenu [size]="20"></svg>
             </button>
             <div class="hidden min-w-0 sm:block">
               <p class="truncate text-sm font-medium text-white">LedgerLoop</p>
@@ -90,12 +104,12 @@ import { Bell, Building2, ChevronDown, LayoutDashboard, LucideAngularModule, Men
 
           <div class="flex items-center gap-2">
             <button class="ll-icon-button" type="button" aria-label="Notifications">
-              <lucide-icon [img]="Bell" [size]="18"></lucide-icon>
+              <svg lucideBell [size]="18"></svg>
             </button>
             <button class="flex items-center gap-2 rounded-xl border border-white/8 bg-white/[0.03] px-2.5 py-2 text-left transition hover:border-violet-400/20 hover:bg-white/[0.05]" type="button" aria-label="Open user menu">
               <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500/80 to-fuchsia-500/70 text-xs font-semibold text-white">N</span>
               <span class="hidden text-xs font-medium text-white sm:block">Account</span>
-              <lucide-icon class="hidden text-[var(--ll-text-muted)] sm:block" [img]="ChevronDown" [size]="14"></lucide-icon>
+              <svg class="hidden text-[var(--ll-text-muted)] sm:block" lucideChevronDown [size]="14"></svg>
             </button>
           </div>
         </header>
@@ -109,13 +123,6 @@ import { Bell, Building2, ChevronDown, LayoutDashboard, LucideAngularModule, Men
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AppComponent {
-  protected readonly Building2 = Building2;
-  protected readonly Bell = Bell;
-  protected readonly ChevronDown = ChevronDown;
-  protected readonly LayoutDashboard = LayoutDashboard;
-  protected readonly Menu = Menu;
-  protected readonly Settings = Settings;
-  protected readonly X = X;
   protected sidebarOpen = false;
 
   protected openSidebar(): void {
