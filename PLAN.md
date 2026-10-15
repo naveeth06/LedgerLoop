@@ -6,7 +6,7 @@
 - Default branch: `main`
 - Inspection date: 2026-10-15
 - Observed state at initial inspection: repository was empty; this is a greenfield implementation, not a refactor.
-- Verification: GitHub Actions passed npm install, PostgreSQL migration, tenant RLS integration, TypeScript type-checking, API build, and unit tests for the merged tenant foundation. The database runtime/membership/audit increment is being verified separately in CI. Direct local execution is not available in this session.
+- Verification: GitHub Actions passed npm install, PostgreSQL migration, tenant RLS integration, TypeScript type-checking, API build, and unit tests for the merged tenant foundation and database-runtime/membership/audit increment. The auth-session foundation in the current branch is pending its dedicated CI run. Direct local execution is not available in this session.
 - Local setup constraint: Docker is optional and intentionally deferred. GitHub Actions uses a temporary PostgreSQL service for integration tests; local database work can use native PostgreSQL on Windows later.
 
 ## Product and engineering principles
@@ -83,8 +83,8 @@
 1. **Completed:** repository plan, npm workspace, integer-paise utility and tests, development environment template, README, optional Docker Compose, and initial CI.
 2. **Completed:** NestJS API starter, `GET /api/health`, startup validation, and API build/typecheck/test scripts. GitHub Actions passed for the merged increment.
 3. **Completed:** initial PostgreSQL tenant schema, forced RLS policies, transaction-local tenant context helper, and PostgreSQL-backed RLS integration test. GitHub Actions passed migration, RLS integration, typecheck, build, and tests.
-4. **In progress:** database connection/configuration module, active-membership tenant resolution, transaction-aware audit service, and unit tests. Await the dedicated CI run before claiming this increment verified.
-5. **Next:** implement authentication foundations (password hashing, session/refresh-token storage and rotation, CSRF, and sign-in flows) plus authorization guards before accounting workflows.
+4. **Completed:** database connection/configuration module, active-membership tenant resolution, transaction-aware audit service, and unit tests. GitHub Actions passed for the merged PR.
+5. **In progress:** auth primitives: Argon2id password hashing, opaque refresh-token hashing, session persistence, transactional refresh-token rotation, replay-triggered family revocation, and unit tests. Authentication endpoints, CSRF, and authorization guards remain separate follow-up work.
 
 ## Acceptance gates
 
