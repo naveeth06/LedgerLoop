@@ -40,8 +40,9 @@
 - [x] PostgreSQL pool lifecycle management, active-membership tenant transactions, and transaction-aware audit writes.
 - [x] Argon2id password hashing, refresh-token hashing/rotation, and replay-triggered session-family revocation.
 - [x] Email/password sign-up, sign-in, refresh, and logout HTTP endpoints; HttpOnly refresh cookie, CSRF checks, origin validation, credentialed CORS, short-lived signed access tokens, and endpoint throttling.
-- [ ] Access-token authorization guard and protected route policy.
-- [ ] Email verification/password reset, Google sign-in adapter, and company onboarding/membership creation.
+- [x] Global access-token authorization guard, explicit public-route metadata, and protected current-user endpoint.
+- [x] Company-scoped role policy backed by active database membership; initial company onboarding and owner/admin-only branch creation with tenant-scoped RLS and audit writes.
+- [ ] Email verification/password reset and Google sign-in adapter.
 - [ ] Distributed rate limiting, security monitoring, and full authentication integration tests.
 
 ### Phase 2 — Accounting core
@@ -82,7 +83,8 @@
 3. **Completed:** PostgreSQL tenant schema, forced RLS policies, tenant context helper, and PostgreSQL-backed RLS integration test.
 4. **Completed:** database runtime, active-membership tenant resolution, transaction-aware audit service, and unit tests.
 5. **Completed:** Argon2id password hashing, opaque refresh-token hashing, session persistence, transactional refresh rotation, replay-triggered family revocation, and unit tests.
-6. **In progress:** HTTP authentication endpoints, CSRF/origin protections, short-lived access tokens, CORS, and rate limiting. Must not be considered complete until the current branch's CI passes.
+6. **Completed:** HTTP authentication endpoints, CSRF/origin protections, short-lived access tokens, CORS, and rate limiting; latest-head CI passed before merge.
+7. **In review:** global access-token guard, public-route metadata, protected current-user endpoint, company onboarding, company-role checks, owner/admin-only branch creation, audit writes, and guard unit tests. Do not mark complete until the current PR's latest-head CI passes.
 
 ## Acceptance gates
 
