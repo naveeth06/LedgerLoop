@@ -18,7 +18,7 @@ function setup(status = 'posted', reversalOfId: string | null = null) {
         { line_number: 2, account_id: '22222222-2222-4222-8222-222222222222', description: 'Credit', debit_paise: '0', credit_paise: '1000' },
       ] };
     }
-    return { rows: [{ id: 'new-entry', entry_number: 'REV-2026-ABC12345' }] };
+    return { rows: [{ id: 'new-entry', entry_number: 'REV-2026-ABC12345', status: 'posted' }] };
   });
   const client = { query };
   const tenantAccess = { withCompanyTransaction: vi.fn(async (_u: string, _c: string, callback: (arg: typeof client) => Promise<unknown>) => callback(client)) };
@@ -30,9 +30,9 @@ describe('JournalReversalsController', () => {
   it('creates one balanced reversal with debits and credits swapped', async () => {
     const { controller, query, audit } = setup();
     const result = await controller.reverse(companyId, entryId, request);
-    expect(result.status).toBe('posted');
+    expect(result.reversalEntry.status).toBe('posted');
     expect(result.originalEntryId).toBe(entryId);
-    expect(result.reversalEntryId).toBeTypeOf('string');
+    expect(result.reversalEntry.id).toBeTypeOf('string');
     expect(query.mock.calls.some(([sql]) => String(sql).includes("source_type, created_by, posted_by, posted_at, reversal_of_id"))).toBe(true);
     expect(audit.record).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ action: 'JOURNAL_ENTRY_REVERSED' }));
   });
