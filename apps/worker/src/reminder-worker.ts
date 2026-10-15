@@ -3,6 +3,7 @@ import { Queue, Worker } from 'bullmq';
 import { Pool, type PoolClient } from 'pg';
 import { z } from 'zod';
 import { buildSmtpConfig, SmtpEmailProvider } from './email-provider';
+import { buildReminderEmailTemplate } from './reminder-email-template';
 
 const environmentSchema = z.object({
   DATABASE_URL: z.string().url().refine((value) => value.startsWith('postgres://') || value.startsWith('postgresql://'), 'DATABASE_URL must use postgres:// or postgresql://'),
@@ -106,10 +107,21 @@ export async function processReminderEmail(pool: Pool, companyId: string, delive
   });
   if (!claimed) return;
 
-  const text = `Payment reminder for invoice ${claimed.invoice_number}.\nDue date: ${claimed.due_date}\nOutstanding amount (paise): ${claimed.outstanding_paise}\nReminder ${claimed.reminder_sequence}.`;
-  const html = `<p>Payment reminder for invoice <strong>${escapeHtml(claimed.invoice_number)}</strong>.</p><p>Due date: ${escapeHtml(claimed.due_date)}<br>Outstanding amount (paise): ${escapeHtml(claimed.outstanding_paise)}<br>Reminder ${claimed.reminder_sequence}.</p>`;
+  const template = buildReminderEmailTemplate({
+    invoiceNumber: claimed.invoice_number,
+    dueDate: claimed.due_date,
+    outstandingPaise: claimed.outstanding_paise,
+    reminderSequence: claimed.reminder_sequence,
+  });
+
   try {
-    const sent = await provider.send({ to: claimed.recipient_email, subject: claimed.subject, text, html, messageId: `<ledgerloop-reminder-${deliveryId}@ledgerloop.local>` });
+    const sent = await provider.send({
+      to: claimed.recipient_email,
+      subject: template.subject,
+      text: template.text,
+      html: template.html,
+      messageId: `<ledgerloop-reminder-${deliveryId}@ledgerloop.local>`,
+    });
     await withTransaction(pool, async (client) => {
       await client.query('SELECT set_config($1, $2, true)', ['app.current_company_id', companyId]);
       await client.query(`UPDATE reminder_email_deliveries SET status = 'sent', sent_at = now(), provider_message_id = $2, last_error = NULL, updated_at = now() WHERE id = $1 AND status = 'processing'`, [deliveryId, sent.providerMessageId ?? null]);
@@ -144,7 +156,6 @@ export function parseRedisUrl(value: string) {
 }
 
 export function loadEnvironment(): z.infer<typeof environmentSchema> { return environmentSchema.parse(process.env); }
-function escapeHtml(value: string): string { return value.replace(/[&<>"']/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character] ?? character)); }
 
 export async function main(): Promise<void> {
   const environment = loadEnvironment();
