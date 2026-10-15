@@ -8,11 +8,20 @@ import { AppController } from './app.controller';
 import { AccountsController } from './companies/accounts.controller';
 import { CompaniesController } from './companies/companies.controller';
 import { CompanySettingsController } from './companies/company-settings.controller';
+import { ItemsController, WarehousesController } from './companies/items-warehouses.controller';
 import { PartiesController } from './companies/parties.controller';
 
 @Module({
   imports: [DatabaseModule, AuthModule],
-  controllers: [AppController, CompaniesController, AccountsController, CompanySettingsController, PartiesController],
+  controllers: [
+    AppController,
+    CompaniesController,
+    AccountsController,
+    CompanySettingsController,
+    PartiesController,
+    ItemsController,
+    WarehousesController,
+  ],
   providers: [
     { provide: APP_GUARD, useClass: AccessTokenGuard },
     { provide: APP_GUARD, useClass: CompanyRoleGuard },
