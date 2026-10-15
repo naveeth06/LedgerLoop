@@ -8,18 +8,17 @@ const billId = 'd20e6a9d-03f7-4d43-84cb-cb2d8d97b0b2';
 const request = { user: { sub: userId } } as never;
 
 function setup() {
+  let ledgerAccountCall = 0;
   const query = vi.fn(async (sql: string) => {
     if (sql.includes('FROM supplier_payments') && sql.includes('FOR UPDATE')) {
       return { rows: [{ id: paymentId, payment_number: 'SP-000001', payment_date: '2026-10-15', party_id: 'a20e6a9d-03f7-4d43-84cb-cb2d8d97b0b2', account_id: '11111111-1111-4111-8111-111111111111', amount_paise: '11800', status: 'draft' }] };
     }
-    if (sql.includes('FROM ledger_accounts') && sql.includes('account_id')) {
-      return { rows: [{ account_type: 'asset', is_active: true }] };
+    if (sql.includes('FROM ledger_accounts')) {
+      ledgerAccountCall += 1;
+      return { rows: [{ account_type: ledgerAccountCall === 1 ? 'asset' : 'liability', is_active: true }] };
     }
     if (sql.includes('FROM purchase_posting_accounts')) {
       return { rows: [{ payable_account_id: '22222222-2222-4222-8222-222222222222' }] };
-    }
-    if (sql.includes('FROM ledger_accounts')) {
-      return { rows: [{ account_type: 'liability', is_active: true }] };
     }
     if (sql.includes('FROM supplier_payment_allocations')) {
       return { rows: [{ bill_id: billId, allocated_paise: '11800', party_id: 'a20e6a9d-03f7-4d43-84cb-cb2d8d97b0b2', status: 'received', total_paise: '11800', posted_allocated_paise: '0' }] };
