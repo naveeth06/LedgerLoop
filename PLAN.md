@@ -72,7 +72,7 @@
 - [ ] Secure statement import with size/type limits and scanning.
 - [x] Trial balance from posted journal entries with tenant-scoped as-of-date reporting and deterministic paise balances.
 - [x] Profit & Loss and Balance Sheet from posted journal entries with deterministic date boundaries and paise balances.
-- [ ] Receivables ageing and GST summary from posted journals.
+- [x] Receivables ageing and GST summary from posted journals.
 - [ ] Statement-import demo and Playwright e2e.
 
 ## Phase 5 — Reminders and AI
@@ -102,7 +102,8 @@
 23. **Completed:** bank statement reconciliation against posted journal lines, tenant-safe composite matching, one-match-per-journal-line protection, audit events and reconciled immutability.
 24. **Completed:** reconciliation hardening with transaction update timestamps and deterministic confidence bands for user-facing suggestions; no low-confidence auto-posting.
 25. **Completed:** reporting foundation with tenant-scoped Trial Balance endpoint derived only from posted journal entries and an explicit as-of date.
-26. **In progress:** Profit & Loss and Balance Sheet endpoints derived from posted journal entries with deterministic period/as-of boundaries and integer-paise balances.
+26. **Completed:** Profit & Loss and Balance Sheet endpoints derived from posted journal entries with deterministic period/as-of boundaries and integer-paise balances.
+27. **In progress:** receivables ageing with posted receipt allocation cut-off and deterministic ageing buckets; GST summary for posted sales invoices and purchase bills with CGST/SGST/IGST totals and net GST payable.
 
 ## Acceptance gates
 
