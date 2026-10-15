@@ -31,7 +31,7 @@ exports.up = (pgm) => {
   pgm.sql('GRANT SELECT, INSERT ON opening_inventory TO ledgerloop_app');
   pgm.sql('REVOKE UPDATE, DELETE ON opening_inventory FROM ledgerloop_app');
   pgm.sql(`
-    CREATE FUNCTION ledgerloop_guard_opening_inventory() RETURNS trigger LANGUAGE plpgsql AS $
+    CREATE FUNCTION ledgerloop_guard_opening_inventory() RETURNS trigger LANGUAGE plpgsql AS $$
     DECLARE target_status text; target_source text;
     BEGIN
       IF TG_OP <> 'INSERT' THEN
@@ -43,7 +43,7 @@ exports.up = (pgm) => {
         RAISE EXCEPTION 'Opening inventory must reference a posted opening-balance journal entry' USING ERRCODE = '23514';
       END IF;
       RETURN NEW;
-    END; $;
+    END; $$;
     CREATE TRIGGER opening_inventory_guard BEFORE INSERT OR UPDATE OR DELETE ON opening_inventory
       FOR EACH ROW EXECUTE FUNCTION ledgerloop_guard_opening_inventory();
   `);
