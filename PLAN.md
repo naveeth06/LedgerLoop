@@ -5,97 +5,96 @@
 - Repository: `naveeth06/LedgerLoop`
 - Default branch: `main`
 - Inspection date: 2026-10-15
-- Observed state at initial inspection: repository was empty; this is a greenfield implementation, not a refactor.
-- Verification: merged increments have been verified through GitHub Actions for migrations, tenant RLS integration, TypeScript type-checking, build, and unit tests. PR #9 must pass its own latest-head workflow before it is considered verified. Direct local execution is not available in this session.
+- This is a greenfield implementation, not a refactor.
+- Verification: merged increments are verified through GitHub Actions for migrations, tenant RLS integration, TypeScript type-checking, build, and unit tests. Direct local execution is not available in this session.
 - Local setup constraint: Docker is optional and intentionally deferred. GitHub Actions uses a temporary PostgreSQL service for integration tests; local database work can use native PostgreSQL on Windows later.
 
 ## Product and engineering principles
 
-1. Keep accounting calculations deterministic and use integer paise for persisted money.
-2. Post each voucher and its journal lines atomically. Enforce balanced debit/credit totals at the PostgreSQL transaction boundary; posted vouchers are immutable and corrected by reversal.
-3. Scope every tenant-owned table by `company_id`. Enable and test PostgreSQL row-level security, with transaction-scoped tenant context and safe connection-pool behavior.
-4. Audit every mutation. AI outputs are untrusted suggestions, require human approval, and are tagged/audited when accepted.
-5. Never use placeholder business metrics. Empty states must be explicit.
-6. Validate configuration at startup; keep secrets out of source control and provide only safe placeholders in `.env.example`.
-7. Each increment must include tests and a runnable demo script where meaningful. Report exactly which checks were run and which remain unverified.
+1. Persist money as integer paise and keep calculations deterministic.
+2. Post vouchers and journal lines atomically; enforce balanced debit/credit totals at the database boundary. Posted vouchers are immutable and corrected by reversal.
+3. Scope every tenant-owned table by `company_id`; enable and test forced RLS with transaction-scoped context.
+4. Audit mutations. AI outputs are untrusted suggestions and require human approval.
+5. Never use placeholder business metrics; empty states must be explicit.
+6. Validate configuration at startup; keep secrets out of source control.
+7. Each increment includes tests and a demo script where meaningful; report checks accurately.
 
 ## Target architecture
 
-- `apps/web`: Angular 18+ standalone application, Angular Material/CDK, signals, Tailwind, accessible responsive UI and keyboard-first workflows.
-- `apps/api`: NestJS HTTP API, validation, authentication, authorization, OpenAPI, accounting domain services.
-- `apps/worker`: BullMQ workers and server-side scheduled jobs, including overdue reminders.
-- `packages/types`: shared TypeScript contracts and validated API schemas.
-- PostgreSQL with migrations and `pgvector`; Redis/BullMQ; S3-compatible object storage. Docker is optional for local development.
-- Claude integration isolated behind a server-side provider adapter, structured JSON parsing/schema validation, company quotas, and approval workflows.
+- `apps/web`: Angular standalone, Angular Material/CDK, signals, Tailwind, accessible responsive UI.
+- `apps/api`: NestJS, validation, authentication, authorization, OpenAPI, accounting services.
+- `apps/worker`: BullMQ workers and scheduled jobs.
+- `packages/types`: shared TypeScript contracts and schemas.
+- PostgreSQL/pgvector, Redis/BullMQ, S3-compatible object storage. Docker is optional locally.
+- Server-side Claude adapter with structured output validation, company quotas and approval workflows.
 
 ## Phased delivery
 
-### Phase 0 — Repository and API foundation
-- [x] npm workspaces, shared integer-paise helper, NestJS health endpoint, configuration validation, and CI.
-- [ ] Add linting, lockfile policy, and final environment validation.
+### Phase 0 — Foundation
+- [x] npm workspaces, integer-paise helper, API health, configuration validation and CI.
+- [ ] Linting, lockfile policy and final environment validation.
 
-### Phase 1 — Tenant and identity foundation
-- [x] Users, companies, memberships, branches, and audit-log schema.
-- [x] Forced RLS and transaction-scoped tenant context; PostgreSQL integration coverage.
-- [x] PostgreSQL pool lifecycle management, active-membership tenant transactions, and transaction-aware audit service.
-- [x] Argon2id password hashing, refresh-token hashing/rotation, and replay-triggered session-family revocation.
-- [x] Email/password sign-up, sign-in, refresh, and logout HTTP endpoints; HttpOnly refresh cookie, CSRF checks, origin validation, credentialed CORS, short-lived signed access tokens, and endpoint throttling.
-- [x] Global access-token authorization guard, explicit public-route metadata, and protected current-user endpoint.
-- [x] Company-scoped role policy backed by active database membership; initial company onboarding and owner/admin branch creation with tenant-scoped RLS and audit writes.
-- [x] Authenticated company directory and branch listing APIs with active membership checks and user-scoped membership RLS.
-- [ ] Email verification/password reset and Google sign-in adapter.
-- [ ] Distributed rate limiting, security monitoring, and full authentication integration tests.
+### Phase 1 — Tenant and identity
+- [x] Users, companies, memberships, branches, audit log, forced RLS and tenant context.
+- [x] Database pool lifecycle, active-membership tenant transactions and audit service.
+- [x] Argon2id password hashing, refresh-token hashing/rotation and replay-triggered family revocation.
+- [x] Email/password auth, CSRF/origin protection, short-lived access tokens and throttling.
+- [x] Global access-token guard, company onboarding, role checks and branch APIs.
+- [x] Authenticated company directory and branch listing with user-scoped membership RLS.
+- [ ] Email verification/password reset and Google sign-in.
+- [ ] Distributed rate limiting, security monitoring and full auth integration tests.
 
 ### Phase 2 — Accounting core
-- [x] Tenant-scoped chart-of-accounts schema with account types, per-company unique codes, same-company parent constraints, and forced RLS.
-- [x] Authenticated account listing and owner/admin/accountant account creation with validation and audit writes.
-- [ ] Company settings, GST registrations, parties, items, warehouses, and opening balances.
-- [ ] Integer-paise money types and deterministic CGST/SGST/IGST tax calculation, including rounding rules.
-- [ ] Voucher, journal-entry, and journal-line schema with atomic posting and database-enforced balance.
+- [x] Tenant-scoped chart-of-accounts schema and list/create API with account constraints, forced RLS and audit.
+- [x] Company settings retrieval/update and tenant-scoped GST registration list/create API (PR #10 pending verification).
+- [ ] Parties, items, warehouses and opening balances.
+- [ ] Integer-paise money types and deterministic CGST/SGST/IGST tax calculations including rounding rules.
+- [ ] Voucher, journal-entry and journal-line schema with atomic posting and database-enforced balance.
 - [ ] Posted voucher immutability and reversal workflow.
-- [ ] Unit and database integration tests for balance, rollback, tax, rounding, immutability, and tenant boundaries.
+- [ ] Unit/database integration tests for balance, rollback, tax, rounding, immutability and tenant boundaries.
 
 ### Phase 3 — Sales and purchases
-- [ ] Quotes, invoices, receipts, purchase orders, bills, payments, expenses, and debit notes.
-- [ ] Invoice-to-payment demo script and Playwright end-to-end coverage.
-- [ ] GST-aware document numbering, validation, and audit trail.
+- [ ] Quotes, invoices, receipts, purchase orders, bills, payments, expenses and debit notes.
+- [ ] Invoice-to-payment demo and Playwright e2e coverage.
+- [ ] GST-aware document numbering, validation and audit trail.
 
 ### Phase 4 — Banking and reporting
-- [ ] Secure statement uploads/import parsing with type/size limits and scanning integration.
-- [ ] Reconciliation candidates with explicit confidence thresholds; never auto-post low-confidence matches.
-- [ ] Trial balance, profit and loss, balance sheet, receivables ageing, and GST summary derived from posted journal data.
-- [ ] Statement-import demo script and Playwright e2e coverage.
+- [ ] Secure statement uploads/import parsing with type/size limits and scanning.
+- [ ] Reconciliation candidates with confidence thresholds; never auto-post low-confidence matches.
+- [ ] Trial balance, profit and loss, balance sheet, receivables ageing and GST summary from posted journals.
+- [ ] Statement-import demo and Playwright e2e coverage.
 
-### Phase 5 — Reminders and AI assistance
-- [ ] Server-side overdue reminder scheduling with BullMQ, retries, idempotency, and delivery audit.
-- [ ] Claude-backed expense/bank categorisation using only the current company's ledger candidates.
-- [ ] Receipt extraction and reconciliation suggestions with schema validation and human approval.
-- [ ] Reminder drafting, per-company quotas, prompt-injection defenses, redaction, and AI-created-record flags/audit events.
-- [ ] Tests for cross-company isolation, malformed outputs, quota enforcement, prompt injection, approval, and confidence thresholds.
+### Phase 5 — Reminders and AI
+- [ ] BullMQ overdue reminders with retries, idempotency and delivery audit.
+- [ ] Claude-backed categorisation using only current-company ledger candidates.
+- [ ] Receipt extraction/reconciliation suggestions with schema validation and human approval.
+- [ ] Per-company quotas, prompt-injection defenses, redaction and AI-created-record audit.
+- [ ] Tests for isolation, malformed outputs, quota, prompt injection, approval and confidence thresholds.
 
-### Phase 6 — Hardening and release readiness
-- [ ] WCAG 2.2 AA keyboard and screen-reader review; light/dark themes from shared tokens.
-- [ ] Responsive checks at 640/1024/1440px; loading, empty, error, and offline states; Ctrl+K palette.
-- [ ] OpenAPI docs, migrations and seed data, Dockerfiles, complete README, CI, and demo scripts.
-- [ ] Run lint, unit, API integration, and Playwright suites in a real runtime; resolve failures and document remaining limitations.
+### Phase 6 — Hardening
+- [ ] WCAG 2.2 AA, keyboard/screen-reader review and shared light/dark tokens.
+- [ ] Responsive checks at 640/1024/1440px; loading, empty, error/offline states and Ctrl+K.
+- [ ] OpenAPI, seed data, Dockerfiles, complete docs, CI and demo scripts.
+- [ ] Run lint, unit, API integration and Playwright suites in a real runtime.
 
 ## Implementation increments
 
-1. **Completed:** repository plan, npm workspace, integer-paise utility and tests, environment template, README, optional Docker Compose, and initial CI.
-2. **Completed:** NestJS API starter, health endpoint, startup validation, and API build/typecheck/test scripts.
-3. **Completed:** PostgreSQL tenant schema, forced RLS policies, tenant context helper, and PostgreSQL-backed RLS integration test.
-4. **Completed:** database runtime, active-membership tenant resolution, transaction-aware audit service, and unit tests.
-5. **Completed:** Argon2id password hashing, opaque refresh-token hashing, session persistence, transactional refresh rotation, replay-triggered family revocation, and unit tests.
-6. **Completed:** HTTP authentication endpoints, CSRF/origin protections, short-lived access tokens, CORS, and rate limiting; latest-head CI passed before merge.
-7. **Completed:** global access-token guard, explicit public-route metadata, protected current-user endpoint, company onboarding, company-role checks, owner/admin-only branch creation, audit writes, and guard unit tests; latest-head CI passed before merge.
-8. **Completed:** authenticated company directory and branch listing APIs, user-scoped membership RLS, unit/database integration coverage, and documentation. Latest-head CI passed: [run #120](https://github.com/naveeth06/LedgerLoop/actions/runs/38761759245).
-9. **In review:** tenant-scoped chart-of-accounts schema and API, role-gated account creation, account audit events, and unit tests. Do not mark complete until the current PR's latest-head CI passes.
+1. **Completed:** repository plan, npm workspace, integer-paise utility, environment template, README, optional Compose and initial CI.
+2. **Completed:** NestJS API starter, health endpoint, config validation and scripts.
+3. **Completed:** PostgreSQL tenant schema, forced RLS and integration test.
+4. **Completed:** database runtime, active-membership checks, audit service and tests.
+5. **Completed:** password hashing and refresh-session rotation/replay defense.
+6. **Completed:** auth endpoints, CSRF/origin, access tokens, CORS and throttling; CI passed.
+7. **Completed:** authorization guard, company onboarding, branch creation and audit; CI passed.
+8. **Completed:** company directory/branch listing and user-scoped membership RLS; [CI passed](https://github.com/naveeth06/LedgerLoop/actions/runs/38761759245).
+9. **Completed:** chart-of-accounts schema/API and account audit; [CI passed](https://github.com/naveeth06/LedgerLoop/actions/runs/38762262278).
+10. **In review:** company settings and GST registrations. Verify current-head CI before marking complete.
 
 ## Acceptance gates
 
-- A feature is not marked complete merely because source files exist.
-- Accounting posting acceptance: a posted invoice creates balanced journal lines in one database transaction; failed posting leaves no partial state.
-- Reconciliation acceptance: matches below the configured threshold remain suggestions and never post automatically.
-- Reminder acceptance: reminders execute from the server scheduler while the web app is closed, with idempotency and test coverage.
-- Security acceptance: tenant isolation is tested against the database, not inferred from service filters alone.
-- Release acceptance: migrations, seed, docs, environment template, CI, and demo scripts are present; all claimed checks have actual recorded results.
+- A feature is not complete merely because source exists.
+- Posting acceptance: balanced invoice journal lines in one transaction; failed posting leaves no partial state.
+- Reconciliation acceptance: low-confidence matches remain suggestions.
+- Reminder acceptance: server-side schedule with idempotency and tests.
+- Security acceptance: tenant isolation tested against PostgreSQL, not inferred from filters.
+- Release acceptance: migrations, seed, docs, environment template, CI and demo scripts; report only actual checks.
