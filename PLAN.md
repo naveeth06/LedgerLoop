@@ -5,9 +5,9 @@
 - Repository: `naveeth06/LedgerLoop`
 - Default branch: `main`
 - Inspection date: 2026-10-15
-- Observed state: GitHub repository metadata is accessible, but the repository reports size 0 and the Contents API returns 404 with "This repository is empty."
-- Consequence: there is no existing source code, dependency manifest, migration history, CI, or test suite to preserve or baseline. This is a greenfield implementation, not a refactor.
-- Verification limitation: the current session can read and write repository content through GitHub, but has no working local clone/runtime and direct Git network access failed. Code execution, database integration, browser tests, and CI results must not be described as passing until actually run in an execution environment.
+- Observed state at initial inspection: repository was empty; this is a greenfield implementation, not a refactor.
+- Verification: the first two increments passed GitHub Actions checks for npm install, TypeScript type-checking, API build, and unit tests. Direct local execution is not available in this session. Database migration and RLS claims remain pending until the new PostgreSQL-backed CI run completes.
+- Local setup constraint: Docker is optional and intentionally deferred. GitHub Actions uses a temporary PostgreSQL service for integration tests; local database work can use native PostgreSQL on Windows later.
 
 ## Product and engineering principles
 
@@ -25,24 +25,25 @@
 - `apps/api`: NestJS HTTP API, validation, authentication, authorization, OpenAPI, accounting domain services.
 - `apps/worker`: BullMQ workers and server-side scheduled jobs, including overdue reminders.
 - `packages/types`: shared TypeScript contracts and validated API schemas.
-- PostgreSQL with migrations and `pgvector`; Redis/BullMQ; S3-compatible object storage.
+- PostgreSQL with migrations and `pgvector`; Redis/BullMQ; S3-compatible object storage. Docker is optional for local development.
 - Claude integration isolated behind a server-side provider adapter, structured JSON parsing/schema validation, company quotas, and approval workflows.
 
 ## Phased delivery
 
-### Phase 0 — Repository foundation
-- [x] Inspect repository metadata and root contents.
-- [x] Record baseline and implementation plan.
-- [x] Establish initial npm workspace conventions and API startup environment validation. Formatting/linting configuration remains pending.
-- [x] Add Docker Compose for PostgreSQL (including pgvector), Redis, and local S3-compatible storage.
-- [x] Add starter CI workflow for type-checking, API build, and unit tests. Lint, API integration tests, and Playwright e2e remain pending.
-- [x] Add setup README and a development environment template. Validate and finalize the full variable inventory as services are implemented.
+### Phase 0 — Repository and API foundation
+- [x] Inspect repository metadata and record the implementation plan.
+- [x] Establish npm workspaces and shared integer-paise helper with unit tests.
+- [x] Add NestJS API starter, health endpoint, startup environment validation, and build/typecheck/test scripts.
+- [x] Add starter GitHub Actions workflow; initial API and utility checks passed.
+- [x] Add README, environment template, and Docker Compose file for a later optional local infrastructure phase.
+- [ ] Add linting, lockfile policy, and final environment validation.
 
 ### Phase 1 — Tenant and identity foundation
-- [ ] Initial PostgreSQL migrations, extensions, company/user/membership/branch schema.
+- [ ] Run the new PostgreSQL migration and RLS integration test in CI; fix any migration or test failures before marking this phase complete.
+- [ ] Finalize users, companies, memberships, branches, and audit-log schema.
 - [ ] Company-scoped RLS policies and transaction-scoped tenant context.
 - [ ] Argon2 password hashing, email/password sign-in, Google sign-in adapter, rotating refresh tokens in HttpOnly cookies, CSRF, rate limits.
-- [ ] RBAC permission guard on every protected route; input validation and audit log.
+- [ ] RBAC permission guard on every protected route; complete audit-write integration.
 - [ ] Unit/integration tests for tenant isolation, refresh rotation/reuse, authorization, and audit writes.
 
 ### Phase 2 — Accounting core
@@ -78,11 +79,10 @@
 
 ## Implementation increments
 
-1. **Completed — initial repository foundation:** plan, npm workspace, integer-paise utility and tests, Docker Compose dependencies, `.env.example`, README, and starter CI.
-2. **In progress — API foundation:** NestJS app module, health endpoint, startup environment validation, API build/typecheck/test scripts. Verify via GitHub Actions before marking this increment complete.
-3. **Next — tenant/database foundation:** add migration tooling and initial users, companies, memberships, branches, and audit schema; implement transaction-scoped tenant context and PostgreSQL RLS policies with integration tests.
-
-Keep accounting and authentication claims out of scope until their database and runtime tests exist.
+1. **Completed:** repository plan, npm workspace, integer-paise utility and tests, development environment template, README, optional Docker Compose, and initial CI.
+2. **Completed:** NestJS API starter, `GET /api/health`, startup validation, and API build/typecheck/test scripts. GitHub Actions passed for the merged increment.
+3. **In progress:** initial PostgreSQL tenant schema, forced RLS policies, transaction-local tenant context helper, and CI-backed RLS integration test. Wait for the PostgreSQL CI run before claiming verification.
+4. **Next:** add database connection/configuration module, membership-aware tenant resolution, and audit service before starting authentication or accounting workflows.
 
 ## Acceptance gates
 
