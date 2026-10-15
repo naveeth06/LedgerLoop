@@ -1,9 +1,21 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { ArrowUpRight, BarChart3, FileText, Landmark, LucideAngularModule, ReceiptIndianRupee, Wallet } from '@lucide/angular';
+import {
+  LucideArrowUpRight,
+  LucideBarChart3,
+  LucideFileText,
+  LucideIcon,
+  LucideLandmark,
+  LucideReceiptIndianRupee,
+  LucideWallet,
+} from '@lucide/angular';
 
 @Component({
   standalone: true,
-  imports: [LucideAngularModule.pick({ ArrowUpRight, BarChart3, FileText, Landmark, ReceiptIndianRupee, Wallet })],
+  imports: [
+    LucideArrowUpRight,
+    LucideBarChart3,
+    LucideIcon,
+  ],
   template: `
     <section class="mx-auto w-full max-w-[1600px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
       <header class="mb-8 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
@@ -14,7 +26,7 @@ import { ArrowUpRight, BarChart3, FileText, Landmark, LucideAngularModule, Recei
         </div>
         <button type="button" class="ll-button-primary">
           <span>View reports</span>
-          <lucide-icon [img]="ArrowUpRight" [size]="16"></lucide-icon>
+          <svg lucideArrowUpRight [size]="16"></svg>
         </button>
       </header>
 
@@ -23,7 +35,7 @@ import { ArrowUpRight, BarChart3, FileText, Landmark, LucideAngularModule, Recei
           <article class="ll-card p-5">
             <div class="flex items-start justify-between gap-4">
               <span class="flex h-9 w-9 items-center justify-center rounded-xl border border-violet-400/15 bg-violet-500/10 text-violet-300">
-                <lucide-icon [img]="metric.icon" [size]="17"></lucide-icon>
+                <svg [lucideIcon]="metric.icon" [size]="17"></svg>
               </span>
               <span class="text-xs text-[var(--ll-text-muted)]">{{ metric.period }}</span>
             </div>
@@ -63,7 +75,7 @@ import { ArrowUpRight, BarChart3, FileText, Landmark, LucideAngularModule, Recei
               <p class="text-sm font-semibold text-white">Recent activity</p>
               <p class="mt-1 text-xs text-[var(--ll-text-muted)]">Latest workspace events.</p>
             </div>
-            <lucide-icon [img]="BarChart3" class="text-[var(--ll-text-muted)]" [size]="18"></lucide-icon>
+            <svg lucideBarChart3 class="text-[var(--ll-text-muted)]" [size]="18"></svg>
           </div>
           <div class="mt-6 space-y-5">
             @for (activity of activities; track activity.title) {
@@ -83,13 +95,11 @@ import { ArrowUpRight, BarChart3, FileText, Landmark, LucideAngularModule, Recei
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DashboardPageComponent {
-  protected readonly ArrowUpRight = ArrowUpRight;
-  protected readonly BarChart3 = BarChart3;
   protected readonly metrics = [
-    { label: 'Revenue', value: '₹0.00', period: 'Current period', progress: 18, icon: ReceiptIndianRupee },
-    { label: 'Receivables', value: '₹0.00', period: 'Outstanding', progress: 8, icon: Wallet },
-    { label: 'Transactions', value: '0', period: 'This period', progress: 34, icon: FileText },
-    { label: 'Bank balance', value: '₹0.00', period: 'Current', progress: 56, icon: Landmark },
+    { label: 'Revenue', value: '₹0.00', period: 'Current period', progress: 18, icon: LucideReceiptIndianRupee },
+    { label: 'Receivables', value: '₹0.00', period: 'Outstanding', progress: 8, icon: LucideWallet },
+    { label: 'Transactions', value: '0', period: 'This period', progress: 34, icon: LucideFileText },
+    { label: 'Bank balance', value: '₹0.00', period: 'Current', progress: 56, icon: LucideLandmark },
   ];
 
   protected readonly bars = [34, 48, 42, 66, 54, 72, 61, 78, 68, 84, 73, 90];
