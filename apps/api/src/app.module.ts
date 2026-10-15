@@ -9,6 +9,7 @@ import { AccountsController } from './companies/accounts.controller';
 import { CompaniesController } from './companies/companies.controller';
 import { CompanySettingsController } from './companies/company-settings.controller';
 import { ItemsController, WarehousesController } from './companies/items-warehouses.controller';
+import { JournalEntriesController } from './companies/journal-entries.controller';
 import { PartiesController } from './companies/parties.controller';
 
 @Module({
@@ -21,6 +22,7 @@ import { PartiesController } from './companies/parties.controller';
     PartiesController,
     ItemsController,
     WarehousesController,
+    JournalEntriesController,
   ],
   providers: [
     { provide: APP_GUARD, useClass: AccessTokenGuard },
