@@ -5,11 +5,12 @@ const userId = 'e50f8a1b-15e1-4c35-9f28-20c1b0a9c7a2';
 const companyId = 'b20f8a1b-15e1-4c35-9f28-20c1b0a9c7a2';
 const accountA = 'a20e6a9d-03f7-4d43-84cb-cb2d8d97b0b2';
 const accountB = 'b20e6a9d-03f7-4d43-84cb-cb2d8d97b0b2';
+const entryId = '341b6a9b-f301-4868-87dc-d110a4ef8d6f';
 
 function setup() {
   const query = vi.fn(async (sql: string) => {
-    if (sql.includes('INSERT INTO journal_entries')) return { rows: [{ id: 'entry-id', company_id: companyId, entry_number: 'JV-001', status: 'draft' }] };
-    if (sql.includes('UPDATE journal_entries')) return { rows: [{ id: 'entry-id', company_id: companyId, entry_number: 'JV-001', status: 'posted' }] };
+    if (sql.includes('INSERT INTO journal_entries')) return { rows: [{ id: entryId, company_id: companyId, entry_number: 'JV-001', status: 'draft' }] };
+    if (sql.includes('UPDATE journal_entries')) return { rows: [{ id: entryId, company_id: companyId, entry_number: 'JV-001', status: 'posted' }] };
     return { rows: [] };
   });
   const client = { query };
@@ -29,7 +30,7 @@ describe('JournalEntriesController', () => {
     const result = await controller.create(companyId, balancedBody, request);
     expect(result.entry.status).toBe('posted');
     expect(client.query).toHaveBeenCalledTimes(4);
-    expect(audit.record).toHaveBeenCalledWith(client, expect.objectContaining({ action: 'JOURNAL_ENTRY_POSTED', entityId: 'entry-id' }));
+    expect(audit.record).toHaveBeenCalledWith(client, expect.objectContaining({ action: 'JOURNAL_ENTRY_POSTED', entityId: entryId }));
   });
   it('rejects unbalanced entries before opening a transaction when posting', async () => {
     const { controller, tenantAccess } = setup();
