@@ -16,10 +16,11 @@ Implemented foundation:
 - Global access-token authorization guard, current-user endpoint, company onboarding, owner/admin branch creation, company directory and branch listing.
 - Tenant-scoped chart of accounts with constraints, forced RLS, and audited account creation.
 - Company settings update endpoints and tenant-scoped GST registration APIs with GSTIN/state-code constraints and audit events.
-- Tenant-scoped party directory with customer/supplier/both classification, GSTIN validation, contact/address fields, paise credit limits, forced RLS and audited creation.
+- Tenant-scoped party directory with customer/supplier/both classification, GSTIN/contact/address fields, paise credit limits, forced RLS and audited creation.
+- Tenant-scoped item and warehouse directories with GST/HSN-SAC metadata, integer-paise prices, inventory tracking flags, optional branch assignment, forced RLS and audit events.
 - GitHub Actions checks for migrations, type-checking, build, unit tests and PostgreSQL integration.
 
-Still not implemented: Angular web app, email verification/password reset, Google sign-in, items/warehouses/opening balances, accounting journals and posting, invoice/payment workflows, reporting, reminders, and AI features. This scaffold is not a production accounting system.
+Still not implemented: Angular web app, email verification/password reset, Google sign-in, opening balances, deterministic tax calculation, accounting journals and posting, invoice/payment workflows, reporting, reminders, and AI features. This scaffold is not a production accounting system.
 
 ## Requirements and local setup
 
@@ -89,6 +90,15 @@ Protected routes require `Authorization: Bearer <accessToken>`. The global guard
 - `POST /api/companies/:companyId/parties` — create a party; requires owner/admin/accountant role. Fields: `partyCode`, `name`, `partyType` (`customer`, `supplier`, `both`), optional `gstin`, `email`, `phone`, `billingAddress` object, and `creditLimitPaise` as a decimal string.
 - Party codes are unique per company and normalized to uppercase. Credit limits are non-negative PostgreSQL BIGINT values passed as decimal strings to avoid JavaScript precision loss.
 - Parties are protected by forced RLS. Creation and `COMPANY_PARTY_CREATED` audit event share a transaction. The runtime role has SELECT/INSERT only; update/deactivation workflows are future work.
+
+## Items and warehouses
+
+- `GET /api/companies/:companyId/items` — list items for active members; optional `type=goods|service` and `active=true|false` filters.
+- `POST /api/companies/:companyId/items` — create an item; owner/admin/accountant only. Supports `itemCode`, `name`, `itemType`, optional numeric `hsnSac`, `unitCode`, `gstRateBps`, `sellingPricePaise`, `purchasePricePaise` and `trackInventory`.
+- GST rates are stored as integer basis points (`1800` = `18.00%`). Prices are decimal strings of integer paise to avoid JavaScript precision loss. Tax calculation and tax splitting are not implemented by this directory API.
+- `GET /api/companies/:companyId/warehouses` — list warehouses; optional `active=true|false`.
+- `POST /api/companies/:companyId/warehouses` — create a warehouse; owner/admin/accountant only. Supports `warehouseCode`, `name`, optional `branchId` and JSON `address`.
+- Item codes and warehouse codes are unique per company. Warehouses can be company-wide or branch-specific; both the API and composite database foreign key prevent cross-company branch assignment. Both tables use forced RLS and creation audit events. The runtime role has SELECT/INSERT only; update/deactivation and opening stock workflows are future work.
 
 ## PostgreSQL migrations
 

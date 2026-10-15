@@ -46,7 +46,8 @@
 - [x] Tenant-scoped chart of accounts and audited list/create API.
 - [x] Company settings and tenant-scoped GST registration APIs.
 - [x] Tenant-scoped parties directory with customer/supplier/both types, GSTIN/contact/address data, paise credit limits, forced RLS and audit.
-- [ ] Items, warehouses and opening balances.
+- [x] Tenant-scoped item and warehouse directories with HSN/SAC, GST-rate metadata, integer-paise prices, inventory flags, optional branch assignment, forced RLS and audit.
+- [ ] Opening balances and opening inventory.
 - [ ] Deterministic CGST/SGST/IGST calculations and rounding rules.
 - [ ] Voucher, journal-entry and journal-line schema with atomic posting and database-enforced balance.
 - [ ] Posted voucher immutability and reversal workflow.
@@ -78,9 +79,10 @@
 
 ## Implementation increments
 
-1–9. **Completed:** foundation, auth, tenant RLS, company/branch context and chart of accounts. Latest relevant CI runs are linked in prior merged PRs.
+1–9. **Completed:** foundation, auth, tenant RLS, company/branch context and chart of accounts.
 10. **Completed:** company settings and GST registration APIs; [CI run #139 passed](https://github.com/naveeth06/LedgerLoop/actions/runs/38762723608).
-11. **In review:** tenant-scoped party directory schema and list/create APIs, validation, forced RLS, audit and tests. Verify latest-head CI before marking complete.
+11. **Completed:** tenant-scoped party directory; [CI run #148 passed](https://github.com/naveeth06/LedgerLoop/actions/runs/38763174427).
+12. **In review:** tenant-scoped items and warehouses schema, APIs, validation, forced RLS, audit, unit tests and PostgreSQL RLS integration coverage. Latest-head CI pending.
 
 ## Acceptance gates
 
