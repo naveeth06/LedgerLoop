@@ -42,7 +42,7 @@
 - [ ] Email verification/password reset and Google sign-in.
 - [ ] Distributed rate limiting, security monitoring and full auth integration tests.
 
-### Phase 2 — Accounting core
+## Phase 2 — Accounting core
 - [x] Tenant-scoped chart of accounts and audited list/create API.
 - [x] Company settings and tenant-scoped GST registration APIs.
 - [x] Tenant-scoped parties directory with customer/supplier/both types, GSTIN/contact/address data, paise credit limits, forced RLS and audit.
@@ -61,7 +61,7 @@
 - [x] Purchase orders and bills with supplier validation, GST-aware deterministic totals, automatic numbering, tenant-scoped lines, draft audit events, forced RLS and bill immutability.
 - [x] Purchase bill posting to payables, inventory asset for tracked goods, purchase expense for non-inventory lines and input GST with atomic balanced journal posting.
 - [x] Supplier payments with automatic numbering, supplier-to-bill allocation, outstanding balance checks, atomic payable/bank journal posting, forced RLS, immutability and audit events.
-- [x] Expenses and supplier debit notes with tenant-scoped draft/post lifecycle, atomic journal posting, outstanding-bill protection, GST reversal handling, immutability and audit events.
+- [x] Expenses and supplier debit notes with tenant-scoped draft/post lifecycle, atomic journal posting, GST reversal handling, immutability and audit events.
 - [ ] Invoice-to-payment demo and Playwright e2e.
 - [x] GST-aware sales numbering, validation and audit trail foundation.
 
@@ -116,7 +116,8 @@
 33. **Completed:** secure statement-import hardening with a 5MB JSON body cap, explicit JSON content type, statement text safety scanning and focused unit coverage.
 34. **Completed:** overdue-reminder foundation with tenant-scoped settings/events, BullMQ hourly scheduling, idempotent reminder-event creation, tenant-context enforcement, audit events and reminder acknowledgement APIs.
 35. **Completed:** SMTP email reminder delivery with tenant-scoped delivery records, party opt-out, deterministic message IDs, retry/backoff, provider abstraction and delivery audit events.
-36. **In progress:** provider-independent reminder delivery monitoring summary with tenant-scoped status counts and focused controller coverage.
+36. **Completed:** provider-independent reminder delivery monitoring summary with tenant-scoped status counts and focused controller coverage.
+37. **In progress:** reminder delivery hardening with provider-neutral richer templates and tests. Provider-specific bounce/webhook handling remains intentionally deferred until the intended email provider/API is documented; no provider has been assumed.
 
 ## Acceptance gates
 
