@@ -5,6 +5,9 @@ exports.up = (pgm) => {
   pgm.addConstraint('company_parties', 'company_parties_company_id_id_unique', {
     unique: ['company_id', 'id'],
   });
+  pgm.addConstraint('overdue_reminder_events', 'overdue_reminder_events_company_id_id_unique', {
+    unique: ['company_id', 'id'],
+  });
 
   pgm.createTable('reminder_email_deliveries', {
     id: { type: 'uuid', primaryKey: true, default: pgm.func('gen_random_uuid()') },
@@ -49,6 +52,7 @@ exports.up = (pgm) => {
 
 exports.down = (pgm) => {
   pgm.dropTable('reminder_email_deliveries');
+  pgm.dropConstraint('overdue_reminder_events', 'overdue_reminder_events_company_id_id_unique');
   pgm.dropConstraint('company_parties', 'company_parties_company_id_id_unique');
   pgm.dropColumn('company_parties', 'email_reminders_enabled');
 };
