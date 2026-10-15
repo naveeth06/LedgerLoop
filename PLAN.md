@@ -105,13 +105,15 @@
 25. **Completed:** reporting foundation with tenant-scoped Trial Balance endpoint derived only from posted journal entries and an explicit as-of date.
 26. **Completed:** Profit & Loss and Balance Sheet endpoints derived from posted journal entries with deterministic period/as-of boundaries and integer-paise balances.
 27. **Completed:** receivables ageing with posted receipt allocation cut-off and deterministic ageing buckets; GST summary for posted sales invoices and purchase bills with CGST/SGST/IGST totals and net GST payable.
-28. **In progress:** weighted-average inventory valuation balances, default stock warehouse/account configuration, stock valuation reporting, purchase receipt inventory capitalization, and sales COGS/inventory relief in the same atomic posting transaction.
+28. **Completed:** weighted-average inventory valuation balances, default stock warehouse/account configuration, stock valuation reporting, purchase receipt inventory capitalization, and sales COGS/inventory relief in the same atomic posting transaction.
+29. **In progress:** tenant-scoped inventory adjustment documents with stock increase/decrease posting, immutable posted adjustments, atomic inventory/journal updates, and reversal-safe correction workflow.
 
 ## Acceptance gates
 
 - Never mark work complete merely because source files exist.
 - Posting: balanced journal lines and voucher in one transaction; failed posting leaves no partial state.
 - Inventory: tracked goods use weighted-average cost, never permit negative stock, and inventory movement plus journal posting commit atomically.
+- Inventory corrections: adjustments are tenant-scoped, journal-balanced, immutable after posting, and corrected through an explicit reversal rather than editing history.
 - Reconciliation: low-confidence matches remain suggestions.
 - Reports: derive balances from posted journals, respect tenant RLS, use integer paise and deterministic date boundaries.
 - Reminders: server-side scheduling, idempotency and tests.
