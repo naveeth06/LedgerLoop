@@ -4,6 +4,7 @@ import {
   Controller,
   HttpCode,
   HttpStatus,
+  Get,
   Post,
   Req,
   Res,
@@ -16,6 +17,8 @@ import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 import { z } from 'zod';
 import { DatabaseService } from '../database/database.service';
 import { AccessTokenService } from './access-token.service';
+import { Public } from './public.decorator';
+import type { AuthenticatedRequest } from './current-user';
 import { AuthSessionService } from './auth-session.service';
 import { PasswordService } from './password.service';
 
@@ -43,6 +46,7 @@ export class AuthController {
     private readonly accessTokens: AccessTokenService,
   ) {}
 
+  @Public()
   @Post('signup')
   @HttpCode(HttpStatus.CREATED)
   @Throttle({ default: { limit: 5, ttl: 60_000 } })
@@ -77,6 +81,7 @@ export class AuthController {
     return { user: publicUser(user), ...this.accessTokens.issue(user.id) };
   }
 
+  @Public()
   @Post('signin')
   @HttpCode(HttpStatus.OK)
   @Throttle({ default: { limit: 5, ttl: 60_000 } })
@@ -99,6 +104,7 @@ export class AuthController {
     return { user: publicUser(user), ...this.accessTokens.issue(user.id) };
   }
 
+  @Public()
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
   @Throttle({ default: { limit: 10, ttl: 60_000 } })
@@ -116,6 +122,7 @@ export class AuthController {
     return this.accessTokens.issue(rotated.userId);
   }
 
+  @Public()
   @Post('logout')
   @HttpCode(HttpStatus.NO_CONTENT)
   @Throttle({ default: { limit: 10, ttl: 60_000 } })
@@ -125,6 +132,19 @@ export class AuthController {
     const refreshToken = readCookie(request, REFRESH_COOKIE);
     if (refreshToken) await this.sessions.revoke(refreshToken);
     this.clearSessionCookies(response);
+  }
+
+  @Get('me')
+  async getCurrentUser(@Req() request: AuthenticatedRequest) {
+    const userId = request.user?.sub;
+    if (!userId) throw new UnauthorizedException('A valid bearer access token is required.');
+    const result = await this.database.pool.query<{ id: string; email: string; display_name: string | null }>(
+      'SELECT id, email, display_name FROM app_users WHERE id = $1 LIMIT 1',
+      [userId],
+    );
+    const user = result.rows[0];
+    if (!user) throw new UnauthorizedException('Authenticated user no longer exists.');
+    return { user: publicUser(user) };
   }
 
   private assertTrustedOrigin(request: Request): void {
