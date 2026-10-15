@@ -90,7 +90,8 @@
 16. **Completed:** sales invoice issue workflow with tenant-configured receivables, revenue and output GST accounts; balanced atomic journal posting and audit events. Inventory deduction remains intentionally deferred.
 17. **Completed:** customer receipts, automatic receipt numbering, bank/cash account selection, atomic receipt journal posting, multi-invoice/partial receivable allocation, outstanding balance checks, forced RLS, immutability and audit events.
 18. **Completed:** purchase orders and purchase bills with supplier validation, GST-aware deterministic totals, automatic numbering, tenant-scoped lines, draft audit events, forced RLS and bill immutability.
-19. **In progress:** purchase bill posting to payables, purchase expense and input GST with tenant-configured accounts, atomic journal posting and audit events. Supplier payments, expenses, debit notes and inventory movement/valuation remain separate increments.
+19. **Completed:** purchase bill posting to payables, purchase expense and input GST with tenant-configured accounts, atomic journal posting and audit events. Supplier payments, expenses, debit notes and inventory movement/valuation remain separate increments.
+20. **In progress:** supplier payments with automatic numbering, supplier-to-bill allocation, outstanding balance checks, atomic payable/bank journal posting, forced RLS, immutability and audit events. Expenses, debit notes and inventory movement/valuation remain separate increments.
 
 ## Acceptance gates
 

@@ -17,6 +17,7 @@ import { SalesInvoicePostingController } from './companies/sales-invoice-posting
 import { SalesReceiptsController } from './companies/sales-receipts.controller';
 import { PurchaseDocumentsController } from './companies/purchase-documents.controller';
 import { PurchaseBillPostingController } from './companies/purchase-bill-posting.controller';
+import { SupplierPaymentsController } from './companies/supplier-payments.controller';
 import { SalesGstService } from './companies/sales-gst.service';
 
 @Module({
@@ -36,6 +37,7 @@ import { SalesGstService } from './companies/sales-gst.service';
     SalesReceiptsController,
     PurchaseDocumentsController,
     PurchaseBillPostingController,
+    SupplierPaymentsController,
   ],
   providers: [
     SalesGstService,
