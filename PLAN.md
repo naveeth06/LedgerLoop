@@ -6,7 +6,7 @@
 - Default branch: `main`
 - Inspection date: 2026-10-15
 - Observed state at initial inspection: repository was empty; this is a greenfield implementation, not a refactor.
-- Verification: the first two increments passed GitHub Actions checks for npm install, TypeScript type-checking, API build, and unit tests. Direct local execution is not available in this session. Database migration and RLS claims remain pending until the new PostgreSQL-backed CI run completes.
+- Verification: GitHub Actions passed npm install, PostgreSQL migration, tenant RLS integration, TypeScript type-checking, API build, and unit tests for the merged tenant foundation. The database runtime/membership/audit increment is being verified separately in CI. Direct local execution is not available in this session.
 - Local setup constraint: Docker is optional and intentionally deferred. GitHub Actions uses a temporary PostgreSQL service for integration tests; local database work can use native PostgreSQL on Windows later.
 
 ## Product and engineering principles
@@ -39,9 +39,10 @@
 - [ ] Add linting, lockfile policy, and final environment validation.
 
 ### Phase 1 — Tenant and identity foundation
-- [ ] Run the new PostgreSQL migration and RLS integration test in CI; fix any migration or test failures before marking this phase complete.
-- [ ] Finalize users, companies, memberships, branches, and audit-log schema.
-- [ ] Company-scoped RLS policies and transaction-scoped tenant context.
+- [x] Run the PostgreSQL migration and RLS integration test in CI; migration and RLS checks passed in the merged tenant-foundation increment.
+- [x] Add initial users, companies, memberships, branches, and audit-log schema.
+- [x] Add company-scoped RLS policies and transaction-scoped tenant context.
+- [x] Add PostgreSQL pool lifecycle management, `DATABASE_URL` validation, active-membership tenant transactions, and transaction-aware audit writes (CI verification pending for this increment).
 - [ ] Argon2 password hashing, email/password sign-in, Google sign-in adapter, rotating refresh tokens in HttpOnly cookies, CSRF, rate limits.
 - [ ] RBAC permission guard on every protected route; complete audit-write integration.
 - [ ] Unit/integration tests for tenant isolation, refresh rotation/reuse, authorization, and audit writes.
@@ -81,8 +82,9 @@
 
 1. **Completed:** repository plan, npm workspace, integer-paise utility and tests, development environment template, README, optional Docker Compose, and initial CI.
 2. **Completed:** NestJS API starter, `GET /api/health`, startup validation, and API build/typecheck/test scripts. GitHub Actions passed for the merged increment.
-3. **In progress:** initial PostgreSQL tenant schema, forced RLS policies, transaction-local tenant context helper, and CI-backed RLS integration test. Wait for the PostgreSQL CI run before claiming verification.
-4. **Next:** add database connection/configuration module, membership-aware tenant resolution, and audit service before starting authentication or accounting workflows.
+3. **Completed:** initial PostgreSQL tenant schema, forced RLS policies, transaction-local tenant context helper, and PostgreSQL-backed RLS integration test. GitHub Actions passed migration, RLS integration, typecheck, build, and tests.
+4. **In progress:** database connection/configuration module, active-membership tenant resolution, transaction-aware audit service, and unit tests. Await the dedicated CI run before claiming this increment verified.
+5. **Next:** implement authentication foundations (password hashing, session/refresh-token storage and rotation, CSRF, and sign-in flows) plus authorization guards before accounting workflows.
 
 ## Acceptance gates
 
