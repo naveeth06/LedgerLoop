@@ -33,10 +33,10 @@
 ### Phase 0 — Repository foundation
 - [x] Inspect repository metadata and root contents.
 - [x] Record baseline and implementation plan.
-- [ ] Establish monorepo conventions, package manager, formatting/linting, and environment validation.
-- [ ] Add Docker Compose for PostgreSQL (including pgvector), Redis, and local S3-compatible storage.
-- [ ] Add CI workflow for lint, unit tests, API integration tests, and Playwright e2e.
-- [ ] Add setup README and complete variable inventory in `.env.example`.
+- [x] Establish initial npm workspace conventions and API startup environment validation. Formatting/linting configuration remains pending.
+- [x] Add Docker Compose for PostgreSQL (including pgvector), Redis, and local S3-compatible storage.
+- [x] Add starter CI workflow for type-checking, API build, and unit tests. Lint, API integration tests, and Playwright e2e remain pending.
+- [x] Add setup README and a development environment template. Validate and finalize the full variable inventory as services are implemented.
 
 ### Phase 1 — Tenant and identity foundation
 - [ ] Initial PostgreSQL migrations, extensions, company/user/membership/branch schema.
@@ -76,9 +76,13 @@
 - [ ] OpenAPI docs, migrations and seed data, Dockerfiles, complete README, CI, and demo scripts.
 - [ ] Run lint, unit, API integration, and Playwright suites in a real runtime; resolve failures and document remaining limitations.
 
-## First implementation increment
+## Implementation increments
 
-After this plan is committed, create a dedicated implementation branch and add the smallest useful foundation: monorepo workspace metadata and a CI workflow that performs reproducible checks without requiring production secrets. Keep accounting and authentication claims out of scope until their database and runtime tests exist.
+1. **Completed — initial repository foundation:** plan, npm workspace, integer-paise utility and tests, Docker Compose dependencies, `.env.example`, README, and starter CI.
+2. **In progress — API foundation:** NestJS app module, health endpoint, startup environment validation, API build/typecheck/test scripts. Verify via GitHub Actions before marking this increment complete.
+3. **Next — tenant/database foundation:** add migration tooling and initial users, companies, memberships, branches, and audit schema; implement transaction-scoped tenant context and PostgreSQL RLS policies with integration tests.
+
+Keep accounting and authentication claims out of scope until their database and runtime tests exist.
 
 ## Acceptance gates
 

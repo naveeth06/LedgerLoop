@@ -1,12 +1,20 @@
 # LedgerLoop
 
-LedgerLoop is planned as an India-focused, GST-aware accounting platform for small businesses and accountants.
+LedgerLoop is an India-focused, GST-aware accounting platform for small businesses and accountants.
 
 ## Current status
 
-This repository is being built incrementally. The initial commit documents the repository baseline and delivery plan in [PLAN.md](./PLAN.md). The current foundation branch introduces the npm workspace, a shared integer-paise parser with unit tests, local infrastructure for PostgreSQL/pgvector, Redis and MinIO, an environment template, and a starter CI workflow.
+This repository is being built incrementally. [PLAN.md](./PLAN.md) records the baseline, architecture, phases, and acceptance criteria.
 
-The Angular web app, NestJS API, worker, database migrations, authentication and accounting workflows are **not implemented yet**. Do not use this scaffold as a production accounting system.
+The current foundation includes:
+- An npm workspace with a NestJS API starter and shared TypeScript package.
+- A basic API health endpoint at `GET /api/health`.
+- Startup validation for `NODE_ENV` and `API_PORT`.
+- A shared integer-paise parser and unit tests.
+- Local PostgreSQL/pgvector, Redis, and MinIO service definitions.
+- A development environment template and GitHub Actions checks.
+
+**Not implemented yet:** Angular web app, database migrations/RLS, authentication and authorization, audit persistence, accounting posting, invoice/payment workflows, reporting, reminders, and AI features. Do not use this scaffold as a production accounting system.
 
 ## Requirements
 
@@ -16,7 +24,7 @@ The Angular web app, NestJS API, worker, database migrations, authentication and
 ## Local infrastructure
 
 1. Copy `.env.example` to `.env`.
-2. Review and replace local-only values before exposing any service outside your machine.
+2. Replace development-only values before exposing any service outside your machine.
 3. Start dependencies:
 
    ```sh
@@ -25,18 +33,28 @@ The Angular web app, NestJS API, worker, database migrations, authentication and
 
    PostgreSQL is available at `localhost:5432`, Redis at `localhost:6379`, and MinIO at `localhost:9000` (console: `localhost:9001`).
 
-4. Install workspace dependencies and run the shared-types checks:
+## Install and verify
 
-   ```sh
-   npm install
-   npm run typecheck
-   npm test
-   ```
+```sh
+npm install
+npm run typecheck
+npm run build
+npm test
+```
+
+Run the API locally after installation:
+
+```sh
+npm run build
+node apps/api/dist/main.js
+```
+
+The health endpoint is `http://localhost:3000/api/health`. The API currently has no database connection; the endpoint only indicates that the HTTP process is running.
 
 ## Money representation
 
-Persisted monetary amounts must be integer paise. The shared `parseRupeesToPaise` helper accepts a decimal rupee **string** and uses `BigInt` for conversion before returning a safe integer. It intentionally rejects floating-point inputs, negative amounts, exponent notation, separators, and more than two fractional digits. Debit/credit sign and direction belong to journal semantics, not this non-negative amount parser.
+Persisted monetary amounts must be integer paise. The shared `parseRupeesToPaise` helper accepts a decimal rupee string and uses `BigInt` for conversion before returning a safe integer. It intentionally rejects floating-point inputs, negative amounts, exponent notation, separators, and more than two fractional digits.
 
 ## Security status
 
-The values in `.env.example` are development placeholders only. No production secrets belong in source control. RLS, authentication, CSRF, RBAC, audit logging, file scanning and AI safeguards remain planned work until implemented and tested.
+Values in `.env.example` are development placeholders only. No production secrets belong in source control. RLS, authentication, CSRF, RBAC, audit logging, file scanning, and AI safeguards remain planned work until implemented and tested.
