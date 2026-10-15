@@ -10,6 +10,7 @@ import { CompaniesController } from './companies/companies.controller';
 import { CompanySettingsController } from './companies/company-settings.controller';
 import { ItemsController, WarehousesController } from './companies/items-warehouses.controller';
 import { JournalEntriesController } from './companies/journal-entries.controller';
+import { OpeningBalancesController } from './companies/opening-balances.controller';
 import { PartiesController } from './companies/parties.controller';
 
 @Module({
@@ -23,6 +24,7 @@ import { PartiesController } from './companies/parties.controller';
     ItemsController,
     WarehousesController,
     JournalEntriesController,
+    OpeningBalancesController,
   ],
   providers: [
     { provide: APP_GUARD, useClass: AccessTokenGuard },
