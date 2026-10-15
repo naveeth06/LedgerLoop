@@ -5,11 +5,12 @@ import { AccessTokenGuard } from './auth/access-token.guard';
 import { CompanyRoleGuard } from './auth/company-role.guard';
 import { DatabaseModule } from './database/database.module';
 import { AppController } from './app.controller';
+import { AccountsController } from './companies/accounts.controller';
 import { CompaniesController } from './companies/companies.controller';
 
 @Module({
   imports: [DatabaseModule, AuthModule],
-  controllers: [AppController, CompaniesController],
+  controllers: [AppController, CompaniesController, AccountsController],
   providers: [
     { provide: APP_GUARD, useClass: AccessTokenGuard },
     { provide: APP_GUARD, useClass: CompanyRoleGuard },
