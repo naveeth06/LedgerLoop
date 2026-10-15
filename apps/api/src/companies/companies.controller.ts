@@ -1,12 +1,11 @@
 import { BadRequestException, Body, Controller, Param, Post, Req } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
-import type { Request } from 'express';
 import { z } from 'zod';
 import { AuditService } from '../database/audit.service';
 import { DatabaseService } from '../database/database.service';
 import { TenantAccessService } from '../database/tenant-access.service';
 import { withTenantTransaction } from '../database/tenant-transaction';
-import { AuthenticatedRequest } from '../auth/current-user';
+import type { AuthenticatedRequest } from '../auth/current-user';
 import { CompanyRoles } from '../auth/roles.decorator';
 
 const createCompanySchema = z.object({
