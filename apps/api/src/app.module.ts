@@ -14,6 +14,7 @@ import { OpeningBalancesController } from './companies/opening-balances.controll
 import { PartiesController } from './companies/parties.controller';
 import { SalesDocumentsController } from './companies/sales-documents.controller';
 import { SalesInvoicePostingController } from './companies/sales-invoice-posting.controller';
+import { SalesReceiptsController } from './companies/sales-receipts.controller';
 import { SalesGstService } from './companies/sales-gst.service';
 
 @Module({
@@ -30,6 +31,7 @@ import { SalesGstService } from './companies/sales-gst.service';
     OpeningBalancesController,
     SalesDocumentsController,
     SalesInvoicePostingController,
+    SalesReceiptsController,
   ],
   providers: [
     SalesGstService,
