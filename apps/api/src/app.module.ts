@@ -7,10 +7,11 @@ import { DatabaseModule } from './database/database.module';
 import { AppController } from './app.controller';
 import { AccountsController } from './companies/accounts.controller';
 import { CompaniesController } from './companies/companies.controller';
+import { CompanySettingsController } from './companies/company-settings.controller';
 
 @Module({
   imports: [DatabaseModule, AuthModule],
-  controllers: [AppController, CompaniesController, AccountsController],
+  controllers: [AppController, CompaniesController, AccountsController, CompanySettingsController],
   providers: [
     { provide: APP_GUARD, useClass: AccessTokenGuard },
     { provide: APP_GUARD, useClass: CompanyRoleGuard },

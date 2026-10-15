@@ -15,9 +15,10 @@ Implemented foundation:
 - Email/password sign-up, sign-in, refresh and logout endpoints with CSRF/origin protections, credentialed CORS, short-lived signed access tokens and throttling.
 - Global access-token authorization guard, current-user endpoint, company onboarding, owner/admin branch creation, company directory and branch listing.
 - Tenant-scoped chart of accounts with constrained account types, per-company unique account codes, same-company parent account references, forced RLS, and audited account creation.
+- Company settings update endpoints and tenant-scoped GST registration listing/creation with GSTIN/state-code constraints and audit events.
 - GitHub Actions checks for migrations, type-checking, build, unit tests and PostgreSQL integration.
 
-Still not implemented: Angular web app, email verification/password reset, Google sign-in, company settings/GST registrations, parties/items/warehouses, accounting journals and posting, invoice/payment workflows, reporting, reminders, and AI features. This scaffold is not a production accounting system.
+Still not implemented: Angular web app, email verification/password reset, Google sign-in, parties/items/warehouses, accounting journals and posting, invoice/payment workflows, reporting, reminders, and AI features. This scaffold is not a production accounting system.
 
 ## Requirements and local setup
 
@@ -65,8 +66,8 @@ Protected routes require `Authorization: Bearer <accessToken>`. The global guard
 - `POST /api/companies` — create a company, initial owner membership and audit event atomically.
 - `GET /api/companies/:companyId/branches` — list branches after active membership verification.
 - `POST /api/companies/:companyId/branches` — create a branch; requires owner/admin membership.
-
-Membership directory lookup uses transaction-local `app.current_user_id` to expose only the authenticated user's own membership rows. Company and branch details still require active membership and transaction-local `app.current_company_id`.
+- `GET /api/companies/:companyId/settings` — retrieve company legal/display names and base currency.
+- `PATCH /api/companies/:companyId/settings` — update legal/display names; owner/admin only; audited in the same transaction.
 
 ## Chart of accounts
 
@@ -74,6 +75,13 @@ Membership directory lookup uses transaction-local `app.current_user_id` to expo
 - `POST /api/companies/:companyId/accounts` — creates an account; requires an active `owner`, `admin`, or `accountant` role. JSON fields: `accountCode`, `name`, `accountType` (one of `asset`, `liability`, `equity`, `income`, `expense`), optional `parentAccountId`, optional `description`.
 - Account codes are unique per company (case-normalized to uppercase). A parent account must belong to the same company. Creation and `LEDGER_ACCOUNT_CREATED` audit write share one transaction.
 - Accounts are tenant-scoped by forced RLS. The runtime database role can select and insert accounts but cannot update or delete them yet; editing, deactivation, and seeded standard accounts are future increments.
+
+## GST registrations
+
+- `GET /api/companies/:companyId/gst-registrations` — lists registrations for an active company member.
+- `POST /api/companies/:companyId/gst-registrations` — creates a GST registration; owner/admin/accountant only. Fields: `gstin`, `legalName`, optional `tradeName`, optional `registrationType` (`regular`, `composition`, `casual`, `sez`, `non_resident`), optional `isPrimary`.
+- GSTIN format and state-code consistency are validated; each GSTIN is unique per company. PostgreSQL permits at most one active primary registration per company. A conflicting primary or duplicate GSTIN returns HTTP 409 rather than silently replacing existing data.
+- Registration creation and `GST_REGISTRATION_CREATED` audit write share a transaction. Registrations are tenant-scoped by forced RLS.
 
 ## PostgreSQL migrations
 
