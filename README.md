@@ -12,6 +12,7 @@ Implemented foundation:
 - Integer-paise money parser with unit tests.
 - First PostgreSQL migration for users, companies, memberships, branches, and audit logs.
 - Forced row-level security (RLS) for company-owned tables, transaction-scoped tenant context helper, and a PostgreSQL integration test.
+- PostgreSQL connection pool managed by NestJS lifecycle hooks, required `DATABASE_URL` validation, membership-gated tenant transactions, and transaction-aware audit writes.
 - GitHub Actions checks for API build, type-checking, unit tests, and PostgreSQL RLS integration.
 
 Not implemented yet: Angular web app, authentication, authorization guards, business CRUD APIs, accounting posting, invoice/payment workflows, reporting, reminders, and AI features. This scaffold is not a production accounting system.
@@ -40,7 +41,7 @@ Run the API after building:
 node apps/api/dist/main.js
 ```
 
-The health endpoint is `http://localhost:3000/api/health`. It currently confirms only that the HTTP process is running; it does not check a database.
+The health endpoint is `http://localhost:3000/api/health`. It currently confirms only that the HTTP process is running; it does not check database connectivity. The API validates `DATABASE_URL` at startup, and the connection pool connects lazily.
 
 ## PostgreSQL migrations (when PostgreSQL is installed locally)
 
@@ -59,7 +60,7 @@ The health endpoint is `http://localhost:3000/api/health`. It currently confirms
    npm run db:migrate --workspace @ledgerloop/api
    ```
 
-The migration grants the restricted role access to its tables. Company-owned tables use forced RLS and depend on transaction-local `app.current_company_id`. Application code must resolve a company through the authenticated user's active membership and set that context through `withTenantTransaction`; never trust a tenant ID supplied directly by a request.
+The migration grants the restricted role access to its tables. Company-owned tables use forced RLS and depend on transaction-local `app.current_company_id`. Request-facing code should use `TenantAccessService.withCompanyTransaction(authenticatedUserId, requestedCompanyId, work)`: it verifies an active membership before running the callback in the same transaction. Never use a request-supplied company ID as authorization by itself. `AuditService.record(client, event)` writes through that same transaction; the company ID comes from PostgreSQL tenant context, and the runtime role has no audit update/delete grants.
 
 The CI integration test uses a temporary PostgreSQL database and verifies that a runtime role can see only the company matching its transaction-local tenant context. It does not require Docker on your computer.
 
