@@ -40,7 +40,7 @@ describe('SalesInvoicePostingController', () => {
     expect(result.status).toBe('issued');
     expect(result.totals.totalPaise).toBe('11800');
     const journalLineInserts = client.query.mock.calls.filter(([sql]) => sql.includes('INSERT INTO journal_lines'));
-    expect(journalLineInserts).toHaveLength(3);
+    expect(journalLineInserts).toHaveLength(4);
     expect(audit.record).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ action: 'SALES_INVOICE_ISSUED' }));
   });
 
