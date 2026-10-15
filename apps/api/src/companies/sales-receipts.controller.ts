@@ -69,7 +69,9 @@ export class SalesReceiptsController {
     const data = parsed.data;
     const amount = BigInt(data.amountPaise);
     const uniqueInvoiceIds = [...new Set(data.allocations.map((allocation) => allocation.invoiceId))];
-    if (uniqueInvoiceIds.length !== data.allocations.length) throw new BadRequestException('Each invoice may appear only once in a receipt allocation.');
+    if (uniqueInvoiceIds.length !== data.allocations.length) {
+      throw new BadRequestException('Each invoice may appear only once in a receipt allocation.');
+    }
 
     try {
       return await this.tenantAccess.withCompanyTransaction(userId, companyId, async (client) => {
@@ -92,10 +94,21 @@ export class SalesReceiptsController {
         }
 
         let allocationTotal = 0n;
-        const invoices = new Map<string, { id: string; party_id: string; total_paise: string; allocated_paise: string }>();
+        const invoices = new Map<string, {
+          id: string;
+          party_id: string;
+          status: string;
+          total_paise: string;
+          allocated_paise: string;
+        }>();
+
         if (uniqueInvoiceIds.length > 0) {
           const invoiceResult = await client.query<{
-            id: string; party_id: string; status: string; total_paise: string; allocated_paise: string;
+            id: string;
+            party_id: string;
+            status: string;
+            total_paise: string;
+            allocated_paise: string;
           }>(
             `SELECT i.id, i.party_id, i.status, i.total_paise::text,
                     COALESCE(SUM(CASE WHEN r.status = 'posted' THEN a.allocated_paise ELSE 0 END), 0)::text AS allocated_paise
@@ -107,19 +120,29 @@ export class SalesReceiptsController {
             [companyId, uniqueInvoiceIds],
           );
           for (const invoice of invoiceResult.rows) invoices.set(invoice.id, invoice);
-          if (invoices.size !== uniqueInvoiceIds.length) throw new BadRequestException('Every allocated invoice must belong to this company.');
+          if (invoices.size !== uniqueInvoiceIds.length) {
+            throw new BadRequestException('Every allocated invoice must belong to this company.');
+          }
         }
 
         for (const allocation of data.allocations) {
           const invoice = invoices.get(allocation.invoiceId);
-          if (!invoice || invoice.status !== 'issued') throw new BadRequestException('Only issued sales invoices can receive allocations.');
-          if (invoice.party_id !== data.partyId) throw new BadRequestException('Receipt allocations must belong to the same customer as the receipt.');
+          if (!invoice || invoice.status !== 'issued') {
+            throw new BadRequestException('Only issued sales invoices can receive allocations.');
+          }
+          if (invoice.party_id !== data.partyId) {
+            throw new BadRequestException('Receipt allocations must belong to the same customer as the receipt.');
+          }
           const allocated = BigInt(allocation.allocatedPaise);
           const outstanding = BigInt(invoice.total_paise) - BigInt(invoice.allocated_paise);
-          if (allocated > outstanding) throw new BadRequestException(`Allocation for invoice ${allocation.invoiceId} exceeds its outstanding balance.`);
+          if (allocated > outstanding) {
+            throw new BadRequestException(`Allocation for invoice ${allocation.invoiceId} exceeds its outstanding balance.`);
+          }
           allocationTotal += allocated;
         }
-        if (allocationTotal > amount) throw new BadRequestException('Receipt allocations cannot exceed the receipt amount.');
+        if (allocationTotal > amount) {
+          throw new BadRequestException('Receipt allocations cannot exceed the receipt amount.');
+        }
 
         const sequence = await client.query<{ receipt_number: string }>(
           `INSERT INTO company_document_sequences (company_id, receipt_next)
@@ -130,11 +153,13 @@ export class SalesReceiptsController {
         );
         const receiptNumber = `RC-${sequence.rows[0].receipt_number.padStart(6, '0')}`;
         const receiptId = randomUUID();
+
         await client.query(
           `INSERT INTO sales_receipts (id, company_id, receipt_number, receipt_date, party_id, account_id, amount_paise, reference, notes, status, created_by)
            VALUES ($1,$2,$3,$4::date,$5,$6,$7::bigint,$8,$9,'draft',$10)`,
           [receiptId, companyId, receiptNumber, data.receiptDate, data.partyId, data.accountId, data.amountPaise, data.reference ?? null, data.notes ?? null, userId],
         );
+
         for (const allocation of data.allocations) {
           await client.query(
             `INSERT INTO sales_receipt_allocations (company_id, receipt_id, invoice_id, allocated_paise)
@@ -142,6 +167,7 @@ export class SalesReceiptsController {
             [companyId, receiptId, allocation.invoiceId, allocation.allocatedPaise],
           );
         }
+
         await this.audit.record(client, {
           actorUserId: userId,
           action: 'SALES_RECEIPT_CREATED',
@@ -149,6 +175,7 @@ export class SalesReceiptsController {
           entityId: receiptId,
           metadata: { companyId, receiptNumber, partyId: data.partyId, amountPaise: amount.toString(), allocatedPaise: allocationTotal.toString() },
         });
+
         return {
           receiptId,
           receiptNumber,
@@ -177,7 +204,13 @@ export class SalesReceiptsController {
     try {
       return await this.tenantAccess.withCompanyTransaction(userId, companyId, async (client) => {
         const receiptResult = await client.query<{
-          id: string; receipt_number: string; receipt_date: string; party_id: string; account_id: string; amount_paise: string; status: string;
+          id: string;
+          receipt_number: string;
+          receipt_date: string;
+          party_id: string;
+          account_id: string;
+          amount_paise: string;
+          status: string;
         }>(
           `SELECT id, receipt_number, receipt_date, party_id, account_id, amount_paise::text, status
              FROM sales_receipts WHERE company_id = $1 AND id = $2 FOR UPDATE`,
@@ -192,7 +225,9 @@ export class SalesReceiptsController {
           [companyId, receipt.account_id],
         );
         const account = accountResult.rows[0];
-        if (!account || !account.is_active || account.account_type !== 'asset') throw new BadRequestException('Receipt account must remain an active asset account.');
+        if (!account || !account.is_active || account.account_type !== 'asset') {
+          throw new BadRequestException('Receipt account must remain an active asset account.');
+        }
 
         const postingResult = await client.query<{ receivable_account_id: string }>(
           'SELECT receivable_account_id FROM sales_posting_accounts WHERE company_id = $1',
@@ -206,11 +241,20 @@ export class SalesReceiptsController {
           [companyId, posting.receivable_account_id],
         );
         const receivable = receivableResult.rows[0];
-        if (!receivable || !receivable.is_active || receivable.account_type !== 'asset') throw new BadRequestException('Configured receivable account must remain an active asset account.');
-        if (posting.receivable_account_id === receipt.account_id) throw new BadRequestException('Receipt bank/cash account cannot be the configured receivable account.');
+        if (!receivable || !receivable.is_active || receivable.account_type !== 'asset') {
+          throw new BadRequestException('Configured receivable account must remain an active asset account.');
+        }
+        if (posting.receivable_account_id === receipt.account_id) {
+          throw new BadRequestException('Receipt bank/cash account cannot be the configured receivable account.');
+        }
 
         const allocationResult = await client.query<{
-          invoice_id: string; allocated_paise: string; party_id: string; status: string; total_paise: string; posted_allocated_paise: string;
+          invoice_id: string;
+          allocated_paise: string;
+          party_id: string;
+          status: string;
+          total_paise: string;
+          posted_allocated_paise: string;
         }>(
           `SELECT a.invoice_id, a.allocated_paise::text, i.party_id, i.status, i.total_paise::text,
                   COALESCE((SELECT SUM(a2.allocated_paise) FROM sales_receipt_allocations a2
@@ -223,18 +267,22 @@ export class SalesReceiptsController {
             FOR UPDATE OF i`,
           [companyId, receiptId],
         );
+
         let allocationTotal = 0n;
         for (const allocation of allocationResult.rows) {
           if (allocation.status !== 'issued') throw new BadRequestException('Only issued sales invoices can receive allocations.');
           if (allocation.party_id !== receipt.party_id) throw new BadRequestException('Receipt allocations must belong to the receipt customer.');
           const allocated = BigInt(allocation.allocated_paise);
           const outstanding = BigInt(allocation.total_paise) - BigInt(allocation.posted_allocated_paise);
-          if (allocated > outstanding) throw new ConflictException(`Invoice ${allocation.invoice_id} no longer has enough outstanding balance for this allocation.`);
+          if (allocated > outstanding) {
+            throw new ConflictException(`Invoice ${allocation.invoice_id} no longer has enough outstanding balance for this allocation.`);
+          }
           allocationTotal += allocated;
         }
 
         const amount = BigInt(receipt.amount_paise);
         if (allocationTotal > amount) throw new BadRequestException('Receipt allocations cannot exceed the receipt amount.');
+
         const entryId = randomUUID();
         await client.query(
           `INSERT INTO journal_entries (id, company_id, entry_number, entry_date, memo, status, source_type, created_by)
@@ -256,6 +304,7 @@ export class SalesReceiptsController {
             WHERE company_id = $1 AND id = $2`,
           [companyId, receiptId, entryId],
         );
+
         await this.audit.record(client, {
           actorUserId: userId,
           action: 'SALES_RECEIPT_POSTED',
@@ -270,6 +319,7 @@ export class SalesReceiptsController {
           entityId: entryId,
           metadata: { companyId, sourceType: 'receipt', receiptId, receiptNumber: receipt.receipt_number },
         });
+
         return {
           receiptId,
           receiptNumber: receipt.receipt_number,
