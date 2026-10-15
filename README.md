@@ -13,9 +13,10 @@ Implemented foundation:
 - First PostgreSQL migration for users, companies, memberships, branches, and audit logs.
 - Forced row-level security (RLS) for company-owned tables, transaction-scoped tenant context helper, and a PostgreSQL integration test.
 - PostgreSQL connection pool managed by NestJS lifecycle hooks, required `DATABASE_URL` validation, membership-gated tenant transactions, and transaction-aware audit writes.
+- Initial auth primitives: Argon2id password hashing/verification, hashed opaque refresh-token storage, transactional refresh-token rotation, and token-family revocation on replay.
 - GitHub Actions checks for API build, type-checking, unit tests, and PostgreSQL RLS integration.
 
-Not implemented yet: Angular web app, authentication, authorization guards, business CRUD APIs, accounting posting, invoice/payment workflows, reporting, reminders, and AI features. This scaffold is not a production accounting system.
+Not implemented yet: Angular web app, authentication HTTP endpoints, email verification/password reset, Google sign-in, CSRF protections, authorization guards, business CRUD APIs, accounting posting, invoice/payment workflows, reporting, reminders, and AI features. The auth code in this branch is foundational only and is not a complete sign-in system. This scaffold is not a production accounting system.
 
 ## Requirements
 
@@ -70,4 +71,4 @@ Persisted monetary amounts must be integer paise. The shared `parseRupeesToPaise
 
 ## Security status
 
-Values in `.env.example` are development placeholders only. No production secrets belong in source control. Authentication, CSRF, application-level RBAC, complete audit-write integration, accounting posting, file scanning, and AI safeguards remain pending until implemented and tested.
+Values in `.env.example` are development placeholders only. No production secrets belong in source control. Authentication endpoints, CSRF, application-level RBAC, complete audit-write integration, accounting posting, file scanning, and AI safeguards remain pending until implemented and tested. The current password/session utilities are not sufficient to expose a production login flow on their own.
