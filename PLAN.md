@@ -69,7 +69,7 @@
 - [x] Tenant-scoped bank accounts and statement imports with duplicate external-id protection.
 - [x] Bank reconciliation against posted journal lines with tenant-safe matching and immutable reconciled state.
 - [x] Deterministic reconciliation confidence bands; low-confidence matches remain explicit user-approved suggestions and never auto-post.
-- [x] Secure JSON statement import with a 5MB request cap, explicit content-type enforcement and control-character scanning.
+- [x] Secure JSON statement import with a 5MB request cap, explicit JSON content type, and control-character scanning.
 - [x] Trial balance from posted journal entries with tenant-scoped as-of-date reporting and deterministic paise balances.
 - [x] Profit & Loss and Balance Sheet from posted journal entries with deterministic date boundaries and paise balances.
 - [x] Receivables ageing and GST summary from posted journals.
@@ -110,7 +110,8 @@
 30. **Completed:** tenant-scoped expenses and supplier debit notes with draft/post lifecycle, atomic journal posting, GST-aware expense posting, supplier-bill outstanding protection, immutable posted documents and audit events.
 31. **Completed:** generic posted-journal reversal workflow with explicit reversal linkage, one-reversal guard, balanced debit/credit inversion, forced tenant transaction context and audit events.
 32. **Completed:** invoice-to-receipt settlement regression covering full settlement, journal balance, receivable zeroing and cash balance; controller/UI Playwright e2e remains deferred until the Angular web app exists.
-33. **In progress:** secure statement-import hardening with a 5MB JSON body cap, explicit JSON content type, statement text safety scanning and focused unit coverage.
+33. **Completed:** secure statement-import hardening with a 5MB JSON body cap, explicit JSON content type, statement text safety scanning and focused unit coverage.
+34. **In progress:** overdue-reminder foundation with tenant-scoped settings/events, BullMQ worker scheduling, idempotent reminder-event creation, tenant-context enforcement and audit events. Delivery channels remain a follow-up increment.
 
 ## Acceptance gates
 
