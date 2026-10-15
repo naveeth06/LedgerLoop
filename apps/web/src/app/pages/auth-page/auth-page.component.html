@@ -1,0 +1,61 @@
+<main class="auth-layout">
+  <section class="brand-panel" aria-label="About LedgerLoop">
+    <a class="brand" routerLink="/login" aria-label="LedgerLoop home">
+      <span class="brand-mark">L</span>
+      <span>ledger<span class="brand-light">loop</span></span>
+    </a>
+    <div class="brand-copy">
+      <span class="eyebrow">YOUR BUSINESS, IN BALANCE</span>
+      <h1>Clarity for your books.<br><em>Confidence for your business.</em></h1>
+      <p>Bring sales, purchases, banking and GST into one calm, connected workspace.</p>
+      <div class="trust-line"><span class="trust-dot"></span> Built for the way Indian businesses work</div>
+    </div>
+    <div class="panel-footer">Less busywork. Better business decisions.</div>
+  </section>
+
+  <section class="form-panel">
+    <div class="mobile-brand">
+      <span class="brand-mark">L</span><span>ledger<span class="brand-light">loop</span></span>
+    </div>
+    <div class="form-wrap">
+      <div class="form-heading">
+        <span class="eyebrow">{{ mode === 'signup' ? 'GET STARTED' : 'WELCOME BACK' }}</span>
+        <h2>{{ mode === 'signup' ? 'Create your account' : 'Sign in to LedgerLoop' }}</h2>
+        <p>{{ mode === 'signup' ? 'Start building a clearer picture of your business.' : 'Your financial workspace is waiting for you.' }}</p>
+      </div>
+
+      <div class="mode-switch" role="group" aria-label="Account action">
+        <a routerLink="/login" [class.selected]="mode === 'login'">Sign in</a>
+        <a routerLink="/signup" [class.selected]="mode === 'signup'">Create account</a>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+        <div class="field" *ngIf="mode === 'signup'">
+          <label for="displayName">Your name</label>
+          <input id="displayName" type="text" formControlName="displayName" autocomplete="name" placeholder="e.g. Asha Kumar">
+          <small class="field-error" *ngIf="form.controls.displayName.touched && form.controls.displayName.invalid">Enter your name (up to 120 characters).</small>
+        </div>
+        <div class="field">
+          <label for="email">Work email</label>
+          <input id="email" type="email" formControlName="email" autocomplete="email" placeholder="you@company.com">
+          <small class="field-error" *ngIf="form.controls.email.touched && form.controls.email.invalid">Enter a valid email address.</small>
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <input id="password" type="password" formControlName="password" [autocomplete]="mode === 'signup' ? 'new-password' : 'current-password'" placeholder="At least 12 characters">
+          <small class="field-hint" *ngIf="mode === 'signup'">Use 12–128 characters.</small>
+          <small class="field-error" *ngIf="form.controls.password.touched && form.controls.password.invalid">Password must be between 12 and 128 characters.</small>
+        </div>
+
+        <div class="error-banner" role="alert" *ngIf="errorMessage">{{ errorMessage }}</div>
+        <button class="submit-button" type="submit" [disabled]="submitting">
+          <span>{{ submitting ? 'Please wait…' : (mode === 'signup' ? 'Create account' : 'Sign in securely') }}</span>
+          <span aria-hidden="true" *ngIf="!submitting">→</span>
+        </button>
+      </form>
+      <p class="security-note"><span aria-hidden="true">◈</span> Your account is protected with secure session handling.</p>
+      <p class="legal-copy">By continuing, you agree to use LedgerLoop responsibly. Account recovery and verification will be added in a future increment.</p>
+    </div>
+    <div class="form-footer"><span>© 2026 LedgerLoop</span><span>Made for growing businesses</span></div>
+  </section>
+</main>
