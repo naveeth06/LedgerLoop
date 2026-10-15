@@ -33,7 +33,7 @@ export class JournalReversalsController {
       if (original.reversal_of_id) throw new BadRequestException('A reversal journal cannot itself be reversed.');
 
       const existing = await client.query(
-        'SELECT id, entry_number FROM journal_entries WHERE company_id = $1 AND reversal_of_id = $2 LIMIT 1',
+        'SELECT id FROM journal_entries WHERE company_id = $1 AND reversal_of_id = $2 LIMIT 1',
         [companyId, entryId],
       );
       if (existing.rows[0]) throw new BadRequestException('This journal entry has already been reversed.');
@@ -46,15 +46,6 @@ export class JournalReversalsController {
         [companyId, entryId],
       );
       if (linesResult.rows.length < 2) throw new BadRequestException('The posted journal has no reversible line set.');
-
-      const sequenceResult = await client.query(
-        `UPDATE company_document_sequences
-            SET receipt_next = receipt_next
-          WHERE company_id = $1
-        RETURNING company_id`,
-        [companyId],
-      );
-      if (!sequenceResult.rows[0]) throw new BadRequestException('Company document sequence was not found.');
 
       const reversalEntryId = randomUUID();
       const reversalNumber = `REV-${new Date().getUTCFullYear()}-${reversalEntryId.slice(0, 8).toUpperCase()}`;
@@ -99,12 +90,7 @@ export class JournalReversalsController {
         metadata: { companyId, entryNumber: reversalNumber, status: 'posted', sourceType: 'reversal', reversalOfId: entryId },
       });
 
-      return {
-        originalEntryId: entryId,
-        reversalEntryId,
-        reversalEntryNumber: reversalNumber,
-        status: 'posted',
-      };
+      return { originalEntryId: entryId, reversalEntryId, reversalEntryNumber: reversalNumber, status: 'posted' };
     });
   }
 }
