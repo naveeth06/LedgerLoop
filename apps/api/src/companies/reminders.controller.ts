@@ -1,5 +1,6 @@
 import { BadRequestException, Body, Controller, Get, Param, Put, Req } from '@nestjs/common';
 import { z } from 'zod';
+import { CompanyRoles } from '../auth/roles.decorator';
 import type { AuthenticatedRequest } from '../auth/current-user';
 import { AuditService } from '../database/audit.service';
 import { TenantAccessService } from '../database/tenant-access.service';
@@ -44,6 +45,7 @@ export class RemindersController {
   }
 
   @Put('settings')
+  @CompanyRoles('owner', 'admin')
   async updateSettings(
     @Param('companyId') companyId: string,
     @Body() body: unknown,
