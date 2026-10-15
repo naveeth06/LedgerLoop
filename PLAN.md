@@ -49,7 +49,7 @@
 - [x] Tenant-scoped item and warehouse directories with HSN/SAC, GST-rate metadata, integer-paise prices, inventory flags, optional branch assignment, forced RLS and audit.
 - [ ] Opening balances and opening inventory.
 - [ ] Deterministic CGST/SGST/IGST calculations and rounding rules.
-- [ ] Voucher, journal-entry and journal-line schema with atomic posting and database-enforced balance.
+- [ ] Journal entry and line schema with atomic posting and database-enforced balance.
 - [ ] Posted voucher immutability and reversal workflow.
 - [ ] Tests for balance, rollback, tax, rounding, immutability and tenant boundaries.
 
@@ -82,7 +82,8 @@
 1–9. **Completed:** foundation, auth, tenant RLS, company/branch context and chart of accounts.
 10. **Completed:** company settings and GST registration APIs; [CI run #139 passed](https://github.com/naveeth06/LedgerLoop/actions/runs/38762723608).
 11. **Completed:** tenant-scoped party directory; [CI run #148 passed](https://github.com/naveeth06/LedgerLoop/actions/runs/38763174427).
-12. **In review:** tenant-scoped items and warehouses schema, APIs, validation, forced RLS, audit, unit tests and PostgreSQL RLS integration coverage. Latest-head CI pending.
+12. **Completed:** tenant-scoped items and warehouses; [CI run #158 passed](https://github.com/naveeth06/LedgerLoop/actions/runs/38763824088).
+13. **In review:** tenant-scoped journal entries and lines, draft creation, balanced posting checks, forced RLS, audit events and unit tests. Latest-head CI pending.
 
 ## Acceptance gates
 
