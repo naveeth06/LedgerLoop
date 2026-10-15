@@ -5,15 +5,7 @@ import { CompanyRoles } from '../auth/roles.decorator';
 import type { AuthenticatedRequest } from '../auth/current-user';
 import { AuditService } from '../database/audit.service';
 import { TenantAccessService } from '../database/tenant-access.service';
-
-const unsafeControlCharacterPattern = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/;
-
-const safeText = (value: string, fieldName: string): string => {
-  if (unsafeControlCharacterPattern.test(value)) {
-    throw new BadRequestException(`${fieldName} contains unsupported control characters.`);
-  }
-  return value;
-};
+import { assertSafeStatementText } from './statement-import-security';
 
 const rowSchema = z.object({
   transactionDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
@@ -64,11 +56,11 @@ export class BankStatementImportsController {
     if (!parsed.success) throw new BadRequestException('Statement import is invalid.');
     const data = parsed.data;
 
-    safeText(data.sourceName ?? '', 'sourceName');
+    assertSafeStatementText(data.sourceName ?? '', 'sourceName');
     for (const row of data.rows) {
-      safeText(row.description, 'description');
-      safeText(row.reference ?? '', 'reference');
-      safeText(row.externalId ?? '', 'externalId');
+      assertSafeStatementText(row.description, 'description');
+      assertSafeStatementText(row.reference ?? '', 'reference');
+      assertSafeStatementText(row.externalId ?? '', 'externalId');
     }
 
     return this.tenantAccess.withCompanyTransaction(userId, companyId, async (client) => {
