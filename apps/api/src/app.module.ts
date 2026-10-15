@@ -13,6 +13,7 @@ import { JournalEntriesController } from './companies/journal-entries.controller
 import { OpeningBalancesController } from './companies/opening-balances.controller';
 import { PartiesController } from './companies/parties.controller';
 import { SalesDocumentsController } from './companies/sales-documents.controller';
+import { SalesInvoicePostingController } from './companies/sales-invoice-posting.controller';
 import { SalesGstService } from './companies/sales-gst.service';
 
 @Module({
@@ -28,6 +29,7 @@ import { SalesGstService } from './companies/sales-gst.service';
     JournalEntriesController,
     OpeningBalancesController,
     SalesDocumentsController,
+    SalesInvoicePostingController,
   ],
   providers: [
     SalesGstService,
