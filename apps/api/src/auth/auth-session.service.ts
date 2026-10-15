@@ -24,19 +24,51 @@ export type RotatedRefreshSession = IssuedRefreshSession | { invalid: true };
 export class AuthSessionService {
   constructor(private readonly database: DatabaseService) {}
 
-  async create(userId: string, metadata?: { userAgent?: string; ipAddress?: string }): Promise<IssuedRefreshSession> {
+  async create(
+    userId: string,
+    metadata?: { userAgent?: string; ipAddress?: string },
+    transactionClient?: PoolClient,
+  ): Promise<IssuedRefreshSession> {
     const parsedUserId = uuidSchema.parse(userId);
     const safeMetadata = metadataSchema.parse(metadata);
     const refreshToken = createRefreshToken();
     const sessionId = randomUUID();
     const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+    const queryable = transactionClient ?? this.database.pool;
 
-    await this.database.pool.query(
+    await queryable.query(
       `INSERT INTO auth_sessions (id, user_id, token_hash, expires_at, user_agent, ip_address)
        VALUES ($1, $2, $3, $4, $5, $6)`,
       [sessionId, parsedUserId, hashRefreshToken(refreshToken), expiresAt, safeMetadata?.userAgent ?? null, safeMetadata?.ipAddress ?? null],
     );
     return { sessionId, userId: parsedUserId, refreshToken, expiresAt };
+  }
+
+  async revoke(refreshToken: string): Promise<void> {
+    if (typeof refreshToken !== 'string' || refreshToken.length < 32 || refreshToken.length > 128) return;
+    const client = await this.database.pool.connect();
+    try {
+      await client.query('BEGIN');
+      const lookup = await client.query<{ id: string; family_id: string; revoked_at: Date | string | null }>(
+        'SELECT id, family_id, revoked_at FROM auth_sessions WHERE token_hash = $1 FOR UPDATE',
+        [hashRefreshToken(refreshToken)],
+      );
+      const current = lookup.rows[0];
+      if (current?.revoked_at) {
+        await client.query(
+          'UPDATE auth_sessions SET revoked_at = COALESCE(revoked_at, now()) WHERE family_id = $1',
+          [current.family_id],
+        );
+      } else if (current) {
+        await client.query('UPDATE auth_sessions SET revoked_at = now(), last_used_at = now() WHERE id = $1', [current.id]);
+      }
+      await client.query('COMMIT');
+    } catch (error) {
+      try { await client.query('ROLLBACK'); } catch { /* Preserve original error. */ }
+      throw error;
+    } finally {
+      client.release();
+    }
   }
 
   /**
