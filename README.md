@@ -15,10 +15,12 @@ Implemented foundation:
 - PostgreSQL connection pool managed by NestJS lifecycle hooks, membership-gated tenant transactions, and transaction-aware audit writes.
 - Argon2id password hashing/verification, hashed opaque refresh-token storage, transactional refresh-token rotation, and token-family revocation on replay.
 - HTTP endpoints for email/password sign-up, sign-in, refresh, and logout. Refresh tokens are stored as hashes and sent only in HttpOnly cookies; access tokens are short-lived signed tokens.
+- Global access-token guard for protected routes, explicit public-route metadata, and company-scoped role checks based on active database membership (never roles copied from client input or trusted from the token).
+- Authenticated current-user endpoint and initial company onboarding that creates the company, owner membership, and audit event atomically; owner/admin-only branch creation uses tenant-scoped transactions and audit writes.
 - Exact configured-origin checks for auth mutations, double-submit CSRF token checks for refresh/logout, credentialed CORS restricted to `WEB_ORIGIN`, and endpoint throttling.
 - GitHub Actions checks for API build, type-checking, unit tests, and PostgreSQL RLS integration.
 
-Still not implemented: Angular web app, email verification/password reset, Google sign-in, access-token authorization guards on business endpoints, company onboarding/membership creation, business CRUD APIs, accounting posting, invoice/payment workflows, reporting, reminders, and AI features. This scaffold is not a production accounting system.
+Still not implemented: Angular web app, email verification/password reset, Google sign-in, business CRUD APIs beyond initial company/branch creation, accounting posting, invoice/payment workflows, reporting, reminders, and AI features. This scaffold is not a production accounting system.
 
 ## Requirements and local setup
 
@@ -57,7 +59,15 @@ All endpoints are under `/api/auth`. Auth mutation requests must include an `Ori
 
 Cookies use `SameSite=Strict`, are host-only, and are Secure in production. The frontend must send credentials on refresh/logout requests and read the non-HttpOnly `ll_csrf` cookie to populate `X-CSRF-Token`. The access token is returned in JSON and is not placed in a cookie.
 
-Rate limiting currently uses the NestJS in-process throttler. It is useful for a single API instance but is not a shared distributed limit; configure a Redis-backed throttling store before running multiple API replicas. The API does not yet have access-token authorization guards or protected accounting routes, so the access token is not yet used to authorize business operations. Do not expose this scaffold as a production service before the remaining authorization, email verification, monitoring, and security review work is completed.
+Rate limiting currently uses the NestJS in-process throttler. It is useful for a single API instance but is not a shared distributed limit; configure a Redis-backed throttling store before running multiple API replicas. Accounting routes and most business CRUD APIs are not implemented yet; the authorization foundation currently protects the current-user, company onboarding, and branch-creation routes. Do not expose this scaffold as a production service before the remaining authorization, email verification, monitoring, and security review work is completed.
+
+## Protected API and company onboarding
+
+- Protected routes require `Authorization: Bearer <accessToken>`. The global guard verifies the signed token and attaches the verified subject to the request; public routes must be explicitly marked with `@Public()`.
+- `GET /api/auth/me` returns the current user's public profile and requires a valid access token.
+- `POST /api/companies` requires a valid access token and JSON `{ "legalName", "displayName" }`. Company creation, the initial active `owner` membership, and the `COMPANY_CREATED` audit event run in one transaction with the new company ID as the transaction-local RLS context.
+- `POST /api/companies/:companyId/branches` requires a valid access token and an active `owner` or `admin` membership for that company. The route uses company-scoped RLS and records `BRANCH_CREATED` in the same transaction.
+- Role checks query the active membership in PostgreSQL. Do not add roles to access-token claims or accept a role supplied by a request body as authorization.
 
 ## PostgreSQL migrations
 
