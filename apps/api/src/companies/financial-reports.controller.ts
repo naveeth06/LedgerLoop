@@ -5,6 +5,17 @@ import type { AuthenticatedRequest } from '../auth/current-user';
 
 const rangeSchema = z.object({ fromDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(), toDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional() }).strict();
 
+type FinancialAccountType = 'asset' | 'liability' | 'equity' | 'income' | 'expense';
+
+type LedgerRow = {
+  accountId: string;
+  accountCode: string;
+  accountName: string;
+  accountType: FinancialAccountType;
+  debitPaise: string;
+  creditPaise: string;
+};
+
 @Controller('companies/:companyId/reports')
 export class FinancialReportsController {
   constructor(private readonly tenantAccess: TenantAccessService) {}
@@ -66,17 +77,17 @@ function validateDate(value: string, field: string): void {
   if (Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== value) throw new BadRequestException(`${field} must be a valid calendar date.`);
 }
 
-async function ledgerRows(client: any, companyId: string, fromDate: string | undefined, toDate: string, types: string[]) {
+async function ledgerRows(client: any, companyId: string, fromDate: string | undefined, toDate: string, types: string[]): Promise<LedgerRow[]> {
   const params: unknown[] = [companyId, toDate, types];
   let dateClause = 'je.entry_date <= $2::date';
   if (fromDate) { params.push(fromDate); dateClause += ' AND je.entry_date >= $4::date'; }
   const result = await client.query(`SELECT a.id AS "accountId", a.account_code AS "accountCode", a.name AS "accountName", a.account_type AS "accountType", COALESCE(SUM(CASE WHEN je.id IS NOT NULL THEN jl.debit_paise ELSE 0 END), 0)::text AS "debitPaise", COALESCE(SUM(CASE WHEN je.id IS NOT NULL THEN jl.credit_paise ELSE 0 END), 0)::text AS "creditPaise" FROM ledger_accounts a LEFT JOIN journal_lines jl ON jl.company_id = a.company_id AND jl.account_id = a.id LEFT JOIN journal_entries je ON je.company_id = jl.company_id AND je.id = jl.journal_entry_id AND je.status = 'posted' AND ${dateClause} WHERE a.company_id = $1 AND a.account_type = ANY($3::text[]) GROUP BY a.id, a.account_code, a.name, a.account_type ORDER BY a.account_code ASC, a.id ASC`, params);
-  return result.rows;
+  return result.rows as LedgerRow[];
 }
 
 async function netIncome(client: any, companyId: string, asOfDate: string): Promise<bigint> {
   const rows = await ledgerRows(client, companyId, undefined, asOfDate, ['income', 'expense']);
-  return rows.reduce((total: bigint, row: any) => total + (row.accountType === 'income' ? BigInt(row.creditPaise) - BigInt(row.debitPaise) : BigInt(row.debitPaise) - BigInt(row.creditPaise)), 0n);
+  return rows.reduce((total: bigint, row: LedgerRow) => total + (row.accountType === 'income' ? BigInt(row.creditPaise) - BigInt(row.debitPaise) : BigInt(row.debitPaise) - BigInt(row.creditPaise)), 0n);
 }
 
 function balanceForType(type: string, debit: string, credit: string): bigint {
