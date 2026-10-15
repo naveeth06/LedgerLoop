@@ -14,11 +14,12 @@ Implemented foundation:
 - Argon2id password hashing, hashed refresh-token storage, refresh rotation and replay-triggered session-family revocation.
 - Email/password sign-up, sign-in, refresh and logout endpoints with CSRF/origin protections, credentialed CORS, short-lived signed access tokens and throttling.
 - Global access-token authorization guard, current-user endpoint, company onboarding, owner/admin branch creation, company directory and branch listing.
-- Tenant-scoped chart of accounts with constrained account types, per-company unique account codes, same-company parent account references, forced RLS, and audited account creation.
-- Company settings update endpoints and tenant-scoped GST registration listing/creation with GSTIN/state-code constraints and audit events.
+- Tenant-scoped chart of accounts with constraints, forced RLS, and audited account creation.
+- Company settings update endpoints and tenant-scoped GST registration APIs with GSTIN/state-code constraints and audit events.
+- Tenant-scoped party directory with customer/supplier/both classification, GSTIN validation, contact/address fields, paise credit limits, forced RLS and audited creation.
 - GitHub Actions checks for migrations, type-checking, build, unit tests and PostgreSQL integration.
 
-Still not implemented: Angular web app, email verification/password reset, Google sign-in, parties/items/warehouses, accounting journals and posting, invoice/payment workflows, reporting, reminders, and AI features. This scaffold is not a production accounting system.
+Still not implemented: Angular web app, email verification/password reset, Google sign-in, items/warehouses/opening balances, accounting journals and posting, invoice/payment workflows, reporting, reminders, and AI features. This scaffold is not a production accounting system.
 
 ## Requirements and local setup
 
@@ -58,7 +59,7 @@ All endpoints are under `/api/auth`. Auth mutation requests must include an `Ori
 
 Cookies use `SameSite=Strict`, are host-only, and are Secure in production. Rate limiting currently uses the NestJS in-process throttler; configure a Redis-backed store before multiple API replicas. Do not expose this scaffold as a production service before the remaining security review and missing features are complete.
 
-## Company and branch context
+## Company, branch and settings APIs
 
 Protected routes require `Authorization: Bearer <accessToken>`. The global guard verifies the signed token; public routes must be explicitly marked with `@Public()`.
 
@@ -71,17 +72,23 @@ Protected routes require `Authorization: Bearer <accessToken>`. The global guard
 
 ## Chart of accounts
 
-- `GET /api/companies/:companyId/accounts` — lists accounts for an active member of the company.
-- `POST /api/companies/:companyId/accounts` — creates an account; requires an active `owner`, `admin`, or `accountant` role. JSON fields: `accountCode`, `name`, `accountType` (one of `asset`, `liability`, `equity`, `income`, `expense`), optional `parentAccountId`, optional `description`.
-- Account codes are unique per company (case-normalized to uppercase). A parent account must belong to the same company. Creation and `LEDGER_ACCOUNT_CREATED` audit write share one transaction.
-- Accounts are tenant-scoped by forced RLS. The runtime database role can select and insert accounts but cannot update or delete them yet; editing, deactivation, and seeded standard accounts are future increments.
+- `GET /api/companies/:companyId/accounts` — lists accounts for an active company member.
+- `POST /api/companies/:companyId/accounts` — creates an account; requires owner/admin/accountant role. Account types: `asset`, `liability`, `equity`, `income`, `expense`; optional `parentAccountId` and `description`.
+- Account codes are unique per company, case-normalized to uppercase, and parent references cannot cross company boundaries.
+- Forced RLS scopes records by company. The runtime role can select and insert but cannot update/delete accounts yet.
 
 ## GST registrations
 
-- `GET /api/companies/:companyId/gst-registrations` — lists registrations for an active company member.
-- `POST /api/companies/:companyId/gst-registrations` — creates a GST registration; owner/admin/accountant only. Fields: `gstin`, `legalName`, optional `tradeName`, optional `registrationType` (`regular`, `composition`, `casual`, `sez`, `non_resident`), optional `isPrimary`.
-- GSTIN format and state-code consistency are validated; each GSTIN is unique per company. PostgreSQL permits at most one active primary registration per company. A conflicting primary or duplicate GSTIN returns HTTP 409 rather than silently replacing existing data.
-- Registration creation and `GST_REGISTRATION_CREATED` audit write share a transaction. Registrations are tenant-scoped by forced RLS.
+- `GET /api/companies/:companyId/gst-registrations` — list registrations for active members.
+- `POST /api/companies/:companyId/gst-registrations` — create a registration; owner/admin/accountant only. Supports `gstin`, `legalName`, optional `tradeName`, `registrationType` and `isPrimary`.
+- GSTIN format/state-code consistency, per-company GSTIN uniqueness, and one active primary registration per company are enforced.
+
+## Parties
+
+- `GET /api/companies/:companyId/parties` — list parties for an active company member. Optional query filters: `type=customer|supplier|both` and `active=true|false`. The type filter also includes `both` parties.
+- `POST /api/companies/:companyId/parties` — create a party; requires owner/admin/accountant role. Fields: `partyCode`, `name`, `partyType` (`customer`, `supplier`, `both`), optional `gstin`, `email`, `phone`, `billingAddress` object, and `creditLimitPaise` as a decimal string.
+- Party codes are unique per company and normalized to uppercase. Credit limits are non-negative PostgreSQL BIGINT values passed as decimal strings to avoid JavaScript precision loss.
+- Parties are protected by forced RLS. Creation and `COMPANY_PARTY_CREATED` audit event share a transaction. The runtime role has SELECT/INSERT only; update/deactivation workflows are future work.
 
 ## PostgreSQL migrations
 
@@ -99,12 +106,10 @@ CREATE ROLE ledgerloop_app_login LOGIN PASSWORD 'replace_with_a_local_password'
   IN ROLE ledgerloop_app NOSUPERUSER NOBYPASSRLS;
 ```
 
-Company-owned tables use forced RLS. Request-facing code must use the transaction helpers and active-membership verification; never trust a company ID from the request as authorization. The CI integration test uses a temporary PostgreSQL database and does not require Docker on your computer.
+Request-facing code must use transaction helpers and active-membership verification; never trust a company ID from the request as authorization. CI uses temporary PostgreSQL and does not require Docker on your computer.
 
-## Money representation
+## Money representation and security
 
 Persisted monetary amounts must be integer paise. The shared `parseRupeesToPaise` helper uses `BigInt` conversion and rejects floats, negative amounts, exponent notation, separators, and more than two fractional digits.
 
-## Security status
-
-Values in `.env.example` are development placeholders only. No production secrets belong in source control. Email verification/password reset, Google sign-in, distributed rate limiting, journal posting, file scanning, complete audit coverage, and AI safeguards remain pending. This scaffold is not production-ready.
+Values in `.env.example` are development placeholders only. Email verification/password reset, Google sign-in, distributed rate limiting, journal posting, file scanning, complete audit coverage, and AI safeguards remain pending. This scaffold is not production-ready.
