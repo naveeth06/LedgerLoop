@@ -5,6 +5,7 @@ import {
   Controller,
   Get,
   Param,
+  Patch,
   Post,
   Query,
   Req,
@@ -24,9 +25,10 @@ const createPartySchema = z.object({
   email: z.string().trim().email().max(254).optional(),
   phone: z.string().trim().min(3).max(32).optional(),
   billingAddress: z.record(z.string(), z.unknown()).optional(),
-  // Keep PostgreSQL BIGINT values as decimal strings to avoid JS precision loss.
   creditLimitPaise: z.string().regex(/^(0|[1-9][0-9]{0,17})$/).optional(),
 }).strict();
+
+const reminderPreferenceSchema = z.object({ enabled: z.boolean() }).strict();
 
 @Controller('companies/:companyId/parties')
 export class PartiesController {
@@ -53,7 +55,8 @@ export class PartiesController {
     const parties = await this.tenantAccess.withCompanyTransaction(userId, companyId, async (client) => {
       const result = await client.query(
         `SELECT id, company_id, party_code, name, party_type, gstin, email, phone,
-                billing_address, credit_limit_paise, is_active, created_at, updated_at
+                billing_address, credit_limit_paise, is_active, email_reminders_enabled,
+                created_at, updated_at
            FROM company_parties
           WHERE company_id = $1
             AND ($2::text IS NULL OR party_type = $2 OR party_type = 'both')
@@ -85,7 +88,8 @@ export class PartiesController {
               billing_address, credit_limit_paise, created_by)
            VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb, $9::bigint, $10)
            RETURNING id, company_id, party_code, name, party_type, gstin, email, phone,
-                     billing_address, credit_limit_paise, is_active, created_at, updated_at`,
+                     billing_address, credit_limit_paise, is_active, email_reminders_enabled,
+                     created_at, updated_at`,
           [
             companyId,
             parsed.data.partyCode.toUpperCase(),
@@ -110,15 +114,47 @@ export class PartiesController {
         return { party };
       });
     } catch (error) {
-      if (isUniqueViolation(error)) {
-        throw new ConflictException('A party with this code already exists in the company.');
-      }
+      if (isUniqueViolation(error)) throw new ConflictException('A party with this code already exists in the company.');
       throw error;
     }
+  }
+
+  @Patch(':partyId/reminder-preference')
+  @CompanyRoles('owner', 'admin', 'accountant')
+  async updateReminderPreference(
+    @Param('companyId') companyId: string,
+    @Param('partyId') partyId: string,
+    @Body() body: unknown,
+    @Req() request: AuthenticatedRequest,
+  ) {
+    const userId = request.user?.sub;
+    if (!userId) throw new BadRequestException('Authenticated user is required.');
+    const parsed = reminderPreferenceSchema.safeParse(body);
+    if (!parsed.success) throw new BadRequestException('Reminder preference is invalid.');
+
+    return this.tenantAccess.withCompanyTransaction(userId, companyId, async (client) => {
+      const updated = await client.query(
+        `UPDATE company_parties
+            SET email_reminders_enabled = $3,
+                updated_at = now()
+          WHERE company_id = $1 AND id = $2
+          RETURNING id, email_reminders_enabled AS "emailRemindersEnabled"`,
+        [companyId, partyId, parsed.data.enabled],
+      );
+      if (updated.rowCount !== 1) throw new BadRequestException('Party was not found.');
+      await this.audit.record(client, {
+        actorUserId: userId,
+        action: 'PARTY_REMINDER_PREFERENCE_UPDATED',
+        entityType: 'company_party',
+        entityId: partyId,
+        metadata: { enabled: parsed.data.enabled },
+      });
+      return updated.rows[0];
+    });
   }
 }
 
 function isUniqueViolation(error: unknown): boolean {
-  return typeof error === 'object' && error !== null &&
-    'code' in error && (error as { code?: unknown }).code === '23505';
+  return typeof error === 'object' && error !== null && 'code' in error &&
+    (error as { code?: unknown }).code === '23505';
 }
