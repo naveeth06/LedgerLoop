@@ -2,12 +2,16 @@ exports.up = (pgm) => {
   pgm.addColumn('company_parties', {
     email_reminders_enabled: { type: 'boolean', notNull: true, default: true },
   });
-  pgm.addConstraint('company_parties', 'company_parties_company_id_id_unique', {
-    unique: ['company_id', 'id'],
-  });
-  pgm.addConstraint('overdue_reminder_events', 'overdue_reminder_events_company_id_id_unique', {
-    unique: ['company_id', 'id'],
-  });
+
+  // company_parties(company_id, id) is already the referenced key used by the
+  // existing tenant-scoped party foreign keys. Do not recreate that relation
+  // here; doing so collides with the existing database relation name.
+  // The reminder event table needs the same composite target for its FK, so
+  // create a uniquely named supporting index only when it is absent.
+  pgm.sql(`
+    CREATE UNIQUE INDEX IF NOT EXISTS overdue_reminder_events_company_id_id_delivery_unique
+      ON overdue_reminder_events(company_id, id)
+  `);
 
   pgm.createTable('reminder_email_deliveries', {
     id: { type: 'uuid', primaryKey: true, default: pgm.func('gen_random_uuid()') },
@@ -52,7 +56,6 @@ exports.up = (pgm) => {
 
 exports.down = (pgm) => {
   pgm.dropTable('reminder_email_deliveries');
-  pgm.dropConstraint('overdue_reminder_events', 'overdue_reminder_events_company_id_id_unique');
-  pgm.dropConstraint('company_parties', 'company_parties_company_id_id_unique');
+  pgm.sql('DROP INDEX IF EXISTS overdue_reminder_events_company_id_id_delivery_unique');
   pgm.dropColumn('company_parties', 'email_reminders_enabled');
 };
