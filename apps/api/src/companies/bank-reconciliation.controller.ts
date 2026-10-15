@@ -36,7 +36,20 @@ export class BankReconciliationController {
       const journalSide = txn.transactionType === 'debit' ? 'credit_paise' : 'debit_paise';
       const result = await client.query(
         `SELECT jl.id AS "journalLineId", je.id AS "journalEntryId", je.entry_number AS "entryNumber", je.entry_date AS "entryDate", je.memo,
-                jl.description AS "lineDescription", jl.debit_paise::text AS "debitPaise", jl.credit_paise::text AS "creditPaise"
+                jl.description AS "lineDescription", jl.debit_paise::text AS "debitPaise", jl.credit_paise::text AS "creditPaise",
+                ABS(je.entry_date - $3::date) AS "dayDistance",
+                CASE
+                  WHEN je.entry_date = $3::date THEN 1.00
+                  WHEN ABS(je.entry_date - $3::date) = 1 THEN 0.90
+                  WHEN ABS(je.entry_date - $3::date) = 2 THEN 0.80
+                  ELSE 0.70
+                END AS confidence,
+                CASE
+                  WHEN je.entry_date = $3::date THEN 'high'
+                  WHEN ABS(je.entry_date - $3::date) = 1 THEN 'high'
+                  WHEN ABS(je.entry_date - $3::date) = 2 THEN 'medium'
+                  ELSE 'low'
+                END AS "confidenceBand"
          FROM journal_lines jl
          JOIN journal_entries je ON je.company_id = jl.company_id AND je.id = jl.journal_entry_id
          WHERE jl.company_id = $1
@@ -49,11 +62,21 @@ export class BankReconciliationController {
              WHERE bst.company_id = jl.company_id
                AND bst.matched_journal_line_id = jl.id
            )
-         ORDER BY ABS(EXTRACT(EPOCH FROM (je.entry_date::timestamp - $3::date::timestamp))), je.entry_number
+         ORDER BY confidence DESC, "dayDistance" ASC, je.entry_number
          LIMIT 25`,
         [companyId, txn.ledgerAccountId, txn.transactionDate, txn.amountPaise],
       );
-      return { transaction: txn, suggestions: result.rows };
+
+      return {
+        transaction: txn,
+        suggestions: result.rows,
+        policy: {
+          amountMatchRequired: true,
+          accountMatchRequired: true,
+          dateWindowDays: 3,
+          lowConfidenceAutoPost: false,
+        },
+      };
     });
   }
 

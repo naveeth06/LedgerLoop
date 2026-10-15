@@ -3,6 +3,7 @@ exports.up = (pgm) => {
     matched_journal_line_id: { type: 'uuid' },
     matched_at: { type: 'timestamptz' },
     matched_by: { type: 'uuid', references: 'app_users', onDelete: 'restrict' },
+    updated_at: { type: 'timestamptz', notNull: true, default: pgm.func('now()') },
   });
 
   // journal_lines.id is globally unique, but the application uses composite
@@ -75,6 +76,6 @@ exports.down = (pgm) => {
   pgm.sql('ALTER TABLE bank_statement_transactions DROP CONSTRAINT IF EXISTS bank_statement_txn_matched_line_company_fk');
   pgm.dropIndex('bank_statement_transactions', ['company_id', 'bank_account_id', 'status', 'transaction_date']);
   pgm.dropIndex('bank_statement_transactions', ['company_id', 'matched_journal_line_id']);
-  pgm.dropColumns('bank_statement_transactions', ['matched_journal_line_id', 'matched_at', 'matched_by']);
+  pgm.dropColumns('bank_statement_transactions', ['matched_journal_line_id', 'matched_at', 'matched_by', 'updated_at']);
   pgm.sql('ALTER TABLE journal_lines DROP CONSTRAINT IF EXISTS journal_lines_company_id_id_unique');
 };
