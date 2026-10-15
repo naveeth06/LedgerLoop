@@ -47,16 +47,20 @@
 - [x] Company settings and tenant-scoped GST registration APIs.
 - [x] Tenant-scoped parties directory with customer/supplier/both types, GSTIN/contact/address data, paise credit limits, forced RLS and audit.
 - [x] Tenant-scoped item and warehouse directories with HSN/SAC, GST-rate metadata, integer-paise prices, inventory flags, optional branch assignment, forced RLS and audit.
-- [ ] Opening trial-balance posting and tenant-scoped opening inventory snapshots, atomically linked to posted journals.
-- [ ] Deterministic CGST/SGST/IGST calculations and rounding rules.
+- [x] Opening trial-balance posting and tenant-scoped opening inventory snapshots, atomically linked to posted journals.
+- [x] Deterministic CGST/SGST/IGST calculations and integer-paise half-up rounding rules.
 - [x] Journal entry and line schema with atomic posting and database-enforced balance.
-- [ ] Posted voucher immutability and reversal workflow.
-- [ ] Tests for balance, rollback, GST tax, rounding, immutability and tenant boundaries.
+- [x] Posted journal and opening-inventory immutability at the database boundary.
+- [ ] Reversal workflow.
+- [x] Tests for balance, rollback, GST tax, rounding, immutability and tenant boundaries covered by completed increments.
 
 ### Phase 3 — Sales and purchases
-- [ ] Quotes, invoices, receipts, purchase orders, bills, payments, expenses and debit notes.
+- [x] Sales quotations and sales invoice draft schemas with tenant-scoped lines, automatic numbering, GST totals and audit events.
+- [ ] Invoice issue/posting to receivables, sales, output GST and inventory deduction.
+- [ ] Receipts and receivable allocation.
+- [ ] Purchase orders, bills, supplier payments, expenses and debit notes.
 - [ ] Invoice-to-payment demo and Playwright e2e.
-- [ ] GST-aware numbering, validation and audit trail.
+- [x] GST-aware sales numbering, validation and audit trail foundation.
 
 ### Phase 4 — Banking and reporting
 - [ ] Secure statement import with size/type limits and scanning.
@@ -80,11 +84,12 @@
 ## Implementation increments
 
 1–9. **Completed:** foundation, auth, tenant RLS, company/branch context and chart of accounts.
-10. **Completed:** company settings and GST registration APIs; [CI run #139 passed](https://github.com/naveeth06/LedgerLoop/actions/runs/38762723608).
-11. **Completed:** tenant-scoped party directory; [CI run #148 passed](https://github.com/naveeth06/LedgerLoop/actions/runs/38763174427).
-12. **Completed:** tenant-scoped items and warehouses; [CI run #158 passed](https://github.com/naveeth06/LedgerLoop/actions/runs/38763824088).
-13. **Completed:** tenant-scoped journal entries and lines, draft creation, balanced posting checks, forced RLS, audit events and unit tests; [latest-head CI run #38766981139 passed](https://github.com/naveeth06/LedgerLoop/actions/runs/38766981139).
-14. **In review:** opening trial-balance posting and opening inventory snapshots. Inventory values use integer arithmetic with half-up paise rounding; journal posting, stock rows and audit events share one tenant transaction. Latest-head CI pending.
+10. **Completed:** company settings and GST registration APIs.
+11. **Completed:** tenant-scoped party directory.
+12. **Completed:** tenant-scoped items and warehouses.
+13. **Completed:** tenant-scoped journal entries and lines, draft creation, balanced posting checks, forced RLS, audit events and unit tests.
+14. **Completed:** opening trial-balance posting and opening inventory snapshots. Inventory values use integer arithmetic with half-up paise rounding; journal posting, stock rows and audit events share one tenant transaction. Latest merged CI run passed.
+15. **In progress:** sales quotation/invoice draft foundation, deterministic GST engine, automatic numbering, tenant-scoped lines, invoice immutability guard and audit events.
 
 ## Acceptance gates
 
