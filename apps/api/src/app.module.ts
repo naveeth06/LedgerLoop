@@ -22,6 +22,7 @@ import { InventoryController } from './companies/inventory.controller';
 import { BankAccountsController } from './companies/bank-accounts.controller';
 import { BankStatementImportsController } from './companies/bank-statement-imports.controller';
 import { BankReconciliationController } from './companies/bank-reconciliation.controller';
+import { ReportsController } from './companies/reports.controller';
 import { SalesGstService } from './companies/sales-gst.service';
 
 @Module({
@@ -46,6 +47,7 @@ import { SalesGstService } from './companies/sales-gst.service';
     BankAccountsController,
     BankStatementImportsController,
     BankReconciliationController,
+    ReportsController,
   ],
   providers: [
     SalesGstService,
