@@ -60,8 +60,8 @@ export class ReportsController {
            a.account_code,
            a.name AS account_name,
            a.account_type,
-           COALESCE(SUM(jl.debit_paise), 0)::text AS debit_paise,
-           COALESCE(SUM(jl.credit_paise), 0)::text AS credit_paise
+           COALESCE(SUM(CASE WHEN je.id IS NOT NULL THEN jl.debit_paise ELSE 0 END), 0)::text AS debit_paise,
+           COALESCE(SUM(CASE WHEN je.id IS NOT NULL THEN jl.credit_paise ELSE 0 END), 0)::text AS credit_paise
          FROM ledger_accounts a
          LEFT JOIN journal_lines jl
            ON jl.company_id = a.company_id
