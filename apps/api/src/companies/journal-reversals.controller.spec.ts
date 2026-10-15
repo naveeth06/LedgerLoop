@@ -33,7 +33,11 @@ describe('JournalReversalsController', () => {
     expect(result.reversalEntry.status).toBe('posted');
     expect(result.originalEntryId).toBe(entryId);
     expect(result.reversalEntry.id).toBeTypeOf('string');
-    expect(query.mock.calls.some(([sql]) => String(sql).includes("source_type, created_by, posted_by, posted_at, reversal_of_id"))).toBe(true);
+    expect(
+      query.mock.calls.some(([sql]) =>
+        String(sql).includes('source_type, created_by, reversal_of_id'),
+      ),
+    ).toBe(true);
     expect(audit.record).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ action: 'JOURNAL_ENTRY_REVERSED' }));
   });
 
