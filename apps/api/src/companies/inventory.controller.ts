@@ -1,8 +1,9 @@
 import { BadRequestException, Body, Controller, Get, Param, Post, Req } from '@nestjs/common';
+import type { PoolClient } from 'pg';
 import { z } from 'zod';
 import { randomUUID } from 'node:crypto';
-import { TenantAccessService } from './tenant-access.service';
-import { AuditService } from './audit.service';
+import { TenantAccessService } from '../database/tenant-access.service';
+import { AuditService } from '../database/audit.service';
 
 const movementSchema = z.object({
   itemId: z.string().uuid(),
@@ -23,7 +24,7 @@ export class InventoryController {
 
   @Get('movements')
   async listMovements(@Param('companyId') companyId: string, @Req() req: any) {
-    return this.tenantAccess.withCompanyTransaction(req.user.sub, companyId, async (client) => {
+    return this.tenantAccess.withCompanyTransaction(req.user.sub, companyId, async (client: PoolClient) => {
       const result = await client.query(
         `SELECT id, item_id AS "itemId", warehouse_id AS "warehouseId", movement_date AS "movementDate",
                 movement_type AS "movementType", quantity::text, unit_cost_paise::text AS "unitCostPaise",
@@ -50,7 +51,7 @@ export class InventoryController {
       throw new BadRequestException('Movement type and quantity direction do not match.');
     }
 
-    return this.tenantAccess.withCompanyTransaction(req.user.sub, companyId, async (client) => {
+    return this.tenantAccess.withCompanyTransaction(req.user.sub, companyId, async (client: PoolClient) => {
       const item = await client.query('SELECT id, item_type, track_inventory, is_active FROM company_items WHERE company_id = $1 AND id = $2 FOR SHARE', [companyId, data.itemId]);
       if (!item.rows[0] || !item.rows[0].is_active) throw new BadRequestException('Item is not active.');
       if (item.rows[0].item_type !== 'goods' || !item.rows[0].track_inventory) throw new BadRequestException('Inventory can only be tracked for active inventory goods.');
@@ -66,7 +67,7 @@ export class InventoryController {
         [id, companyId, data.itemId, data.warehouseId, data.movementDate, data.movementType, data.quantity,
          data.unitCostPaise, data.totalCostPaise, data.sourceType, data.sourceId ?? null, data.journalEntryId ?? null, req.user.sub],
       );
-      await this.audit.record(client, { companyId, userId: req.user.sub, action: 'INVENTORY_MOVEMENT_CREATED', entityType: 'inventory_movement', entityId: id, metadata: { movementType: data.movementType, quantity: data.quantity, totalCostPaise: data.totalCostPaise } });
+      await this.audit.record(client, { actorUserId: req.user.sub, action: 'INVENTORY_MOVEMENT_CREATED', entityType: 'inventory_movement', entityId: id, metadata: { movementType: data.movementType, quantity: data.quantity, totalCostPaise: data.totalCostPaise } });
       return { id, status: 'posted' };
     });
   }
