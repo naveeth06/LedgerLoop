@@ -53,8 +53,8 @@ export class JournalReversalsController {
 
       await client.query(
         `INSERT INTO journal_entries
-          (id, company_id, entry_number, entry_date, memo, status, source_type, created_by, posted_by, posted_at, reversal_of_id)
-         VALUES ($1, $2, $3, $4::date, $5, 'posted', 'reversal', $6, $6, now(), $7)`,
+          (id, company_id, entry_number, entry_date, memo, status, source_type, created_by, reversal_of_id)
+         VALUES ($1, $2, $3, $4::date, $5, 'draft', 'reversal', $6, $7)`,
         [reversalEntryId, companyId, reversalNumber, original.entry_date, reversalMemo, userId, entryId],
       );
 
@@ -75,6 +75,14 @@ export class JournalReversalsController {
         );
       }
 
+      const posted = await client.query(
+        `UPDATE journal_entries
+            SET status = 'posted', posted_by = $3, posted_at = now(), updated_at = now()
+          WHERE company_id = $1 AND id = $2
+        RETURNING id, entry_number, entry_date, memo, status, source_type, reversal_of_id, posted_by, posted_at`,
+        [companyId, reversalEntryId, userId],
+      );
+
       await this.audit.record(client, {
         actorUserId: userId,
         action: 'JOURNAL_ENTRY_REVERSED',
@@ -90,7 +98,7 @@ export class JournalReversalsController {
         metadata: { companyId, entryNumber: reversalNumber, status: 'posted', sourceType: 'reversal', reversalOfId: entryId },
       });
 
-      return { originalEntryId: entryId, reversalEntryId, reversalEntryNumber: reversalNumber, status: 'posted' };
+      return { originalEntryId: entryId, reversalEntry: posted.rows[0] };
     });
   }
 }
