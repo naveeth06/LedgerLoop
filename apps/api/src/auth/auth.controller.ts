@@ -12,7 +12,7 @@ import {
 import { Throttle } from '@nestjs/throttler';
 import type { PoolClient } from 'pg';
 import type { Request, Response } from 'express';
-import { randomBytes, timingSafeEqual } from 'node:crypto';
+import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 import { z } from 'zod';
 import { DatabaseService } from '../database/database.service';
 import { AccessTokenService } from './access-token.service';
@@ -141,13 +141,13 @@ export class AuthController {
     if (!cookie || typeof header !== 'string') throw new BadRequestException('CSRF token is missing or invalid.');
     const left = Buffer.from(cookie, 'utf8');
     const right = Buffer.from(header, 'utf8');
-    if (left.length !== right.length || !timingSafeEqual(left, right)) {
+    if (left.length !== right.length || !timingSafeEqual(left, right) || !isValidCsrfToken(cookie)) {
       throw new BadRequestException('CSRF token is missing or invalid.');
     }
   }
 
   private setSessionCookies(response: Response, refreshToken: string): void {
-    const csrfToken = randomBytes(32).toString('base64url');
+    const csrfToken = createCsrfToken();
     const secure = process.env.NODE_ENV === 'production' || process.env.COOKIE_SECURE === 'true';
     response.setHeader('Set-Cookie', [
       cookie(REFRESH_COOKIE, refreshToken, { httpOnly: true, secure, sameSite: 'Strict', maxAge: REFRESH_TTL_SECONDS, path: '/api/auth' }),
@@ -208,4 +208,24 @@ function cookie(
   if (options.httpOnly) parts.push('HttpOnly');
   if (options.secure) parts.push('Secure');
   return parts.join('; ');
+}
+
+function createCsrfToken(): string {
+  const secret = process.env.CSRF_SECRET;
+  if (!secret || Buffer.byteLength(secret, 'utf8') < 32) {
+    throw new Error('CSRF_SECRET must contain at least 32 bytes.');
+  }
+  const nonce = randomBytes(32).toString('base64url');
+  const signature = createHmac('sha256', secret).update(nonce).digest('base64url');
+  return nonce + '.' + signature;
+}
+
+function isValidCsrfToken(token: string): boolean {
+  const secret = process.env.CSRF_SECRET;
+  if (!secret || Buffer.byteLength(secret, 'utf8') < 32) return false;
+  const parts = token.split('.');
+  if (parts.length !== 2 || !parts[0] || !parts[1]) return false;
+  const expected = Buffer.from(createHmac('sha256', secret).update(parts[0]).digest('base64url'), 'utf8');
+  const actual = Buffer.from(parts[1], 'utf8');
+  return expected.length === actual.length && timingSafeEqual(expected, actual);
 }
