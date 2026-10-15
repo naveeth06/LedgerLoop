@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { ArrowUpRight, BarChart3, FileText, Landmark, LucideAngularModule, ReceiptIndianRupee, Wallet } from 'lucide-angular';
+import { ArrowUpRight, BarChart3, FileText, Landmark, LucideAngularModule, ReceiptIndianRupee, Wallet } from '@lucide/angular';
 
 @Component({
   standalone: true,
