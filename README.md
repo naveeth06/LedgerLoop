@@ -18,9 +18,11 @@ Implemented foundation:
 - Company settings update endpoints and tenant-scoped GST registration APIs with GSTIN/state-code constraints and audit events.
 - Tenant-scoped party directory with customer/supplier/both classification, GSTIN/contact/address fields, paise credit limits, forced RLS and audited creation.
 - Tenant-scoped item and warehouse directories with GST/HSN-SAC metadata, integer-paise prices, inventory tracking flags, optional branch assignment, forced RLS and audit events.
+- Tenant-scoped journal entries with integer-paise lines, balanced posting checks, database-enforced posted-entry immutability and audit events.
+- Opening trial-balance posting and opening inventory snapshots, including atomic journal posting, same-company references, forced RLS and deterministic paise valuation.
 - GitHub Actions checks for migrations, type-checking, build, unit tests and PostgreSQL integration.
 
-Still not implemented: Angular web app, email verification/password reset, Google sign-in, opening balances, deterministic tax calculation, accounting journals and posting, invoice/payment workflows, reporting, reminders, and AI features. This scaffold is not a production accounting system.
+Still not implemented: Angular web app, email verification/password reset, Google sign-in, deterministic GST calculation, invoice/payment workflows, reporting, reminders, and AI features. This scaffold is not a production accounting system.
 
 ## Requirements and local setup
 
@@ -98,7 +100,16 @@ Protected routes require `Authorization: Bearer <accessToken>`. The global guard
 - GST rates are stored as integer basis points (`1800` = `18.00%`). Prices are decimal strings of integer paise to avoid JavaScript precision loss. Tax calculation and tax splitting are not implemented by this directory API.
 - `GET /api/companies/:companyId/warehouses` — list warehouses; optional `active=true|false`.
 - `POST /api/companies/:companyId/warehouses` — create a warehouse; owner/admin/accountant only. Supports `warehouseCode`, `name`, optional `branchId` and JSON `address`.
-- Item codes and warehouse codes are unique per company. Warehouses can be company-wide or branch-specific; both the API and composite database foreign key prevent cross-company branch assignment. Both tables use forced RLS and creation audit events. The runtime role has SELECT/INSERT only; update/deactivation and opening stock workflows are future work.
+- Item codes and warehouse codes are unique per company. Warehouses can be company-wide or branch-specific; both the API and composite database foreign key prevent cross-company branch assignment. Both tables use forced RLS and creation audit events. The runtime role has SELECT/INSERT only; update/deactivation workflows are future work.
+
+## Journals and opening balances
+
+- `GET /api/companies/:companyId/journal-entries` — list journal entries and their lines for active company members.
+- `POST /api/companies/:companyId/journal-entries` — create a draft or post a balanced journal; owner/admin/accountant only. Each line uses `accountId`, `debitPaise` and `creditPaise` as decimal strings. Posted entries and lines are immutable; reversal workflows remain future work.
+- `POST /api/companies/:companyId/opening-balances` — post an opening trial balance using `entryNumber`, `openingDate` and balanced `lines`. Every referenced account must be active and belong to the company. The journal and audit event are committed atomically.
+- `GET /api/companies/:companyId/opening-inventory` — list opening stock records with item, warehouse, quantity, unit cost and total value.
+- `POST /api/companies/:companyId/opening-inventory` — record opening stock using `entryNumber`, `openingDate`, `inventoryAssetAccountId`, `openingEquityAccountId` and an `items` array of `itemId`, `warehouseId`, decimal-string `quantity` (up to 6 decimal places), and integer-paise `unitCostPaise`. It posts inventory debits and an opening-equity credit in the same transaction, then stores immutable stock snapshots.
+- Inventory value is calculated with integer arithmetic and round-half-up to the nearest paise. An item/warehouse pair can have only one opening stock record; corrections require a future reversal/adjustment workflow. GST calculations are not included in opening inventory valuation.
 
 ## PostgreSQL migrations
 
@@ -122,4 +133,4 @@ Request-facing code must use transaction helpers and active-membership verificat
 
 Persisted monetary amounts must be integer paise. The shared `parseRupeesToPaise` helper uses `BigInt` conversion and rejects floats, negative amounts, exponent notation, separators, and more than two fractional digits.
 
-Values in `.env.example` are development placeholders only. Email verification/password reset, Google sign-in, distributed rate limiting, journal posting, file scanning, complete audit coverage, and AI safeguards remain pending. This scaffold is not production-ready.
+Values in `.env.example` are development placeholders only. Email verification/password reset, Google sign-in, distributed rate limiting, reversal workflows, GST calculations, file scanning, complete audit coverage, and AI safeguards remain pending. This scaffold is not production-ready.
