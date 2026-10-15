@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 jobs:
-  shared-types:
+  shared-types-and-api:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -19,4 +19,5 @@ jobs:
           node-version: 22
       - run: npm install
       - run: npm run typecheck
+      - run: npm run build
       - run: npm test
