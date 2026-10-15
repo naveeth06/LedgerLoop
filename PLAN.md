@@ -70,7 +70,8 @@
 - [x] Bank reconciliation against posted journal lines with tenant-safe matching and immutable reconciled state.
 - [x] Deterministic reconciliation confidence bands; low-confidence matches remain explicit user-approved suggestions and never auto-post.
 - [ ] Secure statement import with size/type limits and scanning.
-- [ ] Trial balance, P&L, balance sheet, receivables ageing and GST summary from posted journals.
+- [x] Trial balance from posted journal entries with tenant-scoped as-of-date reporting and deterministic paise balances.
+- [ ] P&L, balance sheet, receivables ageing and GST summary from posted journals.
 - [ ] Statement-import demo and Playwright e2e.
 
 ## Phase 5 — Reminders and AI
@@ -98,13 +99,15 @@
 21. **Completed:** inventory movement foundation with tenant-scoped immutable movement records and accounting linkage; valuation/COGS policy remains a separate increment.
 22. **Completed:** tenant-scoped bank accounts and statement import batches/transactions with external-id deduplication.
 23. **Completed:** bank statement reconciliation against posted journal lines, tenant-safe composite matching, one-match-per-journal-line protection, audit events and reconciled immutability.
-24. **In progress:** reconciliation hardening with transaction update timestamps and deterministic confidence bands for user-facing suggestions; no low-confidence auto-posting.
+24. **Completed:** reconciliation hardening with transaction update timestamps and deterministic confidence bands for user-facing suggestions; no low-confidence auto-posting.
+25. **In progress:** reporting foundation with a tenant-scoped Trial Balance endpoint derived only from posted journal entries and an explicit as-of date.
 
 ## Acceptance gates
 
 - Never mark work complete merely because source files exist.
 - Posting: balanced journal lines and voucher in one transaction; failed posting leaves no partial state.
 - Reconciliation: low-confidence matches remain suggestions.
+- Reports: derive balances from posted journals, respect tenant RLS, use integer paise and deterministic date boundaries.
 - Reminders: server-side scheduling, idempotency and tests.
 - Tenant isolation is tested against PostgreSQL, not inferred from service filters.
 - Report only checks that actually ran.
