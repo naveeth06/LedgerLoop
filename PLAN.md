@@ -58,7 +58,9 @@
 - [x] Sales quotations and sales invoice draft schemas with tenant-scoped lines, automatic numbering, GST totals and audit events.
 - [x] Invoice issue/posting to receivables, sales and output GST. Inventory deduction remains deferred until inventory movement/valuation is implemented.
 - [x] Customer receipts, automatic receipt numbering, bank/cash account selection, atomic receipt posting, multi-invoice/partial allocation, outstanding balance checks, forced RLS, immutability and audit events.
-- [ ] Purchase orders, bills, supplier payments, expenses and debit notes.
+- [x] Purchase orders and bills with supplier validation, GST-aware deterministic totals, automatic numbering, tenant-scoped lines, draft audit events, forced RLS and bill immutability.
+- [x] Purchase bill posting to payables, purchase expense and input GST with atomic balanced journal posting, configuration validation, bill immutability and audit events.
+- [ ] Supplier payments, expenses and debit notes.
 - [ ] Invoice-to-payment demo and Playwright e2e.
 - [x] GST-aware sales numbering, validation and audit trail foundation.
 
@@ -87,7 +89,8 @@
 15. **Completed:** sales quotation/invoice draft foundation, deterministic GST engine, automatic numbering, tenant-scoped lines, invoice immutability guard and audit events.
 16. **Completed:** sales invoice issue workflow with tenant-configured receivables, revenue and output GST accounts; balanced atomic journal posting and audit events. Inventory deduction remains intentionally deferred.
 17. **Completed:** customer receipts, automatic receipt numbering, bank/cash account selection, atomic receipt journal posting, multi-invoice/partial receivable allocation, outstanding balance checks, forced RLS, immutability and audit events.
-18. **In progress:** purchase orders and purchase bills with supplier validation, GST-aware deterministic totals, automatic numbering, tenant-scoped lines, draft audit events, forced RLS and bill immutability. Supplier payments, expense posting, debit notes and bill posting remain separate increments.
+18. **Completed:** purchase orders and purchase bills with supplier validation, GST-aware deterministic totals, automatic numbering, tenant-scoped lines, draft audit events, forced RLS and bill immutability.
+19. **In progress:** purchase bill posting to payables, purchase expense and input GST with tenant-configured accounts, atomic journal posting and audit events. Supplier payments, expenses, debit notes and inventory movement/valuation remain separate increments.
 
 ## Acceptance gates
 
