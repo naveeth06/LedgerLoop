@@ -15,12 +15,8 @@ const environmentSchema = z.object({
   WORKER_CONCURRENCY: z.coerce.number().int().min(1).max(10).default(1),
 });
 
-const environment = environmentSchema.parse(process.env);
 const QUEUE_NAME = 'ledgerloop-reminders';
 const SCHEDULER_ID = 'overdue-reminder-scan';
-const redis = parseRedisUrl(environment.REDIS_URL);
-const pool = new Pool({ connectionString: environment.DATABASE_URL });
-const queue = new Queue(QUEUE_NAME, { connection: redis });
 
 export async function runOverdueReminderScan(client: PoolClient, today = new Date()): Promise<number> {
   const companyResult = await client.query<{ company_id: string }>(
@@ -120,7 +116,30 @@ export async function runOverdueReminderScan(client: PoolClient, today = new Dat
   return created;
 }
 
+export function parseRedisUrl(value: string) {
+  const url = new URL(value);
+  if (url.protocol !== 'redis:' && url.protocol !== 'rediss:') {
+    throw new Error('REDIS_URL must use redis:// or rediss://');
+  }
+  return {
+    host: url.hostname,
+    port: Number(url.port || 6379),
+    username: url.username || undefined,
+    password: url.password || undefined,
+    ...(url.protocol === 'rediss:' ? { tls: {} } : {}),
+  };
+}
+
+export function loadEnvironment(): z.infer<typeof environmentSchema> {
+  return environmentSchema.parse(process.env);
+}
+
 export async function main(): Promise<void> {
+  const environment = loadEnvironment();
+  const redis = parseRedisUrl(environment.REDIS_URL);
+  const pool = new Pool({ connectionString: environment.DATABASE_URL });
+  const queue = new Queue(QUEUE_NAME, { connection: redis });
+
   await queue.upsertJobScheduler(
     SCHEDULER_ID,
     { every: 60 * 60 * 1000 },
@@ -154,17 +173,6 @@ export async function main(): Promise<void> {
   };
   process.once('SIGTERM', shutdown);
   process.once('SIGINT', shutdown);
-}
-
-function parseRedisUrl(value: string) {
-  const url = new URL(value);
-  return {
-    host: url.hostname,
-    port: Number(url.port || 6379),
-    username: url.username || undefined,
-    password: url.password || undefined,
-    ...(url.protocol === 'rediss:' ? { tls: {} } : {}),
-  };
 }
 
 if (require.main === module) {
