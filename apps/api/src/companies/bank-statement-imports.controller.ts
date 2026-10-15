@@ -31,7 +31,7 @@ export class BankStatementImportsController {
     const userId = request.user?.sub;
     if (!userId) throw new BadRequestException('Authenticated user is required.');
     return this.tenantAccess.withCompanyTransaction(userId, companyId, async (client) => {
-      const result = await client.query(`SELECT id, transaction_date AS "transactionDate", value_date AS "valueDate", transaction_type AS "transactionType", amount_paise::text AS "amountPaise", description, reference, external_id AS "externalId", balance_after_paise::text AS "balanceAfterPaise", status, import_id AS "importId", created_at AS "createdAt" FROM bank_statement_transactions WHERE company_id = $1 AND bank_account_id = $2 ORDER BY transaction_date DESC, created_at DESC`, [companyId, bankAccountId]);
+      const result = await client.query(`SELECT id, transaction_date AS "transactionDate", value_date AS "valueDate", transaction_type AS "transactionType", amount_paise::text AS "amountPaise", description, reference, external_id AS "externalId", balance_after_paise::text AS "balanceAfterPaise", status, matched_journal_line_id AS "matchedJournalLineId", matched_at AS "matchedAt", matched_by AS "matchedBy", import_id AS "importId", created_at AS "createdAt" FROM bank_statement_transactions WHERE company_id = $1 AND bank_account_id = $2 ORDER BY transaction_date DESC, created_at DESC`, [companyId, bankAccountId]);
       return { transactions: result.rows };
     });
   }
