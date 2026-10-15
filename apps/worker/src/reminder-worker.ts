@@ -151,7 +151,7 @@ export async function main(): Promise<void> {
   const redis = parseRedisUrl(environment.REDIS_URL);
   const pool = new Pool({ connectionString: environment.DATABASE_URL });
   const queue = new Queue(QUEUE_NAME, { connection: redis });
-  const provider = new SmtpEmailProvider(buildSmtpConfig(environment));
+  const provider = new SmtpEmailProvider(buildSmtpConfig(process.env));
   await queue.upsertJobScheduler(SCHEDULER_ID, { every: 60 * 60 * 1000 }, { name: 'scan-overdue-reminders', data: {} });
   await queue.upsertJobScheduler(DELIVERY_SCHEDULER_ID, { every: 5 * 60 * 1000 }, { name: 'dispatch-reminder-emails', data: {} });
 
