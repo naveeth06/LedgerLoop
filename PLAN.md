@@ -51,7 +51,7 @@
 - [x] Deterministic CGST/SGST/IGST calculations and integer-paise half-up rounding rules.
 - [x] Journal entry and line schema with atomic posting and database-enforced balance.
 - [x] Posted journal and opening-inventory immutability at the database boundary.
-- [ ] Reversal workflow.
+- [x] Reversal workflow: posted journal reversal with one-reversal guard and audit trail.
 - [x] Tests for balance, rollback, GST tax, rounding, immutability and tenant boundaries covered by completed increments.
 
 ## Phase 3 — Sales and purchases
@@ -107,7 +107,8 @@
 27. **Completed:** receivables ageing with posted receipt allocation cut-off and deterministic ageing buckets; GST summary for posted sales invoices and purchase bills with CGST/SGST/IGST totals and net GST payable.
 28. **Completed:** weighted-average inventory valuation balances, default stock warehouse/account configuration, stock valuation reporting, purchase receipt inventory capitalization, and sales COGS/inventory relief in the same atomic posting transaction.
 29. **Completed:** tenant-scoped inventory adjustment documents with stock increase/decrease posting, immutable posted adjustments, atomic inventory/journal updates, and reversal-safe correction workflow.
-30. **In progress:** tenant-scoped expenses and supplier debit notes with draft/post lifecycle, atomic journal posting, GST-aware expense posting, supplier-bill outstanding protection, immutable posted documents and audit events.
+30. **Completed:** tenant-scoped expenses and supplier debit notes with draft/post lifecycle, atomic journal posting, GST-aware expense posting, supplier-bill outstanding protection, immutable posted documents and audit events.
+31. **In progress:** generic posted-journal reversal workflow with explicit reversal linkage, one-reversal guard, balanced debit/credit inversion, forced tenant transaction context and audit events.
 
 ## Acceptance gates
 
