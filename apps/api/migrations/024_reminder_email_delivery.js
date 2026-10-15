@@ -24,16 +24,16 @@ exports.up = (pgm) => {
   pgm.addConstraint('reminder_email_deliveries', 'reminder_email_deliveries_status_check', {
     check: "status IN ('pending', 'processing', 'sent', 'failed', 'cancelled')",
   });
-  pgm.addConstraint('reminder_email_deliveries_attempt_check', {
+  pgm.addConstraint('reminder_email_deliveries', 'reminder_email_deliveries_attempt_check', {
     check: 'attempt_count >= 0 AND attempt_count <= 10',
   });
-  pgm.addConstraint('reminder_email_deliveries_event_fk', {
+  pgm.addConstraint('reminder_email_deliveries', 'reminder_email_deliveries_event_fk', {
     foreignKeys: { columns: ['company_id', 'reminder_event_id'], references: 'overdue_reminder_events(company_id,id)', onDelete: 'cascade' },
   });
-  pgm.addConstraint('reminder_email_deliveries_party_fk', {
+  pgm.addConstraint('reminder_email_deliveries', 'reminder_email_deliveries_party_fk', {
     foreignKeys: { columns: ['company_id', 'party_id'], references: 'company_parties(company_id,id)', onDelete: 'restrict' },
   });
-  pgm.addConstraint('reminder_email_deliveries_event_unique', {
+  pgm.addConstraint('reminder_email_deliveries', 'reminder_email_deliveries_event_unique', {
     unique: ['company_id', 'reminder_event_id'],
   });
   pgm.createIndex('reminder_email_deliveries', ['company_id', 'status', 'next_attempt_at']);
