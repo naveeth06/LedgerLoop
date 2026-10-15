@@ -13,10 +13,10 @@ import { JournalEntriesController } from './companies/journal-entries.controller
 import { OpeningBalancesController } from './companies/opening-balances.controller';
 import { PartiesController } from './companies/parties.controller';
 import { SalesDocumentsController } from './companies/sales-documents.controller';
-import { SalesInvoicePostingController } from './companies/sales-invoice-posting.controller';
+import { SalesInvoicePostingV2Controller } from './companies/sales-invoice-posting-v2.controller';
 import { SalesReceiptsController } from './companies/sales-receipts.controller';
 import { PurchaseDocumentsController } from './companies/purchase-documents.controller';
-import { PurchaseBillPostingController } from './companies/purchase-bill-posting.controller';
+import { PurchaseBillPostingV2Controller } from './companies/purchase-bill-posting-v2.controller';
 import { SupplierPaymentsController } from './companies/supplier-payments.controller';
 import { InventoryController } from './companies/inventory.controller';
 import { InventoryValuationController } from './companies/inventory-valuation.controller';
@@ -34,8 +34,8 @@ import { SalesGstService } from './companies/sales-gst.service';
   controllers: [
     AppController, CompaniesController, AccountsController, CompanySettingsController,
     PartiesController, ItemsController, WarehousesController, JournalEntriesController,
-    OpeningBalancesController, SalesDocumentsController, SalesInvoicePostingController,
-    SalesReceiptsController, PurchaseDocumentsController, PurchaseBillPostingController,
+    OpeningBalancesController, SalesDocumentsController, SalesInvoicePostingV2Controller,
+    SalesReceiptsController, PurchaseDocumentsController, PurchaseBillPostingV2Controller,
     SupplierPaymentsController, InventoryController, InventoryValuationController, BankAccountsController,
     BankStatementImportsController, BankReconciliationController, ReportsController,
     FinancialReportsController, ReceivablesGstReportsController,
