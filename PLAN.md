@@ -4,7 +4,7 @@
 
 - Repository: `naveeth06/LedgerLoop`
 - Default branch: `main`
-- Inspection date: 2026-10-15
+- Inspection date: 2026-10-16
 - Greenfield implementation; not a refactor.
 - Verification: merged increments are checked through GitHub Actions for migrations, PostgreSQL RLS integration, type-checking, build and unit tests. Direct local execution is not available in this session.
 - Docker is optional and deferred; CI uses temporary PostgreSQL service containers.
@@ -56,10 +56,10 @@
 
 ## Phase 3 — Sales and purchases
 - [x] Sales quotations and sales invoice draft schemas with tenant-scoped lines, automatic numbering, GST totals and audit events.
-- [x] Invoice issue/posting to receivables, sales and output GST. Inventory deduction remains deferred until inventory movement/valuation is implemented.
+- [x] Invoice issue/posting to receivables, sales and output GST with weighted-average inventory COGS for tracked goods.
 - [x] Customer receipts, automatic receipt numbering, bank/cash account selection, atomic receipt posting, multi-invoice/partial allocation, outstanding balance checks, forced RLS, immutability and audit events.
 - [x] Purchase orders and bills with supplier validation, GST-aware deterministic totals, automatic numbering, tenant-scoped lines, draft audit events, forced RLS and bill immutability.
-- [x] Purchase bill posting to payables, purchase expense and input GST with atomic balanced journal posting, configuration validation, bill immutability and audit events.
+- [x] Purchase bill posting to payables, inventory asset for tracked goods, purchase expense for non-inventory lines and input GST with atomic balanced journal posting.
 - [x] Supplier payments with automatic numbering, supplier-to-bill allocation, outstanding balance checks, atomic payable/bank journal posting, forced RLS, immutability and audit events.
 - [ ] Expenses and debit notes.
 - [ ] Invoice-to-payment demo and Playwright e2e.
@@ -73,6 +73,7 @@
 - [x] Trial balance from posted journal entries with tenant-scoped as-of-date reporting and deterministic paise balances.
 - [x] Profit & Loss and Balance Sheet from posted journal entries with deterministic date boundaries and paise balances.
 - [x] Receivables ageing and GST summary from posted journals.
+- [x] Inventory valuation and stock-value reporting from tenant-scoped weighted-average balances.
 - [ ] Statement-import demo and Playwright e2e.
 
 ## Phase 5 — Reminders and AI
@@ -92,23 +93,25 @@
 
 1–14. **Completed:** foundation, auth, tenant RLS, company/branch context, chart of accounts, company settings/GST, parties, items/warehouses, journal posting and opening balances/inventory.
 15. **Completed:** sales quotation/invoice draft foundation, deterministic GST engine, automatic numbering, tenant-scoped lines, invoice immutability guard and audit events.
-16. **Completed:** sales invoice issue workflow with tenant-configured receivables, revenue and output GST accounts; balanced atomic journal posting and audit events. Inventory deduction remains intentionally deferred.
+16. **Completed:** sales invoice issue workflow with tenant-configured receivables, revenue and output GST accounts; balanced atomic journal posting and audit events. Inventory deduction was intentionally deferred.
 17. **Completed:** customer receipts, automatic receipt numbering, bank/cash account selection, atomic receipt journal posting, multi-invoice/partial receivable allocation, outstanding balance checks, forced RLS, immutability and audit events.
 18. **Completed:** purchase orders and purchase bills with supplier validation, GST-aware deterministic totals, automatic numbering, tenant-scoped lines, draft audit events, forced RLS and bill immutability.
 19. **Completed:** purchase bill posting to payables, purchase expense and input GST with tenant-configured accounts, atomic journal posting and audit events.
 20. **Completed:** supplier payments with automatic numbering, supplier-to-bill allocation, outstanding balance checks, atomic payable/bank journal posting, forced RLS, immutability and audit events.
-21. **Completed:** inventory movement foundation with tenant-scoped immutable movement records and accounting linkage; valuation/COGS policy remains a separate increment.
+21. **Completed:** inventory movement foundation with tenant-scoped immutable movement records and accounting linkage.
 22. **Completed:** tenant-scoped bank accounts and statement import batches/transactions with external-id deduplication.
 23. **Completed:** bank statement reconciliation against posted journal lines, tenant-safe composite matching, one-match-per-journal-line protection, audit events and reconciled immutability.
 24. **Completed:** reconciliation hardening with transaction update timestamps and deterministic confidence bands for user-facing suggestions; no low-confidence auto-posting.
 25. **Completed:** reporting foundation with tenant-scoped Trial Balance endpoint derived only from posted journal entries and an explicit as-of date.
 26. **Completed:** Profit & Loss and Balance Sheet endpoints derived from posted journal entries with deterministic period/as-of boundaries and integer-paise balances.
-27. **In progress:** receivables ageing with posted receipt allocation cut-off and deterministic ageing buckets; GST summary for posted sales invoices and purchase bills with CGST/SGST/IGST totals and net GST payable.
+27. **Completed:** receivables ageing with posted receipt allocation cut-off and deterministic ageing buckets; GST summary for posted sales invoices and purchase bills with CGST/SGST/IGST totals and net GST payable.
+28. **In progress:** weighted-average inventory valuation balances, default stock warehouse/account configuration, stock valuation reporting, purchase receipt inventory capitalization, and sales COGS/inventory relief in the same atomic posting transaction.
 
 ## Acceptance gates
 
 - Never mark work complete merely because source files exist.
 - Posting: balanced journal lines and voucher in one transaction; failed posting leaves no partial state.
+- Inventory: tracked goods use weighted-average cost, never permit negative stock, and inventory movement plus journal posting commit atomically.
 - Reconciliation: low-confidence matches remain suggestions.
 - Reports: derive balances from posted journals, respect tenant RLS, use integer paise and deterministic date boundaries.
 - Reminders: server-side scheduling, idempotency and tests.
