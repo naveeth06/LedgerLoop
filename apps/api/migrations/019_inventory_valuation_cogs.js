@@ -46,7 +46,7 @@ exports.up = (pgm) => {
     INSERT INTO inventory_valuation_balances (company_id, item_id, warehouse_id, quantity, total_cost_paise)
     SELECT company_id, item_id, warehouse_id,
            SUM(quantity)::numeric(20,6),
-           SUM(total_cost_paise)::bigint
+           SUM(CASE WHEN quantity < 0 THEN -total_cost_paise ELSE total_cost_paise END)::bigint
       FROM inventory_movements
      GROUP BY company_id, item_id, warehouse_id
     HAVING SUM(quantity) > 0;
