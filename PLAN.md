@@ -83,7 +83,7 @@
 10. **Completed:** company settings and GST registration APIs; [CI run #139 passed](https://github.com/naveeth06/LedgerLoop/actions/runs/38762723608).
 11. **Completed:** tenant-scoped party directory; [CI run #148 passed](https://github.com/naveeth06/LedgerLoop/actions/runs/38763174427).
 12. **Completed:** tenant-scoped items and warehouses; [CI run #158 passed](https://github.com/naveeth06/LedgerLoop/actions/runs/38763824088).
-13. **In review:** tenant-scoped journal entries and lines, draft creation, balanced posting checks, forced RLS, audit events and unit tests. Latest-head CI pending.
+13. **In review:** tenant-scoped journal entries and lines, draft creation, balanced posting checks, forced RLS, audit events and unit tests. Initial CI failed because the test fixture expected a literal entry ID inconsistent with the controller's generated UUID; a focused fixture correction has been pushed and awaits latest-head CI.
 
 ## Acceptance gates
 
