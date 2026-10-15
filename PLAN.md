@@ -77,7 +77,9 @@
 - [ ] Statement-import demo and Playwright e2e.
 
 ## Phase 5 — Reminders and AI
-- [ ] BullMQ overdue reminders with retries, idempotency and audit.
+- [x] BullMQ overdue reminder events with retries, idempotency, tenant context and audit.
+- [x] Email reminder delivery foundation with SMTP provider abstraction, party opt-out, delivery state, retry/backoff and audit metadata.
+- [ ] Provider-specific delivery monitoring, bounce handling and richer templates.
 - [ ] Claude-backed categorisation scoped to current-company ledger candidates.
 - [ ] Receipt extraction/reconciliation suggestions with validation and human approval.
 - [ ] Quotas, prompt-injection defense, redaction and AI audit metadata.
@@ -111,7 +113,8 @@
 31. **Completed:** generic posted-journal reversal workflow with explicit reversal linkage, one-reversal guard, balanced debit/credit inversion, forced tenant transaction context and audit events.
 32. **Completed:** invoice-to-receipt settlement regression covering full settlement, journal balance, receivable zeroing and cash balance; controller/UI Playwright e2e remains deferred until the Angular web app exists.
 33. **Completed:** secure statement-import hardening with a 5MB JSON body cap, explicit JSON content type, statement text safety scanning and focused unit coverage.
-34. **In progress:** overdue-reminder foundation with tenant-scoped settings/events, BullMQ worker scheduling, idempotent reminder-event creation, tenant-context enforcement and audit events. Delivery channels remain a follow-up increment.
+34. **Completed:** overdue-reminder foundation with tenant-scoped settings/events, BullMQ hourly scheduling, idempotent reminder-event creation, tenant-context enforcement, audit events and reminder acknowledgement APIs.
+35. **In progress:** SMTP email reminder delivery with tenant-scoped delivery records, party opt-out, deterministic message IDs, retry/backoff, provider abstraction and delivery audit events.
 
 ## Acceptance gates
 
@@ -121,6 +124,7 @@
 - Inventory corrections: adjustments are tenant-scoped, journal-balanced, immutable after posting, and corrected through an explicit reversal rather than editing history.
 - Reconciliation: low-confidence matches remain suggestions.
 - Reports: derive balances from posted journals, respect tenant RLS, use integer paise and deterministic date boundaries.
-- Reminders: server-side scheduling, idempotency and tests.
+- Reminders: server-side scheduling, idempotency, retry/backoff, tenant isolation and tests.
+- Email delivery: provider confirmation is required before marking sent; failures remain auditable and retryable.
 - Tenant isolation is tested against PostgreSQL, not inferred from service filters.
 - Report only checks that actually ran.
