@@ -56,7 +56,7 @@
 
 ### Phase 3 — Sales and purchases
 - [x] Sales quotations and sales invoice draft schemas with tenant-scoped lines, automatic numbering, GST totals and audit events.
-- [ ] Invoice issue/posting to receivables, sales, output GST and inventory deduction.
+- [x] Invoice issue/posting to receivables, sales and output GST. Inventory deduction remains deferred until inventory movement/valuation is implemented.
 - [ ] Receipts and receivable allocation.
 - [ ] Purchase orders, bills, supplier payments, expenses and debit notes.
 - [ ] Invoice-to-payment demo and Playwright e2e.
@@ -83,13 +83,10 @@
 
 ## Implementation increments
 
-1–9. **Completed:** foundation, auth, tenant RLS, company/branch context and chart of accounts.
-10. **Completed:** company settings and GST registration APIs.
-11. **Completed:** tenant-scoped party directory.
-12. **Completed:** tenant-scoped items and warehouses.
-13. **Completed:** tenant-scoped journal entries and lines, draft creation, balanced posting checks, forced RLS, audit events and unit tests.
-14. **Completed:** opening trial-balance posting and opening inventory snapshots. Inventory values use integer arithmetic with half-up paise rounding; journal posting, stock rows and audit events share one tenant transaction. Latest merged CI run passed.
-15. **In progress:** sales quotation/invoice draft foundation, deterministic GST engine, automatic numbering, tenant-scoped lines, invoice immutability guard and audit events.
+1–14. **Completed:** foundation, auth, tenant RLS, company/branch context, chart of accounts, company settings/GST, parties, items/warehouses, journal posting and opening balances/inventory.
+15. **Completed:** sales quotation/invoice draft foundation, deterministic GST engine, automatic numbering, tenant-scoped lines, invoice immutability guard and audit events.
+16. **Completed:** sales invoice issue workflow with tenant-configured receivables, revenue and output GST accounts; balanced atomic journal posting and audit events. Inventory deduction remains intentionally deferred.
+17. **In progress:** customer receipts, automatic receipt numbering, bank/cash account selection, receipt journal posting, multi-invoice/partial receivable allocation, outstanding balance checks, forced RLS, immutability and audit events.
 
 ## Acceptance gates
 
