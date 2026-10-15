@@ -1,4 +1,4 @@
-import { afterAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { Pool } from 'pg';
 
 const databaseUrl = process.env.DATABASE_URL;
@@ -11,10 +11,66 @@ integrationDescribe('PostgreSQL tenant row-level security', () => {
   const userA = 'c3333333-3333-4333-8333-333333333333';
   const userB = 'd4444444-4444-4444-8444-444444444444';
 
+  beforeAll(async () => {
+    if (!pool) throw new Error('DATABASE_URL is required for this integration test.');
+
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      await client.query('SET LOCAL ROLE ledgerloop_app');
+      await client.query(
+        'INSERT INTO app_users (id, email, display_name) VALUES ($1, $2, $3), ($4, $5, $6)',
+        [userA, 'rls-user-a@example.test', 'RLS User A', userB, 'rls-user-b@example.test', 'RLS User B'],
+      );
+
+      await client.query("SELECT set_config('app.current_company_id', $1, true)", [companyA]);
+      await client.query(
+        'INSERT INTO companies (id, legal_name, display_name) VALUES ($1, $2, $3)',
+        [companyA, 'Company A Legal', 'Company A'],
+      );
+
+      await client.query("SELECT set_config('app.current_company_id', $1, true)", [companyB]);
+      await client.query(
+        'INSERT INTO companies (id, legal_name, display_name) VALUES ($1, $2, $3)',
+        [companyB, 'Company B Legal', 'Company B'],
+      );
+
+      await client.query('COMMIT');
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  });
+
   afterAll(async () => {
-    if (pool) {
-      await pool.query('DELETE FROM companies WHERE id = ANY($1::uuid[])', [[companyA, companyB]]);
-      await pool.query('DELETE FROM app_users WHERE id = ANY($1::uuid[])', [[userA, userB]]);
+    if (!pool) return;
+
+    try {
+      // Fixture teardown is privileged test maintenance, not application behavior.
+      // Temporarily disable only this trigger so tenant cascade cleanup can remove fixtures;
+      // always restore it before returning the connection pool.
+      await pool.query('ALTER TABLE opening_inventory DISABLE TRIGGER opening_inventory_guard');
+      await pool.query('ALTER TABLE journal_lines DISABLE TRIGGER ALL');
+      await pool.query('ALTER TABLE journal_entries DISABLE TRIGGER ALL');
+      try {
+        // Fixture teardown only: clear immutable posting rows and restrictive relationships in dependency order.
+        await pool.query('DELETE FROM journal_lines WHERE company_id = ANY($1::uuid[])', [[companyA, companyB]]);
+        await pool.query('DELETE FROM opening_inventory WHERE company_id = ANY($1::uuid[])', [[companyA, companyB]]);
+        await pool.query('DELETE FROM journal_entries WHERE company_id = ANY($1::uuid[])', [[companyA, companyB]]);
+        await pool.query('DELETE FROM ledger_accounts WHERE company_id = ANY($1::uuid[])', [[companyA, companyB]]);
+        await pool.query('DELETE FROM company_items WHERE company_id = ANY($1::uuid[])', [[companyA, companyB]]);
+        await pool.query('DELETE FROM company_warehouses WHERE company_id = ANY($1::uuid[])', [[companyA, companyB]]);
+        await pool.query('DELETE FROM company_memberships WHERE company_id = ANY($1::uuid[])', [[companyA, companyB]]);
+        await pool.query('DELETE FROM companies WHERE id = ANY($1::uuid[])', [[companyA, companyB]]);
+        await pool.query('DELETE FROM app_users WHERE id = ANY($1::uuid[])', [[userA, userB]]);
+      } finally {
+        await pool.query('ALTER TABLE journal_entries ENABLE TRIGGER ALL');
+        await pool.query('ALTER TABLE journal_lines ENABLE TRIGGER ALL');
+        await pool.query('ALTER TABLE opening_inventory ENABLE TRIGGER opening_inventory_guard');
+      }
+    } finally {
       await pool.end();
     }
   });
@@ -23,13 +79,6 @@ integrationDescribe('PostgreSQL tenant row-level security', () => {
     if (!pool) throw new Error('DATABASE_URL is required for this integration test.');
     const client = await pool.connect();
     try {
-      await client.query('BEGIN');
-      await client.query('SET LOCAL ROLE ledgerloop_app');
-      await client.query("SELECT set_config('app.current_company_id', $1, true)", [companyA]);
-      await client.query('INSERT INTO companies (id, legal_name, display_name) VALUES ($1, $2, $3)', [companyA, 'Company A Legal', 'Company A']);
-      await client.query("SELECT set_config('app.current_company_id', $1, true)", [companyB]);
-      await client.query('INSERT INTO companies (id, legal_name, display_name) VALUES ($1, $2, $3)', [companyB, 'Company B Legal', 'Company B']);
-      await client.query('COMMIT');
       await client.query('BEGIN');
       await client.query('SET LOCAL ROLE ledgerloop_app');
       await client.query("SELECT set_config('app.current_company_id', $1, true)", [companyA]);
@@ -50,8 +99,6 @@ integrationDescribe('PostgreSQL tenant row-level security', () => {
     try {
       await client.query('BEGIN');
       await client.query('SET LOCAL ROLE ledgerloop_app');
-      await client.query('INSERT INTO app_users (id, email, display_name) VALUES ($1, $2, $3), ($4, $5, $6)',
-        [userA, 'rls-user-a@example.test', 'RLS User A', userB, 'rls-user-b@example.test', 'RLS User B']);
       await client.query("SELECT set_config('app.current_company_id', $1, true)", [companyA]);
       await client.query("INSERT INTO company_memberships (company_id, user_id, role, status) VALUES ($1, $2, 'owner', 'active')", [companyA, userA]);
       await client.query("SELECT set_config('app.current_company_id', $1, true)", [companyB]);
@@ -65,7 +112,7 @@ integrationDescribe('PostgreSQL tenant row-level security', () => {
       expect(userBMemberships.rows.map((row) => row.company_id)).toEqual([companyB]);
       const companyRows = await client.query<{ id: string }>('SELECT id FROM companies ORDER BY id');
       expect(companyRows.rows).toEqual([]);
-      await client.query('COMMIT');
+      await client.query('ROLLBACK');
     } catch (error) {
       await client.query('ROLLBACK');
       throw error;
@@ -121,6 +168,65 @@ integrationDescribe('PostgreSQL tenant row-level security', () => {
       const warehouses = await client.query<{ warehouse_code: string }>("SELECT warehouse_code FROM company_warehouses WHERE warehouse_code LIKE 'CI-%-WH' ORDER BY warehouse_code");
       expect(items.rows.map((row) => row.item_code)).toEqual(['CI-A-SKU']);
       expect(warehouses.rows.map((row) => row.warehouse_code)).toEqual(['CI-A-WH']);
+      await client.query('ROLLBACK');
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  });
+
+  it('isolates opening inventory snapshots by company under forced RLS', async () => {
+    if (!pool) throw new Error('DATABASE_URL is required for this integration test.');
+    const client = await pool.connect();
+    const openingItemIds: string[] = [];
+    try {
+      await client.query('BEGIN');
+      await client.query('SET LOCAL ROLE ledgerloop_app');
+      for (const [companyId, suffix] of [[companyA, 'A'], [companyB, 'B']] as const) {
+        await client.query("SELECT set_config('app.current_company_id', $1, true)", [companyId]);
+        const asset = await client.query<{ id: string }>(
+          "INSERT INTO ledger_accounts (company_id, account_code, name, account_type, created_by) VALUES ($1, $2, $3, 'asset', $4) RETURNING id",
+          [companyId, `CI-${suffix}-OPEN-ASSET`, `Company ${suffix} Inventory Asset`, userA],
+        );
+        const equity = await client.query<{ id: string }>(
+          "INSERT INTO ledger_accounts (company_id, account_code, name, account_type, created_by) VALUES ($1, $2, $3, 'equity', $4) RETURNING id",
+          [companyId, `CI-${suffix}-OPEN-EQUITY`, `Company ${suffix} Opening Equity`, userA],
+        );
+        const item = await client.query<{ id: string }>(
+          "INSERT INTO company_items (company_id, item_code, name) VALUES ($1, $2, $3) RETURNING id",
+          [companyId, `CI-${suffix}-OPEN-SKU`, `Company ${suffix} Opening Item`],
+        );
+        const warehouse = await client.query<{ id: string }>(
+          "INSERT INTO company_warehouses (company_id, warehouse_code, name) VALUES ($1, $2, $3) RETURNING id",
+          [companyId, `CI-${suffix}-OPEN-WH`, `Company ${suffix} Opening Warehouse`],
+        );
+        const entry = await client.query<{ id: string }>(
+          "INSERT INTO journal_entries (company_id, entry_number, entry_date, status, source_type, created_by) VALUES ($1, $2, '2026-04-01', 'draft', 'opening_balance', $3) RETURNING id",
+          [companyId, `CI-${suffix}-OPEN-JV`, userA],
+        );
+        await client.query(
+          "INSERT INTO journal_lines (company_id, journal_entry_id, line_number, account_id, debit_paise, credit_paise) VALUES ($1, $2, 1, $3, 100, 0), ($1, $2, 2, $4, 0, 100)",
+          [companyId, entry.rows[0].id, asset.rows[0].id, equity.rows[0].id],
+        );
+        await client.query("UPDATE journal_entries SET status = 'posted', posted_by = $3, posted_at = now() WHERE company_id = $1 AND id = $2",
+          [companyId, entry.rows[0].id, userA]);
+        await client.query(
+          "INSERT INTO opening_inventory (company_id, item_id, warehouse_id, journal_entry_id, opening_date, quantity, unit_cost_paise, total_value_paise, created_by) VALUES ($1, $2, $3, $4, '2026-04-01', 1, 100, 100, $5)",
+          [companyId, item.rows[0].id, warehouse.rows[0].id, entry.rows[0].id, userA],
+        );
+        openingItemIds.push(item.rows[0].id);
+      }
+      await client.query('COMMIT');
+      await client.query('BEGIN');
+      await client.query('SET LOCAL ROLE ledgerloop_app');
+      await client.query("SELECT set_config('app.current_company_id', $1, true)", [companyA]);
+      const visible = await client.query<{ item_id: string }>(
+        "SELECT item_id FROM opening_inventory WHERE item_id = ANY($1::uuid[]) ORDER BY item_id",
+        [openingItemIds],
+      );
+      expect(visible.rows.map((row) => row.item_id)).toEqual([openingItemIds[0]]);
       await client.query('ROLLBACK');
     } catch (error) {
       await client.query('ROLLBACK');

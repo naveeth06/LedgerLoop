@@ -47,11 +47,11 @@
 - [x] Company settings and tenant-scoped GST registration APIs.
 - [x] Tenant-scoped parties directory with customer/supplier/both types, GSTIN/contact/address data, paise credit limits, forced RLS and audit.
 - [x] Tenant-scoped item and warehouse directories with HSN/SAC, GST-rate metadata, integer-paise prices, inventory flags, optional branch assignment, forced RLS and audit.
-- [ ] Opening balances and opening inventory.
+- [ ] Opening trial-balance posting and tenant-scoped opening inventory snapshots, atomically linked to posted journals.
 - [ ] Deterministic CGST/SGST/IGST calculations and rounding rules.
-- [ ] Journal entry and line schema with atomic posting and database-enforced balance.
+- [x] Journal entry and line schema with atomic posting and database-enforced balance.
 - [ ] Posted voucher immutability and reversal workflow.
-- [ ] Tests for balance, rollback, tax, rounding, immutability and tenant boundaries.
+- [ ] Tests for balance, rollback, GST tax, rounding, immutability and tenant boundaries.
 
 ### Phase 3 — Sales and purchases
 - [ ] Quotes, invoices, receipts, purchase orders, bills, payments, expenses and debit notes.
@@ -83,7 +83,8 @@
 10. **Completed:** company settings and GST registration APIs; [CI run #139 passed](https://github.com/naveeth06/LedgerLoop/actions/runs/38762723608).
 11. **Completed:** tenant-scoped party directory; [CI run #148 passed](https://github.com/naveeth06/LedgerLoop/actions/runs/38763174427).
 12. **Completed:** tenant-scoped items and warehouses; [CI run #158 passed](https://github.com/naveeth06/LedgerLoop/actions/runs/38763824088).
-13. **In review:** tenant-scoped journal entries and lines, draft creation, balanced posting checks, forced RLS, audit events and unit tests. Initial CI exposed an audit assertion relying on a fixed ID. A second run showed the mock still did not mirror the controller's dynamically generated UUID; the test now derives the mocked ID from the insert parameters and compares audit output against the returned entry ID. Latest-head CI is pending.
+13. **Completed:** tenant-scoped journal entries and lines, draft creation, balanced posting checks, forced RLS, audit events and unit tests; [latest-head CI run #38766981139 passed](https://github.com/naveeth06/LedgerLoop/actions/runs/38766981139).
+14. **In review:** opening trial-balance posting and opening inventory snapshots. Inventory values use integer arithmetic with half-up paise rounding; journal posting, stock rows and audit events share one tenant transaction. Latest-head CI pending.
 
 ## Acceptance gates
 
