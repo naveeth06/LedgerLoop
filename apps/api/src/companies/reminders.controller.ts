@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, Param, Put, Req } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Param, Post, Put, Req } from '@nestjs/common';
 import { z } from 'zod';
 import { CompanyRoles } from '../auth/roles.decorator';
 import type { AuthenticatedRequest } from '../auth/current-user';
@@ -84,6 +84,74 @@ export class RemindersController {
         entityType: 'company_reminder_settings',
         entityId: companyId,
         metadata: parsed.data,
+      });
+
+      return result.rows[0];
+    });
+  }
+
+  @Get('events')
+  async listEvents(
+    @Param('companyId') companyId: string,
+    @Req() request: AuthenticatedRequest,
+  ) {
+    const userId = requireUser(request);
+    return this.tenantAccess.withCompanyTransaction(userId, companyId, async (client) => {
+      const result = await client.query(`
+        SELECT e.id,
+               e.invoice_id AS "invoiceId",
+               i.invoice_number AS "invoiceNumber",
+               e.party_id AS "partyId",
+               p.name AS "partyName",
+               p.email AS "partyEmail",
+               e.reminder_sequence AS "reminderSequence",
+               e.due_date AS "dueDate",
+               e.outstanding_paise AS "outstandingPaise",
+               e.status,
+               e.created_at AS "createdAt",
+               e.acknowledged_at AS "acknowledgedAt"
+          FROM overdue_reminder_events e
+          JOIN sales_invoices i
+            ON i.company_id = e.company_id AND i.id = e.invoice_id
+          JOIN company_parties p
+            ON p.company_id = e.company_id AND p.id = e.party_id
+         WHERE e.company_id = $1
+         ORDER BY e.status ASC, e.created_at DESC
+      `, [companyId]);
+      return { events: result.rows };
+    });
+  }
+
+  @Post('events/:eventId/acknowledge')
+  @CompanyRoles('owner', 'admin', 'accountant', 'staff')
+  async acknowledgeEvent(
+    @Param('companyId') companyId: string,
+    @Param('eventId') eventId: string,
+    @Req() request: AuthenticatedRequest,
+  ) {
+    const userId = requireUser(request);
+    return this.tenantAccess.withCompanyTransaction(userId, companyId, async (client) => {
+      const result = await client.query(`
+        UPDATE overdue_reminder_events
+           SET status = 'acknowledged',
+               acknowledged_at = now(),
+               acknowledged_by = $2
+         WHERE company_id = $1
+           AND id = $3
+           AND status = 'pending'
+         RETURNING id,
+                   invoice_id AS "invoiceId",
+                   status,
+                   acknowledged_at AS "acknowledgedAt"
+      `, [companyId, userId, eventId]);
+      if (result.rowCount !== 1) throw new BadRequestException('Reminder event was not found or is already acknowledged.');
+
+      await this.audit.record(client, {
+        actorUserId: userId,
+        action: 'OVERDUE_REMINDER_ACKNOWLEDGED',
+        entityType: 'overdue_reminder_event',
+        entityId: eventId,
+        metadata: { invoiceId: result.rows[0].invoiceId },
       });
 
       return result.rows[0];
