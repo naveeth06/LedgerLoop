@@ -3,7 +3,6 @@ import {
   LucideArrowUpRight,
   LucideBarChart3,
   LucideFileText,
-  LucideIcon,
   LucideLandmark,
   LucideReceiptIndianRupee,
   LucideWallet,
@@ -14,7 +13,10 @@ import {
   imports: [
     LucideArrowUpRight,
     LucideBarChart3,
-    LucideIcon,
+    LucideFileText,
+    LucideLandmark,
+    LucideReceiptIndianRupee,
+    LucideWallet,
   ],
   template: `
     <section class="mx-auto w-full max-w-[1600px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
@@ -35,7 +37,20 @@ import {
           <article class="ll-card p-5">
             <div class="flex items-start justify-between gap-4">
               <span class="flex h-9 w-9 items-center justify-center rounded-xl border border-violet-400/15 bg-violet-500/10 text-violet-300">
-                <svg [lucideIcon]="metric.icon" [size]="17"></svg>
+                @switch (metric.icon) {
+                  @case ('revenue') {
+                    <svg lucideReceiptIndianRupee [size]="17"></svg>
+                  }
+                  @case ('receivables') {
+                    <svg lucideWallet [size]="17"></svg>
+                  }
+                  @case ('transactions') {
+                    <svg lucideFileText [size]="17"></svg>
+                  }
+                  @case ('bank') {
+                    <svg lucideLandmark [size]="17"></svg>
+                  }
+                }
               </span>
               <span class="text-xs text-[var(--ll-text-muted)]">{{ metric.period }}</span>
             </div>
@@ -96,10 +111,10 @@ import {
 })
 export class DashboardPageComponent {
   protected readonly metrics = [
-    { label: 'Revenue', value: '₹0.00', period: 'Current period', progress: 18, icon: LucideReceiptIndianRupee },
-    { label: 'Receivables', value: '₹0.00', period: 'Outstanding', progress: 8, icon: LucideWallet },
-    { label: 'Transactions', value: '0', period: 'This period', progress: 34, icon: LucideFileText },
-    { label: 'Bank balance', value: '₹0.00', period: 'Current', progress: 56, icon: LucideLandmark },
+    { label: 'Revenue', value: '₹0.00', period: 'Current period', progress: 18, icon: 'revenue' },
+    { label: 'Receivables', value: '₹0.00', period: 'Outstanding', progress: 8, icon: 'receivables' },
+    { label: 'Transactions', value: '0', period: 'This period', progress: 34, icon: 'transactions' },
+    { label: 'Bank balance', value: '₹0.00', period: 'Current', progress: 56, icon: 'bank' },
   ];
 
   protected readonly bars = [34, 48, 42, 66, 54, 72, 61, 78, 68, 84, 73, 90];
