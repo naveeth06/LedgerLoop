@@ -2,7 +2,7 @@ exports.up = (pgm) => {
   pgm.createTable('auth_sessions', {
     id: { type: 'uuid', primaryKey: true, default: pgm.func('gen_random_uuid()') },
     user_id: { type: 'uuid', notNull: true, references: 'app_users', onDelete: 'cascade' },
-    family_id: { type: 'uuid', notNull, default: pgm.func('gen_random_uuid()') },
+    family_id: { type: 'uuid', notNull: true, default: pgm.func('gen_random_uuid()') },
     token_hash: { type: 'char(64)', notNull, unique: true },
     expires_at: { type: 'timestamptz', notNull },
     revoked_at: { type: 'timestamptz' },
