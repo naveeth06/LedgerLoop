@@ -27,6 +27,7 @@ import { BankReconciliationController } from './companies/bank-reconciliation.co
 import { ReportsController } from './companies/reports.controller';
 import { FinancialReportsController } from './companies/financial-reports.controller';
 import { ReceivablesGstReportsController } from './companies/receivables-gst-reports.controller';
+import { ExpensesDebitNotesController } from './companies/expenses-debit-notes.controller';
 import { SalesGstService } from './companies/sales-gst.service';
 
 @Module({
@@ -38,7 +39,7 @@ import { SalesGstService } from './companies/sales-gst.service';
     SalesReceiptsController, PurchaseDocumentsController, PurchaseBillPostingV2Controller,
     SupplierPaymentsController, InventoryController, InventoryValuationController, BankAccountsController,
     BankStatementImportsController, BankReconciliationController, ReportsController,
-    FinancialReportsController, ReceivablesGstReportsController,
+    FinancialReportsController, ReceivablesGstReportsController, ExpensesDebitNotesController,
   ],
   providers: [
     SalesGstService,
