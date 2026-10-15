@@ -4,7 +4,7 @@ import { AuditService } from './audit.service';
 
 describe('AuditService', () => {
   it('derives company scope from transaction context and parameterizes event data', async () => {
-    const query = vi.fn(async () => ({ rows: [] }));
+    const query = vi.fn(async (_sql?: string, _values?: unknown[]) => ({ rows: [] }));
     const client = { query } as unknown as PoolClient;
     const service = new AuditService();
     const event = {
