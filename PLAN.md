@@ -60,13 +60,16 @@
 - [x] Customer receipts, automatic receipt numbering, bank/cash account selection, atomic receipt posting, multi-invoice/partial allocation, outstanding balance checks, forced RLS, immutability and audit events.
 - [x] Purchase orders and bills with supplier validation, GST-aware deterministic totals, automatic numbering, tenant-scoped lines, draft audit events, forced RLS and bill immutability.
 - [x] Purchase bill posting to payables, purchase expense and input GST with atomic balanced journal posting, configuration validation, bill immutability and audit events.
-- [ ] Supplier payments, expenses and debit notes.
+- [x] Supplier payments with automatic numbering, supplier-to-bill allocation, outstanding balance checks, atomic payable/bank journal posting, forced RLS, immutability and audit events.
+- [ ] Expenses and debit notes.
 - [ ] Invoice-to-payment demo and Playwright e2e.
 - [x] GST-aware sales numbering, validation and audit trail foundation.
 
 ## Phase 4 — Banking and reporting
+- [x] Tenant-scoped bank accounts and statement imports with duplicate external-id protection.
+- [x] Bank reconciliation against posted journal lines with tenant-safe matching and immutable reconciled state.
+- [x] Deterministic reconciliation confidence bands; low-confidence matches remain explicit user-approved suggestions and never auto-post.
 - [ ] Secure statement import with size/type limits and scanning.
-- [ ] Reconciliation candidates with confidence thresholds; low-confidence matches never auto-post.
 - [ ] Trial balance, P&L, balance sheet, receivables ageing and GST summary from posted journals.
 - [ ] Statement-import demo and Playwright e2e.
 
@@ -90,8 +93,12 @@
 16. **Completed:** sales invoice issue workflow with tenant-configured receivables, revenue and output GST accounts; balanced atomic journal posting and audit events. Inventory deduction remains intentionally deferred.
 17. **Completed:** customer receipts, automatic receipt numbering, bank/cash account selection, atomic receipt journal posting, multi-invoice/partial receivable allocation, outstanding balance checks, forced RLS, immutability and audit events.
 18. **Completed:** purchase orders and purchase bills with supplier validation, GST-aware deterministic totals, automatic numbering, tenant-scoped lines, draft audit events, forced RLS and bill immutability.
-19. **Completed:** purchase bill posting to payables, purchase expense and input GST with tenant-configured accounts, atomic journal posting and audit events. Supplier payments, expenses, debit notes and inventory movement/valuation remain separate increments.
-20. **In progress:** supplier payments with automatic numbering, supplier-to-bill allocation, outstanding balance checks, atomic payable/bank journal posting, forced RLS, immutability and audit events. Expenses, debit notes and inventory movement/valuation remain separate increments.
+19. **Completed:** purchase bill posting to payables, purchase expense and input GST with tenant-configured accounts, atomic journal posting and audit events.
+20. **Completed:** supplier payments with automatic numbering, supplier-to-bill allocation, outstanding balance checks, atomic payable/bank journal posting, forced RLS, immutability and audit events.
+21. **Completed:** inventory movement foundation with tenant-scoped immutable movement records and accounting linkage; valuation/COGS policy remains a separate increment.
+22. **Completed:** tenant-scoped bank accounts and statement import batches/transactions with external-id deduplication.
+23. **Completed:** bank statement reconciliation against posted journal lines, tenant-safe composite matching, one-match-per-journal-line protection, audit events and reconciled immutability.
+24. **In progress:** reconciliation hardening with transaction update timestamps and deterministic confidence bands for user-facing suggestions; no low-confidence auto-posting.
 
 ## Acceptance gates
 
