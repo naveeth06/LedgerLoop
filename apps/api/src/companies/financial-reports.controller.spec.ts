@@ -7,8 +7,8 @@ const request = { user: { sub: userId } } as never;
 
 type Row = { accountId: string; accountCode: string; accountName: string; accountType: string; debitPaise: string; creditPaise: string };
 
-function setup(rows: Row[]) {
-  const query = vi.fn(async () => ({ rows }));
+function setup(rows: Row[], followUpRows: Row[] = rows) {
+  const query = vi.fn(async () => ({ rows: query.mock.calls.length === 1 ? rows : followUpRows }));
   const client = { query };
   const tenantAccess = { withCompanyTransaction: vi.fn(async (_u: string, _c: string, callback: (arg: typeof client) => Promise<unknown>) => callback(client)) };
   return { controller: new FinancialReportsController(tenantAccess as never), client, tenantAccess };
@@ -27,13 +27,16 @@ describe('FinancialReportsController', () => {
   });
 
   it('calculates balance sheet and retained earnings from posted journals', async () => {
-    const { controller, client } = setup([
+    const balanceSheetRows = [
       { accountId: '1', accountCode: '1000', accountName: 'Bank', accountType: 'asset', debitPaise: '20000', creditPaise: '0' },
       { accountId: '2', accountCode: '2000', accountName: 'Payable', accountType: 'liability', debitPaise: '0', creditPaise: '5000' },
       { accountId: '3', accountCode: '3000', accountName: 'Capital', accountType: 'equity', debitPaise: '0', creditPaise: '10000' },
+    ];
+    const profitAndLossRows = [
       { accountId: '4', accountCode: '4000', accountName: 'Sales', accountType: 'income', debitPaise: '0', creditPaise: '5000' },
       { accountId: '5', accountCode: '5000', accountName: 'Rent', accountType: 'expense', debitPaise: '0', creditPaise: '0' },
-    ]);
+    ];
+    const { controller, client } = setup(balanceSheetRows, profitAndLossRows);
     const result = await controller.balanceSheet(companyId, { asOfDate: '2026-10-15' }, request);
     expect(result.totals).toEqual({ assetPaise: '20000', liabilityPaise: '5000', equityPaise: '10000', retainedEarningsPaise: '5000', liabilitiesAndEquityPaise: '20000' });
     expect(result.balanced).toBe(true);
