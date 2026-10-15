@@ -1,10 +1,20 @@
-import { BadRequestException, Body, Controller, Param, Post, Req } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  NotFoundException,
+  Param,
+  Post,
+  Req,
+} from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import { AuditService } from '../database/audit.service';
 import { DatabaseService } from '../database/database.service';
 import { TenantAccessService } from '../database/tenant-access.service';
 import { withTenantTransaction } from '../database/tenant-transaction';
+import { withUserTransaction } from '../database/user-transaction';
 import type { AuthenticatedRequest } from '../auth/current-user';
 import { CompanyRoles } from '../auth/roles.decorator';
 
@@ -26,6 +36,53 @@ export class CompaniesController {
     private readonly tenantAccess: TenantAccessService,
     private readonly audit: AuditService,
   ) {}
+
+  @Get()
+  async listCompanies(@Req() request: AuthenticatedRequest) {
+    const userId = request.user?.sub;
+    if (!userId) throw new BadRequestException('Authenticated user is required.');
+
+    // RLS exposes only this user's membership rows in this transaction.
+    const memberships = await withUserTransaction(this.database.pool, userId, async (client) => {
+      const result = await client.query<{
+        id: string;
+        company_id: string;
+        role: 'owner' | 'admin' | 'accountant' | 'staff' | 'viewer';
+      }>(
+        `SELECT id, company_id, role FROM company_memberships
+          WHERE user_id = $1 AND status = 'active'
+          ORDER BY created_at ASC, id ASC`,
+        [userId],
+      );
+      return result.rows;
+    });
+
+    // Company details are fetched separately under each verified tenant context.
+    // Re-checking membership closes the race if membership is revoked after listing.
+    const companies = await Promise.all(memberships.map(async (membership) =>
+      this.tenantAccess.withCompanyTransaction(userId, membership.company_id, async (client, activeMembership) => {
+        const result = await client.query<{
+          id: string;
+          legal_name: string;
+          display_name: string;
+          base_currency: string;
+          created_at: Date;
+        }>(
+          `SELECT id, legal_name, display_name, base_currency, created_at
+             FROM companies WHERE id = $1 LIMIT 1`,
+          [membership.company_id],
+        );
+        const company = result.rows[0];
+        if (!company) throw new NotFoundException('Company was not found.');
+        return {
+          company,
+          membership: { id: activeMembership.id, role: activeMembership.role },
+        };
+      }),
+    ));
+
+    return { companies };
+  }
 
   @Post()
   async createCompany(@Req() request: AuthenticatedRequest, @Body() body: unknown) {
@@ -59,6 +116,34 @@ export class CompaniesController {
       });
       return { company: inserted.rows[0], membership: membership.rows[0] };
     });
+  }
+
+  @Get(':companyId/branches')
+  async listBranches(
+    @Param('companyId') companyId: string,
+    @Req() request: AuthenticatedRequest,
+  ) {
+    const userId = request.user?.sub;
+    if (!userId) throw new BadRequestException('Authenticated user is required.');
+
+    const branches = await this.tenantAccess.withCompanyTransaction(userId, companyId, async (client) => {
+      const result = await client.query<{
+        id: string;
+        company_id: string;
+        name: string;
+        code: string;
+        gstin: string | null;
+        address: Record<string, unknown>;
+        created_at: Date;
+      }>(
+        `SELECT id, company_id, name, code, gstin, address, created_at
+           FROM branches WHERE company_id = $1
+           ORDER BY created_at ASC, id ASC`,
+        [companyId],
+      );
+      return result.rows;
+    });
+    return { branches };
   }
 
   @Post(':companyId/branches')
