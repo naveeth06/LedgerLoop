@@ -8,6 +8,7 @@ import { TenantAccessService } from '../database/tenant-access.service';
 const accountSchema = z.object({
   inventoryAssetAccountId: z.string().uuid(),
   cogsAccountId: z.string().uuid(),
+  defaultWarehouseId: z.string().uuid(),
 }).strict();
 
 @Controller('companies/:companyId/inventory')
@@ -20,7 +21,8 @@ export class InventoryValuationController {
     if (!userId) throw new BadRequestException('Authenticated user is required.');
     return this.tenantAccess.withCompanyTransaction(userId, companyId, async (client) => {
       const result = await client.query(`
-        SELECT inventory_asset_account_id AS "inventoryAssetAccountId", cogs_account_id AS "cogsAccountId"
+        SELECT inventory_asset_account_id AS "inventoryAssetAccountId", cogs_account_id AS "cogsAccountId",
+               default_warehouse_id AS "defaultWarehouseId"
           FROM inventory_posting_accounts WHERE company_id = $1`, [companyId]);
       return { postingAccounts: result.rows[0] ?? null };
     });
@@ -46,19 +48,25 @@ export class InventoryValuationController {
       if (byId.get(data.inventoryAssetAccountId) !== 'asset') throw new BadRequestException('inventoryAssetAccountId must reference an active asset account.');
       if (byId.get(data.cogsAccountId) !== 'expense') throw new BadRequestException('cogsAccountId must reference an active expense account.');
 
+      const warehouse = await client.query<{ id: string; is_active: boolean }>(
+        'SELECT id, is_active FROM company_warehouses WHERE company_id = $1 AND id = $2',
+        [companyId, data.defaultWarehouseId],
+      );
+      if (!warehouse.rows[0] || !warehouse.rows[0].is_active) throw new BadRequestException('defaultWarehouseId must reference an active warehouse in this company.');
+
       await client.query(`
-        INSERT INTO inventory_posting_accounts (company_id, inventory_asset_account_id, cogs_account_id, created_by)
-        VALUES ($1,$2,$3,$4)
+        INSERT INTO inventory_posting_accounts (company_id, inventory_asset_account_id, cogs_account_id, default_warehouse_id, created_by)
+        VALUES ($1,$2,$3,$4,$5)
         ON CONFLICT (company_id) DO UPDATE SET inventory_asset_account_id = EXCLUDED.inventory_asset_account_id,
-          cogs_account_id = EXCLUDED.cogs_account_id, updated_at = now()`,
-        [companyId, data.inventoryAssetAccountId, data.cogsAccountId, userId],
+          cogs_account_id = EXCLUDED.cogs_account_id, default_warehouse_id = EXCLUDED.default_warehouse_id, updated_at = now()`,
+        [companyId, data.inventoryAssetAccountId, data.cogsAccountId, data.defaultWarehouseId, userId],
       );
       await this.audit.record(client, {
         actorUserId: userId,
         action: 'INVENTORY_POSTING_ACCOUNTS_CONFIGURED',
         entityType: 'inventory_posting_accounts',
         entityId: companyId,
-        metadata: { companyId },
+        metadata: { companyId, defaultWarehouseId: data.defaultWarehouseId },
       });
       return { postingAccounts: data };
     });
