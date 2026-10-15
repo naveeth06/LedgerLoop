@@ -47,7 +47,7 @@
 - [x] Company settings and tenant-scoped GST registration APIs.
 - [x] Tenant-scoped parties directory with customer/supplier/both types, GSTIN/contact/address data, paise credit limits, forced RLS and audit.
 - [x] Tenant-scoped item and warehouse directories with HSN/SAC, GST-rate metadata, integer-paise prices, inventory flags, optional branch assignment, forced RLS and audit.
-- [x] Opening trial-balance posting and tenant-scoped opening inventory snapshots, atomically linked to posted journals.
+- [ ] Opening trial-balance posting and tenant-scoped opening inventory snapshots, atomically linked to posted journals.
 - [ ] Deterministic CGST/SGST/IGST calculations and rounding rules.
 - [x] Journal entry and line schema with atomic posting and database-enforced balance.
 - [ ] Posted voucher immutability and reversal workflow.
