@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { AuthService } from './auth.service';
+import { API_BASE_URL } from './api-base-url';
 
 export interface DashboardData {
   report: 'dashboard';
@@ -38,7 +39,6 @@ export interface DashboardData {
 export class DashboardDataService {
   private readonly http = inject(HttpClient);
   private readonly auth = inject(AuthService);
-  private readonly apiBaseUrl = 'http://localhost:3000';
 
   getDashboard(fromDate?: string, toDate?: string): Observable<DashboardData> {
     const company = this.auth.selectedCompany();
@@ -51,7 +51,7 @@ export class DashboardDataService {
     if (fromDate) params = params.set('fromDate', fromDate);
     if (toDate) params = params.set('toDate', toDate);
 
-    return this.http.get<DashboardData>(`${this.apiBaseUrl}/companies/${company.id}/dashboard`, {
+    return this.http.get<DashboardData>(`${API_BASE_URL}/companies/${company.id}/dashboard`, {
       params,
       headers: new HttpHeaders({ Authorization: `Bearer ${accessToken}` }),
     });
