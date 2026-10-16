@@ -143,6 +143,8 @@ Money is represented as integer paise. Company-owned resources are protected by 
 - Sales Invoices web page with live invoice listing, customer/item selection, multi-line draft creation, and issue/post action.
 - Sales Receipts web page with customer selection, outstanding-invoice loading, partial/multi-invoice allocation, receipt posting, and accounting-state feedback.
 - Purchases Bills web page with supplier selection, multi-line bill creation, GST-aware integer-paise conversion, posting-account configuration, and bill posting.
+- Shared GSAP motion system with route transitions, ScrollTrigger page/section reveals, table-row stagger reveals, dialog entrance motion, navigation/button micro-interactions, and restrained background parallax.
+- Motion respects `prefers-reduced-motion` and keeps animation lifecycle scoped and cleaned up between routes.
 
 ---
 
@@ -199,19 +201,28 @@ The backend already contains the majority of the accounting domain capabilities.
    - Purchase bill posting through the existing accounting API.
    - Clear draft/received and posting feedback.
 
-6. **Banking workspace — next**
+6. **Frontend motion system — implemented foundation**
+   - Shared GSAP dependency and motion service.
+   - Route enter/leave transitions integrated with Angular Router lifecycle.
+   - ScrollTrigger reveals for semantic content blocks and accounting tables.
+   - Shared button, icon-button, action, and navigation micro-interactions.
+   - Dynamic dialog entrance animation.
+   - Reduced-motion accessibility handling.
+   - Documented animation architecture and cleanup rules.
+
+7. **Banking workspace — next**
    - Bank account management.
    - Statement imports.
    - Reconciliation suggestions.
    - User-approved reconciliation.
 
-7. **Inventory workspace**
+8. **Inventory workspace**
    - Warehouses.
    - Stock movements.
    - Inventory adjustments.
    - Valuation views.
 
-8. **Reports workspace**
+9. **Reports workspace**
    - Trial Balance.
    - Profit & Loss.
    - Balance Sheet.
@@ -219,18 +230,19 @@ The backend already contains the majority of the accounting domain capabilities.
    - GST summary.
    - Inventory valuation.
 
-9. **Reminders workspace**
+10. **Reminders workspace**
    - Reminder settings.
    - Overdue events.
    - Email delivery status.
    - Acknowledgement and monitoring.
 
-10. **Application hardening**
+11. **Application hardening**
     - Consistent loading, empty, error, and offline states.
     - Responsive checks at 640/1024/1440px.
     - Keyboard and screen-reader review.
     - Ctrl+K/application command experience.
     - End-to-end browser coverage.
+    - Motion regression review across supported breakpoints and reduced-motion settings.
 
 ---
 
@@ -298,6 +310,8 @@ Provider-specific email bounce/webhook handling will only be implemented after t
 - Never fabricate dashboard or report metrics in the frontend.
 - AI output remains an untrusted suggestion until explicitly approved by an authorized user.
 - Avoid introducing external providers or APIs that have not been selected by the project.
+- Keep shared UI motion presentation-only; animations must never alter accounting state or business rules.
+- Respect reduced-motion preferences and clean up GSAP contexts/ScrollTriggers when routes change.
 
 ---
 
@@ -307,4 +321,4 @@ LedgerLoop should be considered application-complete only when a user can move t
 
 **Company setup → Masters → Quote/Order → Invoice/Bill → Posting → Receipt/Payment → Bank reconciliation → Inventory → Reports → Reminders**
 
-with tenant isolation, auditability, accounting integrity, responsive UX, and automated verification preserved throughout the workflow.
+with tenant isolation, auditability, accounting integrity, responsive UX, accessible motion, and automated verification preserved throughout the workflow.
