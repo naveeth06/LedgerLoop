@@ -1,14 +1,16 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import {
   LucideBell,
   LucideBuilding2,
   LucideChevronDown,
   LucideLayoutDashboard,
+  LucideLogOut,
   LucideMenu,
   LucideSettings,
   LucideX,
 } from '@lucide/angular';
+import { AuthService } from './services/auth.service';
 
 @Component({
   selector: 'll-root',
@@ -21,6 +23,7 @@ import {
     LucideBuilding2,
     LucideChevronDown,
     LucideLayoutDashboard,
+    LucideLogOut,
     LucideMenu,
     LucideSettings,
     LucideX,
@@ -75,8 +78,8 @@ import {
 
         <div class="border-t border-white/8 p-4">
           <div class="rounded-xl border border-white/8 bg-white/[0.03] p-3">
-            <p class="text-xs font-medium text-white">Company workspace</p>
-            <p class="mt-1 truncate text-xs text-[var(--ll-text-muted)]">Current company context</p>
+            <p class="text-xs font-medium text-white">{{ auth.selectedCompany()?.display_name || 'Company workspace' }}</p>
+            <p class="mt-1 truncate text-xs text-[var(--ll-text-muted)]">{{ auth.user()?.email || 'Current company context' }}</p>
           </div>
         </div>
       </aside>
@@ -97,7 +100,7 @@ import {
               <svg lucideMenu [size]="20"></svg>
             </button>
             <div class="hidden min-w-0 sm:block">
-              <p class="truncate text-sm font-medium text-white">LedgerLoop</p>
+              <p class="truncate text-sm font-medium text-white">{{ auth.selectedCompany()?.display_name || 'LedgerLoop' }}</p>
               <p class="text-xs text-[var(--ll-text-muted)]">Accounting workspace</p>
             </div>
           </div>
@@ -106,11 +109,19 @@ import {
             <button class="ll-icon-button" type="button" aria-label="Notifications">
               <svg lucideBell [size]="18"></svg>
             </button>
-            <button class="flex items-center gap-2 rounded-xl border border-white/8 bg-white/[0.03] px-2.5 py-2 text-left transition hover:border-violet-400/20 hover:bg-white/[0.05]" type="button" aria-label="Open user menu">
-              <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500/80 to-fuchsia-500/70 text-xs font-semibold text-white">N</span>
-              <span class="hidden text-xs font-medium text-white sm:block">Account</span>
-              <svg class="hidden text-[var(--ll-text-muted)] sm:block" lucideChevronDown [size]="14"></svg>
-            </button>
+            <div class="relative">
+              <button class="flex items-center gap-2 rounded-xl border border-white/8 bg-white/[0.03] px-2.5 py-2 text-left transition hover:border-violet-400/20 hover:bg-white/[0.05]" type="button" aria-label="Open user menu" (click)="userMenuOpen = !userMenuOpen">
+                <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500/80 to-fuchsia-500/70 text-xs font-semibold text-white">{{ initials }}</span>
+                <span class="hidden max-w-32 truncate text-xs font-medium text-white sm:block">{{ auth.user()?.displayName || 'Account' }}</span>
+                <svg class="hidden text-[var(--ll-text-muted)] sm:block" lucideChevronDown [size]="14"></svg>
+              </button>
+              @if (userMenuOpen) {
+                <div class="absolute right-0 top-[calc(100%+8px)] w-52 rounded-xl border border-white/8 bg-[var(--ll-surface-elevated)] p-1.5 shadow-2xl shadow-black/40">
+                  <div class="px-3 py-2"><p class="truncate text-xs font-medium text-white">{{ auth.user()?.displayName || 'Account' }}</p><p class="mt-1 truncate text-[10px] text-[var(--ll-text-muted)]">{{ auth.user()?.email }}</p></div>
+                  <button type="button" class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs text-zinc-300 transition hover:bg-white/[0.05] hover:text-white" (click)="logout()"><svg lucideLogOut [size]="14"></svg>Sign out</button>
+                </div>
+              }
+            </div>
           </div>
         </header>
 
@@ -123,7 +134,15 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AppComponent {
+  protected readonly auth = inject(AuthService);
+  private readonly router = inject(Router);
   protected sidebarOpen = false;
+  protected userMenuOpen = false;
+
+  protected get initials(): string {
+    const name = this.auth.user()?.displayName?.trim() || this.auth.user()?.email || 'A';
+    return name.slice(0, 1).toUpperCase();
+  }
 
   protected openSidebar(): void {
     this.sidebarOpen = true;
@@ -131,5 +150,11 @@ export class AppComponent {
 
   protected closeSidebar(): void {
     this.sidebarOpen = false;
+  }
+
+  protected async logout(): Promise<void> {
+    this.userMenuOpen = false;
+    await this.auth.logout();
+    await this.router.navigateByUrl('/auth');
   }
 }
