@@ -33,12 +33,13 @@ function setup() {
 
 describe('SupplierPaymentsController', () => {
   it('posts a supplier payment against a received purchase bill', async () => {
-    const { controller, audit } = setup();
+    const { controller, audit, query } = setup();
     const result = await controller.postPayment(companyId, paymentId, request);
     expect(result.status).toBe('posted');
     expect(result.journalEntryId).toBeTypeOf('string');
     expect(result.amountPaise).toBe('11800');
     expect(result.allocatedPaise).toBe('11800');
+    expect(query.mock.calls.some(([sql]) => sql.includes("'supplier_payment'"))).toBe(true);
     expect(audit.record).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ action: 'SUPPLIER_PAYMENT_POSTED' }));
   });
 
