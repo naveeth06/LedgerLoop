@@ -137,7 +137,10 @@ Money is represented as integer paise. Company-owned resources are protected by 
 - Company workspace context.
 - Protected dashboard route.
 - Dashboard connected to live accounting reporting.
-- Chart of Accounts web page introduced in this increment.
+- Chart of Accounts web page.
+- Customers & Suppliers web page.
+- Items & Warehouses web page.
+- Sales Invoices web page with live invoice listing, customer/item selection, multi-line draft creation, and issue/post action.
 
 ---
 
@@ -147,7 +150,7 @@ The backend already contains the majority of the accounting domain capabilities.
 
 ### Current priority order
 
-1. **Chart of Accounts**
+1. **Chart of Accounts — implemented**
    - Live account list.
    - Search and account-type filtering.
    - System/custom and active/inactive indicators.
@@ -155,27 +158,32 @@ The backend already contains the majority of the accounting domain capabilities.
    - Authorized account creation.
    - Validation and conflict handling.
 
-2. **Parties**
+2. **Parties — implemented foundation**
    - Customer and supplier list.
-   - Create/edit/view flows.
+   - Create party flow.
    - GSTIN and contact information.
    - Credit limits.
    - Customer/supplier classification.
+   - Reminder toggle presentation.
 
-3. **Items and warehouses**
-   - Item/service list and forms.
+3. **Items and warehouses — implemented foundation**
+   - Item/service list and creation form.
    - HSN/SAC and GST configuration.
    - Prices and inventory tracking.
    - Warehouse management.
+   - Validation aligned with the API contract.
 
-4. **Sales workspace**
-   - Quotations.
+4. **Sales workspace — current increment**
    - Invoice list.
-   - Invoice creation/editing.
-   - GST calculation presentation.
-   - Issue/post workflow.
-   - Invoice detail.
-   - Customer receipts and allocations.
+   - Customer and active-item selection.
+   - Multi-line invoice draft creation.
+   - GST rate and integer-paise price conversion.
+   - Due date, place-of-supply, and notes capture.
+   - Draft invoice creation through the existing tenant-scoped API.
+   - Invoice issue/post workflow through the existing accounting API.
+   - Clear GST registration and sales-posting-account setup states.
+
+   **Next sales increment:** invoice detail/editing and customer receipts with partial/multi-invoice allocation.
 
 5. **Purchases workspace**
    - Purchase orders.
@@ -221,9 +229,12 @@ The backend already contains the majority of the accounting domain capabilities.
 ## 4. Future plans
 
 ### Near-term
-- Complete the master-data screens and CRUD workflows.
+- Complete invoice detail/editing and receipt allocation workflows.
+- Complete the remaining master-data CRUD workflows supported by the API.
 - Connect all existing accounting APIs to the Angular application.
-- Add document detail pages and posting workflows.
+- Add purchase document and payment workflows.
+- Add bank statement import and reconciliation screens.
+- Add inventory movement and adjustment screens.
 - Add reusable tables, filters, forms, drawers/dialogs, status badges, and confirmation patterns.
 - Add focused web unit/component tests for critical accounting interactions.
 - Add Playwright coverage for invoice-to-payment and statement-import workflows.

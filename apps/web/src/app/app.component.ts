@@ -9,9 +9,9 @@ import {
   LucideLayoutDashboard,
   LucideLogOut,
   LucideMenu,
+  LucideReceipt,
   LucideSettings,
   LucideUsers,
-
   LucideX,
 } from '@lucide/angular';
 import { AuthService } from './services/auth.service';
@@ -22,7 +22,7 @@ import { AuthService } from './services/auth.service';
   imports: [
     RouterLink, RouterLinkActive, RouterOutlet,
     LucideBell, LucideBookOpen, LucideBoxes, LucideBuilding2, LucideChevronDown,
-    LucideLayoutDashboard, LucideLogOut, LucideMenu, LucideSettings, LucideUsers,
+    LucideLayoutDashboard, LucideLogOut, LucideMenu, LucideReceipt, LucideSettings, LucideUsers,
     LucideX,
   ],
   template: `
@@ -35,12 +35,12 @@ import { AuthService } from './services/auth.service';
         </div>
         <nav class="flex-1 space-y-7 overflow-y-auto px-3 py-6" aria-label="Primary navigation">
           <section><p class="ll-nav-label">Workspace</p><a routerLink="/dashboard" routerLinkActive="ll-nav-active" [routerLinkActiveOptions]="{ exact: true }" class="ll-nav-item" (click)="closeSidebar()"><svg lucideLayoutDashboard [size]="18"></svg><span>Dashboard</span></a></section>
-          <section>
-            <p class="ll-nav-label">Accounting</p>
+          <section><p class="ll-nav-label">Accounting</p>
             <a routerLink="/accounting/accounts" routerLinkActive="ll-nav-active" class="ll-nav-item" (click)="closeSidebar()"><svg lucideBookOpen [size]="18"></svg><span>Chart of Accounts</span></a>
             <a routerLink="/accounting/parties" routerLinkActive="ll-nav-active" class="ll-nav-item" (click)="closeSidebar()"><svg lucideUsers [size]="18"></svg><span>Customers & Suppliers</span></a>
             <a routerLink="/accounting/items-warehouses" routerLinkActive="ll-nav-active" class="ll-nav-item" (click)="closeSidebar()"><svg lucideBoxes [size]="18"></svg><span>Items & Warehouses</span></a>
           </section>
+          <section><p class="ll-nav-label">Sales</p><a routerLink="/sales/invoices" routerLinkActive="ll-nav-active" class="ll-nav-item" (click)="closeSidebar()"><svg lucideReceipt [size]="18"></svg><span>Invoices</span></a></section>
           <section><p class="ll-nav-label">System</p><a href="#" class="ll-nav-item" (click)="$event.preventDefault()"><svg lucideSettings [size]="18"></svg><span>Settings</span></a></section>
         </nav>
         <div class="border-t border-white/8 p-4"><div class="rounded-xl border border-white/8 bg-white/[0.03] p-3"><p class="text-xs font-medium text-white">{{ auth.selectedCompany()?.display_name || 'Company workspace' }}</p><p class="mt-1 truncate text-xs text-[var(--ll-text-muted)]">{{ auth.user()?.email || 'Current company context' }}</p></div></div>
