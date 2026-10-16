@@ -1,6 +1,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, catchError, firstValueFrom, map, of, tap } from 'rxjs';
+import { API_BASE_URL } from './api-base-url';
 
 export interface AuthUser {
   id: string;
@@ -40,7 +41,6 @@ interface CurrentUserResponse {
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly http = inject(HttpClient);
-  private readonly apiBaseUrl = 'http://localhost:3000/api';
   private readonly csrfStorageKey = 'ledgerloop_csrf_token';
   private readonly companyStorageKey = 'ledgerloop_company_id';
 
@@ -64,7 +64,7 @@ export class AuthService {
 
   signIn(email: string, password: string): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(
-      `${this.apiBaseUrl}/auth/signin`,
+      `${API_BASE_URL}/auth/signin`,
       { email, password },
       { withCredentials: true },
     ).pipe(tap((response) => this.setAuthenticated(response)));
@@ -72,14 +72,14 @@ export class AuthService {
 
   signUp(email: string, password: string, displayName: string): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(
-      `${this.apiBaseUrl}/auth/signup`,
+      `${API_BASE_URL}/auth/signup`,
       { email, password, displayName },
       { withCredentials: true },
     ).pipe(tap((response) => this.setAuthenticated(response)));
   }
 
   loadCurrentUser(): Observable<AuthUser> {
-    return this.http.get<CurrentUserResponse>(`${this.apiBaseUrl}/auth/me`, {
+    return this.http.get<CurrentUserResponse>(`${API_BASE_URL}/auth/me`, {
       headers: this.authorizationHeaders(),
     }).pipe(
       tap((response) => this.user.set(response.user)),
@@ -92,7 +92,7 @@ export class AuthService {
   }
 
   loadCompanies(): Observable<Company[]> {
-    return this.http.get<CompaniesResponse>(`${this.apiBaseUrl}/companies`, {
+    return this.http.get<CompaniesResponse>(`${API_BASE_URL}/companies`, {
       headers: this.authorizationHeaders(),
     }).pipe(
       tap((response) => {
@@ -110,7 +110,7 @@ export class AuthService {
 
   createCompany(legalName: string, displayName: string): Observable<CreateCompanyResponse> {
     return this.http.post<CreateCompanyResponse>(
-      `${this.apiBaseUrl}/companies`,
+      `${API_BASE_URL}/companies`,
       { legalName, displayName },
       { headers: this.authorizationHeaders() },
     ).pipe(
@@ -144,7 +144,7 @@ export class AuthService {
     }
 
     return this.http.post<AuthResponse>(
-      `${this.apiBaseUrl}/auth/refresh`,
+      `${API_BASE_URL}/auth/refresh`,
       {},
       {
         withCredentials: true,
@@ -158,7 +158,7 @@ export class AuthService {
     try {
       if (csrfToken) {
         await firstValueFrom(this.http.post(
-          `${this.apiBaseUrl}/auth/logout`,
+          `${API_BASE_URL}/auth/logout`,
           {},
           {
             withCredentials: true,
