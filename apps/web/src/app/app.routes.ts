@@ -8,6 +8,7 @@ import { InventoryPageComponent } from './pages/inventory-page.component';
 import { ItemsWarehousesPageComponent } from './pages/items-warehouses-page.component';
 import { PartiesPageComponent } from './pages/parties-page.component';
 import { PurchasesBillsPageComponent } from './pages/purchases-bills-page.component';
+import { ReportsPageComponent } from './pages/reports-page.component';
 import { SalesPageComponent } from './pages/sales-page.component';
 import { SalesReceiptsPageComponent } from './pages/sales-receipts-page.component';
 
@@ -23,5 +24,6 @@ export const routes: Routes = [
   { path: 'purchases/bills', canActivate: [authGuard], component: PurchasesBillsPageComponent },
   { path: 'banking', canActivate: [authGuard], component: BankingPageComponent },
   { path: 'inventory', canActivate: [authGuard], component: InventoryPageComponent },
+  { path: 'reports', canActivate: [authGuard], component: ReportsPageComponent },
   { path: '**', redirectTo: 'dashboard' },
 ];
