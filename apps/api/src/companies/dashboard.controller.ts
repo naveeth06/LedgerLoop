@@ -153,15 +153,19 @@ export class DashboardController {
         SELECT a.invoice_id, SUM(a.allocated_paise)::bigint AS allocated_paise
         FROM sales_receipt_allocations a JOIN sales_receipts r ON r.company_id = a.company_id AND r.id = a.receipt_id
         WHERE a.company_id = $1 AND r.status = 'posted' AND r.receipt_date <= $2::date GROUP BY a.invoice_id
+      ), ageing AS (
+        SELECT CASE WHEN COALESCE(i.due_date, i.invoice_date) >= $2::date THEN 'not-due'
+          WHEN ($2::date - COALESCE(i.due_date, i.invoice_date)) BETWEEN 1 AND 30 THEN '1-30'
+          WHEN ($2::date - COALESCE(i.due_date, i.invoice_date)) BETWEEN 31 AND 60 THEN '31-60'
+          WHEN ($2::date - COALESCE(i.due_date, i.invoice_date)) BETWEEN 61 AND 90 THEN '61-90' ELSE '90-plus' END AS bucket,
+          COALESCE(SUM(i.total_paise - COALESCE(a.allocated_paise, 0)), 0)::text AS amount_paise, COUNT(*)::text AS document_count
+        FROM sales_invoices i LEFT JOIN allocations a ON a.invoice_id = i.id
+        WHERE i.company_id = $1 AND i.status = 'issued' AND i.invoice_date <= $2::date AND i.total_paise > COALESCE(a.allocated_paise, 0)
+        GROUP BY 1
       )
-      SELECT CASE WHEN COALESCE(i.due_date, i.invoice_date) >= $2::date THEN 'not-due'
-        WHEN ($2::date - COALESCE(i.due_date, i.invoice_date)) BETWEEN 1 AND 30 THEN '1-30'
-        WHEN ($2::date - COALESCE(i.due_date, i.invoice_date)) BETWEEN 31 AND 60 THEN '31-60'
-        WHEN ($2::date - COALESCE(i.due_date, i.invoice_date)) BETWEEN 61 AND 90 THEN '61-90' ELSE '90-plus' END AS bucket,
-        COALESCE(SUM(i.total_paise - COALESCE(a.allocated_paise, 0)), 0)::text AS amount_paise, COUNT(*)::text AS document_count
-      FROM sales_invoices i LEFT JOIN allocations a ON a.invoice_id = i.id
-      WHERE i.company_id = $1 AND i.status = 'issued' AND i.invoice_date <= $2::date AND i.total_paise > COALESCE(a.allocated_paise, 0)
-      GROUP BY bucket ORDER BY CASE bucket WHEN 'not-due' THEN 1 WHEN '1-30' THEN 2 WHEN '31-60' THEN 3 WHEN '61-90' THEN 4 ELSE 5 END
+      SELECT bucket, amount_paise, document_count
+      FROM ageing
+      ORDER BY CASE bucket WHEN 'not-due' THEN 1 WHEN '1-30' THEN 2 WHEN '31-60' THEN 3 WHEN '61-90' THEN 4 ELSE 5 END
     `, [companyId, asOfDate]);
     return aggregateBuckets(result.rows);
   }
@@ -172,15 +176,19 @@ export class DashboardController {
         SELECT a.bill_id, SUM(a.allocated_paise)::bigint AS allocated_paise
         FROM supplier_payment_allocations a JOIN supplier_payments p ON p.company_id = a.company_id AND p.id = a.payment_id
         WHERE a.company_id = $1 AND p.status = 'posted' AND p.payment_date <= $2::date GROUP BY a.bill_id
+      ), ageing AS (
+        SELECT CASE WHEN COALESCE(b.due_date, b.bill_date) >= $2::date THEN 'not-due'
+          WHEN ($2::date - COALESCE(b.due_date, b.bill_date)) BETWEEN 1 AND 30 THEN '1-30'
+          WHEN ($2::date - COALESCE(b.due_date, b.bill_date)) BETWEEN 31 AND 60 THEN '31-60'
+          WHEN ($2::date - COALESCE(b.due_date, b.bill_date)) BETWEEN 61 AND 90 THEN '61-90' ELSE '90-plus' END AS bucket,
+          COALESCE(SUM(b.total_paise - COALESCE(a.allocated_paise, 0)), 0)::text AS amount_paise, COUNT(*)::text AS document_count
+        FROM purchase_bills b LEFT JOIN allocations a ON a.bill_id = b.id
+        WHERE b.company_id = $1 AND b.status = 'received' AND b.bill_date <= $2::date AND b.total_paise > COALESCE(a.allocated_paise, 0)
+        GROUP BY 1
       )
-      SELECT CASE WHEN COALESCE(b.due_date, b.bill_date) >= $2::date THEN 'not-due'
-        WHEN ($2::date - COALESCE(b.due_date, b.bill_date)) BETWEEN 1 AND 30 THEN '1-30'
-        WHEN ($2::date - COALESCE(b.due_date, b.bill_date)) BETWEEN 31 AND 60 THEN '31-60'
-        WHEN ($2::date - COALESCE(b.due_date, b.bill_date)) BETWEEN 61 AND 90 THEN '61-90' ELSE '90-plus' END AS bucket,
-        COALESCE(SUM(b.total_paise - COALESCE(a.allocated_paise, 0)), 0)::text AS amount_paise, COUNT(*)::text AS document_count
-      FROM purchase_bills b LEFT JOIN allocations a ON a.bill_id = b.id
-      WHERE b.company_id = $1 AND b.status = 'received' AND b.bill_date <= $2::date AND b.total_paise > COALESCE(a.allocated_paise, 0)
-      GROUP BY bucket ORDER BY CASE bucket WHEN 'not-due' THEN 1 WHEN '1-30' THEN 2 WHEN '31-60' THEN 3 WHEN '61-90' THEN 4 ELSE 5 END
+      SELECT bucket, amount_paise, document_count
+      FROM ageing
+      ORDER BY CASE bucket WHEN 'not-due' THEN 1 WHEN '1-30' THEN 2 WHEN '31-60' THEN 3 WHEN '61-90' THEN 4 ELSE 5 END
     `, [companyId, asOfDate]);
     return aggregateBuckets(result.rows);
   }
