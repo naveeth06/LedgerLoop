@@ -161,8 +161,8 @@ export class MotionService {
     ).filter((element) => !topLevel.has(element) && !element.closest('[role="dialog"]'));
 
     for (const element of candidates) {
-      if (element.dataset.llMotionReady === 'true') continue;
-      element.dataset.llMotionReady = 'true';
+      if (element.dataset['llMotionReady'] === 'true') continue;
+      element.dataset['llMotionReady'] = 'true';
 
       gsap.fromTo(
         element,
@@ -183,10 +183,10 @@ export class MotionService {
 
       if (element.tagName === 'TABLE') {
         const rows = Array.from(element.querySelectorAll<HTMLElement>('tbody tr')).filter(
-          (row) => row.dataset.llMotionRow !== 'true',
+          (row) => row.dataset['llMotionRow'] !== 'true',
         );
 
-        for (const row of rows) row.dataset.llMotionRow = 'true';
+        for (const row of rows) row.dataset['llMotionRow'] = 'true';
 
         if (rows.length) {
           gsap.fromTo(
@@ -301,8 +301,8 @@ export class MotionService {
   }
 
   private animateDialog(dialog: HTMLElement): void {
-    if (dialog.dataset.llDialogAnimated === 'true') return;
-    dialog.dataset.llDialogAnimated = 'true';
+    if (dialog.dataset['llDialogAnimated'] === 'true') return;
+    dialog.dataset['llDialogAnimated'] = 'true';
 
     gsap.fromTo(
       dialog,
