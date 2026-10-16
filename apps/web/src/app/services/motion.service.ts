@@ -15,13 +15,15 @@ const INTERACTIVE_SELECTOR = [
   '.ll-nav-item',
 ].join(',');
 
+type GsapContext = ReturnType<typeof gsap.context>;
+
 @Injectable({ providedIn: 'root' })
 export class MotionService {
   private readonly document = inject(DOCUMENT);
   private readonly reducedMotion = this.document.defaultView?.matchMedia('(prefers-reduced-motion: reduce)');
 
-  private routeContext: gsap.Context | null = null;
-  private shellContext: gsap.Context | null = null;
+  private routeContext: GsapContext | null = null;
+  private shellContext: GsapContext | null = null;
   private interactionRoot: HTMLElement | null = null;
   private dialogObserver: MutationObserver | null = null;
   private interactionCleanup: (() => void) | null = null;
