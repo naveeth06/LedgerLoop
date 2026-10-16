@@ -155,7 +155,7 @@ type Warehouse = {
             <form class="mt-5 space-y-4" (submit)="createItem($event)">
               <div class="grid gap-4 sm:grid-cols-2"><label><span class="ll-label">Item code</span><input class="ll-input mt-1.5 w-full" required maxlength="32" [value]="itemCode()" (input)="itemCode.set($any($event.target).value)" placeholder="ITEM-001" /></label><label><span class="ll-label">Type</span><select class="ll-input mt-1.5 w-full" [value]="itemType()" (change)="itemType.set($any($event.target).value)"><option value="goods">Goods</option><option value="service">Service</option></select></label></div>
               <label><span class="ll-label">Name</span><input class="ll-input mt-1.5 w-full" required maxlength="200" [value]="itemName()" (input)="itemName.set($any($event.target).value)" placeholder="Product or service name" /></label>
-              <div class="grid gap-4 sm:grid-cols-3"><label><span class="ll-label">HSN / SAC</span><input class="ll-input mt-1.5 w-full" maxlength="8" inputmode="numeric" [value]="hsnSac()" (input)="hsnSac.set($any($event.target).value)" placeholder="9983" /></label><label><span class="ll-label">Unit</span><input class="ll-input mt-1.5 w-full" maxlength="16" [value]="unitCode()" (input)="unitCode.set($any($event.target).value)" /></label><label><span class="ll-label">GST %</span><input class="ll-input mt-1.5 w-full" type="number" min="0" max="100" step="0.01" [value]="gstRate()" (input)="gstRate.set($any($event.target).value)" /></label></div>
+              <div class="grid gap-4 sm:grid-cols-3"><label><span class="ll-label">HSN / SAC</span><input class="ll-input mt-1.5 w-full" maxlength="8" pattern="[0-9]{4,8}" inputmode="numeric" [value]="hsnSac()" (input)="hsnSac.set($any($event.target).value)" placeholder="9983" /></label><label><span class="ll-label">Unit</span><input class="ll-input mt-1.5 w-full" maxlength="16" [value]="unitCode()" (input)="unitCode.set($any($event.target).value)" /></label><label><span class="ll-label">GST %</span><input class="ll-input mt-1.5 w-full" type="number" min="0" max="100" step="0.01" inputmode="decimal" [value]="gstRate()" (input)="gstRate.set($any($event.target).value)" /></label></div>
               <div class="grid gap-4 sm:grid-cols-2"><label><span class="ll-label">Selling price (₹)</span><input class="ll-input mt-1.5 w-full" inputmode="decimal" [value]="sellingPrice()" (input)="sellingPrice.set($any($event.target).value)" placeholder="0.00" /></label><label><span class="ll-label">Purchase price (₹)</span><input class="ll-input mt-1.5 w-full" inputmode="decimal" [value]="purchasePrice()" (input)="purchasePrice.set($any($event.target).value)" placeholder="0.00" /></label></div>
               @if (itemType() === 'goods') { <label class="flex items-center gap-2 text-xs text-zinc-300"><input type="checkbox" [checked]="trackInventory()" (change)="trackInventory.set($any($event.target).checked)" /> Track inventory for this item</label> }
               @if (formError()) { <p class="rounded-lg border border-rose-400/20 bg-rose-500/10 px-3 py-2 text-xs text-rose-200">{{ formError() }}</p> }
@@ -235,20 +235,59 @@ export class ItemsWarehousesPageComponent {
     this.loading.set(true); this.errorMessage.set('');
     const endpoint = this.viewMode() === 'items' ? `/companies/${companyId}/items` : `/companies/${companyId}/warehouses`;
     const options = this.viewMode() === 'items' && this.itemTypeFilter() !== 'all' ? { headers: this.headers(), params: { type: this.itemTypeFilter() } } : { headers: this.headers() };
-    this.http.get<{ items?: Item[]; warehouses?: Warehouse[] }>(`${API_BASE_URL}${endpoint}`, options).pipe(catchError(error => { this.errorMessage.set(error?.error?.message || 'Unable to load master data.'); return of({items :[]as Item[], warehouses :[]as Warehouse[]}); }), finalize(() => this.loading.set(false))).subscribe(response => { if (this.viewMode() === 'items') this.items.set(response.items ?? []); else this.warehouses.set(response.warehouses ?? []); });
+    this.http.get<{ items?: Item[]; warehouses?: Warehouse[] }>(`${API_BASE_URL}${endpoint}`, options).pipe(catchError(error => { this.errorMessage.set(error?.error?.message || 'Unable to load master data.'); return of({ items: [] as Item[], warehouses: [] as Warehouse[] }); }), finalize(() => this.loading.set(false))).subscribe(response => { if (this.viewMode() === 'items') this.items.set(response.items ?? []); else this.warehouses.set(response.warehouses ?? []); });
   }
 
   protected openCreateForm(): void { this.formError.set(''); this.createFormOpen.set(true); }
   protected closeCreateForm(): void { if (!this.saving()) this.createFormOpen.set(false); }
 
   protected createItem(event: Event): void {
-    event.preventDefault(); this.formError.set('');
-    const itemCode = this.itemCode().trim(), name = this.itemName().trim();
-    const gst = Number(this.gstRate()), sell = this.toPaise(this.sellingPrice()), purchase = this.toPaise(this.purchasePrice());
-    if (!itemCode || !name || !Number.isFinite(gst) || gst < 0 || gst > 100 || sell === null || purchase === null) { this.formError.set('Enter valid item details, prices, and GST rate.'); return; }
-    const companyId = this.auth.selectedCompany()?.id; if (!companyId) { this.formError.set('Select a company first.'); return; }
+    event.preventDefault();
+    this.formError.set('');
+    const itemCode = this.itemCode().trim();
+    const name = this.itemName().trim();
+    const hsnSac = this.hsnSac().trim();
+    const unitCode = this.unitCode().trim() || 'unit';
+    const gst = Number(this.gstRate());
+    const gstRateBps = Math.round(gst * 100);
+    const sell = this.toPaise(this.sellingPrice());
+    const purchase = this.toPaise(this.purchasePrice());
+
+    if (!itemCode || !name) {
+      this.formError.set('Item code and name are required.');
+      return;
+    }
+    if (hsnSac && !/^\d{4,8}$/.test(hsnSac)) {
+      this.formError.set('HSN / SAC must contain 4 to 8 digits.');
+      return;
+    }
+    if (!Number.isFinite(gst) || gst < 0 || gst > 100 || !Number.isInteger(gstRateBps) || gstRateBps > 10000) {
+      this.formError.set('GST rate must be between 0% and 100%.');
+      return;
+    }
+    if (sell === null || purchase === null) {
+      this.formError.set('Selling and purchase prices must be valid non-negative amounts.');
+      return;
+    }
+
+    const companyId = this.auth.selectedCompany()?.id;
+    if (!companyId) {
+      this.formError.set('Select a company first.');
+      return;
+    }
+
     this.saving.set(true);
-    const body = { itemCode, name, itemType: this.itemType(), hsnSac: this.hsnSac().trim() || undefined, unitCode: this.unitCode().trim() || 'unit', gstRateBps: Math.round(gst * 100), sellingPricePaise: sell, purchasePricePaise: purchase, trackInventory: this.itemType() === 'goods' ? this.trackInventory() : false };
+    const body = {
+      itemCode,
+      name,
+      itemType: this.itemType(),
+      hsnSac: hsnSac || undefined,
+      unitCode,
+      gstRateBps,
+      sellingPricePaise: sell,
+      purchasePricePaise: purchase,
+      trackInventory: this.itemType() === 'goods' ? this.trackInventory() : false,
+    };
     this.http.post(`${API_BASE_URL}/companies/${companyId}/items`, body, { headers: this.headers() }).pipe(catchError(error => { this.formError.set(error?.error?.message || 'Unable to create item.'); return of(null); }), finalize(() => this.saving.set(false))).subscribe(result => { if (!result) return; this.closeCreateForm(); this.loadCurrentView(); });
   }
 
