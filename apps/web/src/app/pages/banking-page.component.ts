@@ -1,10 +1,10 @@
+import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { LucideCheck, LucideChevronDown, LucideDownload, LucideLandmark, LucidePlus, LucideRefreshCw, LucideUpload, LucideX } from '@lucide/angular';
-import { environment } from '../../environments/environment';
+import { LucideChevronDown, LucideLandmark, LucidePlus, LucideRefreshCw, LucideUpload, LucideX } from '@lucide/angular';
+import { API_BASE_URL } from '../services/api-base-url';
 import { AuthService } from '../services/auth.service';
-import { MotionService } from '../services/motion.service';
 
 interface LedgerAccount {
   id: string;
@@ -69,7 +69,7 @@ interface ImportPayload {
 @Component({
   selector: 'll-banking-page',
   standalone: true,
-  imports: [FormsModule, LucideCheck, LucideChevronDown, LucideDownload, LucideLandmark, LucidePlus, LucideRefreshCw, LucideUpload, LucideX],
+  imports: [CommonModule, FormsModule, LucideChevronDown, LucideLandmark, LucidePlus, LucideRefreshCw, LucideUpload, LucideX],
   template: `
     <section class="mx-auto w-full max-w-7xl space-y-6 px-4 py-6 sm:px-6 lg:px-8">
       <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -256,8 +256,7 @@ export class BankingPageComponent {
   private readonly http = inject(HttpClient);
   private readonly auth = inject(AuthService);
   private readonly cdr = inject(ChangeDetectorRef);
-  private readonly motion = inject(MotionService);
-  private readonly apiBase = environment.apiBaseUrl;
+  private readonly apiBase = API_BASE_URL;
 
   protected bankAccounts: BankAccount[] = [];
   protected ledgerAccounts: LedgerAccount[] = [];
