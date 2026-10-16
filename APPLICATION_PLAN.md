@@ -17,30 +17,74 @@ LedgerLoop is a multi-tenant accounting application for Indian businesses. The w
 - Registration/sign-in and refresh-session rotation.
 - Company and membership context.
 - Company roles and authorization guards.
+- Branch/company APIs.
 - Tenant-scoped audit logging.
+- CSRF/origin, CORS, throttling, and validation foundations.
 - Global Angular bearer-token attachment for authenticated API requests.
 
-### Accounting and master data
-- Chart of Accounts, opening balances, opening inventory, balanced journals, atomic posting, reversals, and posted-history immutability.
+### Accounting
+- Chart of Accounts and account creation.
+- Opening balances and opening inventory.
 - Deterministic CGST/SGST/IGST calculation and integer-paise rounding.
-- Customers, suppliers, GST/contact/address data, items/services, HSN/SAC, GST rates, prices, inventory tracking, and warehouses.
+- Balanced journal entries and atomic posting.
+- Posted journal immutability and reversal workflow.
+- Tenant-boundary and accounting-integrity tests.
 
-### Sales and purchases
-- Sales invoices and customer receipts, including partial/multi-invoice allocation.
-- Purchase bills, posting configuration, payables, inventory capitalization/expense posting, input GST, and supplier payment foundation.
+### Master data
+- Customers, suppliers, and combined parties.
+- GST/contact/address party data and credit limits.
+- Items/services, HSN/SAC, GST rates, prices, and inventory tracking.
+- Warehouses.
 
-### Banking and inventory
-- Tenant-scoped bank accounts, statement imports, duplicate protection, reconciliation suggestions, and user-approved matching.
-- Immutable inventory movements, weighted-average valuation, stock warehouse/account configuration, purchase capitalization, sales COGS/inventory relief, controlled adjustments, and reversal-safe corrections.
+### Sales
+- Sales invoice creation, numbering, GST totals, and posting.
+- Customer receipts.
+- Bank/cash account selection.
+- Partial and multi-invoice allocation.
+- Outstanding-balance validation and receipt immutability.
+
+### Purchases
+- Purchase orders.
+- Purchase bills and deterministic GST totals.
+- Payables posting.
+- Inventory capitalization and expense posting.
+- Input GST.
+- Supplier payments and allocation.
+- Supplier debit notes and expense workflows.
+
+### Inventory
+- Immutable inventory movements.
+- Weighted-average valuation.
+- Stock warehouse/account configuration.
+- Purchase capitalization and sales COGS/inventory relief.
+- Tenant-scoped adjustments and reversal-safe corrections.
+
+### Banking and reconciliation
+- Tenant-scoped bank accounts.
+- Statement import batches and transactions.
+- External-ID duplicate protection.
+- Secure JSON statement import validation.
+- Reconciliation suggestions against posted journal lines.
+- User-approved reconciliation with account, amount, and date-window checks.
+- One-match-per-journal-line protection.
+- Immutable reconciled state and confidence bands.
+- Low-confidence suggestions are never auto-posted.
 
 ### Reporting
 - Trial Balance.
 - Profit & Loss.
 - Balance Sheet.
-- Receivables ageing.
+- Receivables/payables ageing.
 - GST summary.
 - Inventory valuation.
-- Existing dashboard KPIs/charts and financial period filtering.
+- Dashboard KPIs/charts and financial period filtering.
+
+### Reminders and email
+- Overdue reminder settings and idempotent events.
+- BullMQ scheduling.
+- Tenant-scoped delivery records.
+- Party reminder opt-out.
+- SMTP/provider-neutral delivery abstraction with retry/backoff and audit metadata.
 
 ### Web application
 - Responsive dark LedgerLoop application shell.
@@ -48,25 +92,34 @@ LedgerLoop is a multi-tenant accounting application for Indian businesses. The w
 - Chart of Accounts.
 - Customers & Suppliers.
 - Items & Warehouses.
-- Sales Invoices and Sales Receipts.
+- Sales Invoices.
+- Sales Receipts.
 - Purchase Bills.
-- Banking & Reconciliation.
-- Inventory workspace with valuation, movements, adjustments, reversal, and posting-account configuration.
-- Reports workspace with live Trial Balance, P&L, Balance Sheet, Receivables ageing, GST, and Inventory valuation views.
-- Shared GSAP motion system with route transitions, ScrollTrigger reveals, micro-interactions, reduced-motion handling, and lifecycle cleanup.
+- Banking & Reconciliation workspace.
+- Inventory workspace with valuation, movements, stock adjustments, reversal, and posting-account configuration.
+- Reports workspace with Trial Balance, Profit & Loss, Balance Sheet, Receivables ageing, GST summary, and Inventory valuation.
+- Shared GSAP motion system with route transitions, ScrollTrigger reveals, table-row stagger motion, dialog entrance motion, micro-interactions, restrained background parallax, reduced-motion handling, and lifecycle cleanup.
 
 ## Current application plan
 
 1. **Chart of Accounts — implemented**
+   - Live list, filtering, account creation, validation, and conflict handling.
 2. **Parties — implemented foundation**
+   - Customer/supplier directory and creation workflow.
 3. **Items & Warehouses — implemented foundation**
+   - Item/service and warehouse management.
 4. **Sales — implemented foundation**
+   - Invoices and customer receipts, including partial/multi-invoice allocation.
 5. **Purchases — implemented foundation**
+   - Supplier bills and purchase posting configuration.
 6. **Frontend motion — implemented foundation**
+   - Centralized GSAP motion architecture across the authenticated application.
 7. **Banking — implemented foundation**
+   - Bank account connection, JSON statement import, transaction listing, suggestion review, and user-approved matching.
 8. **Inventory — implemented foundation**
+   - Stock/valuation view, immutable movement view, controlled adjustments, reversal action, and inventory posting-account setup.
 9. **Reports — implemented foundation**
-   - Live Trial Balance, Profit & Loss, Balance Sheet, Receivables ageing, GST summary, and Inventory valuation.
+   - Trial Balance, Profit & Loss, Balance Sheet, Receivables ageing, GST summary, and Inventory valuation browser views backed by existing tenant-scoped APIs.
 
 ## Next priorities
 
@@ -102,7 +155,11 @@ LedgerLoop is a multi-tenant accounting application for Indian businesses. The w
 - WCAG 2.2 AA review.
 
 ### AI capabilities
-AI remains advisory rather than authoritative: transaction categorisation suggestions, receipt extraction/reconciliation suggestions, explicit human approval, prompt-injection defenses, sensitive-data redaction, quotas, confidence thresholds, and AI audit metadata.
+AI remains advisory rather than authoritative:
+- Transaction categorisation suggestions.
+- Receipt extraction and reconciliation suggestions.
+- Explicit validation and human approval before accounting mutation.
+- Prompt-injection defenses, sensitive-data redaction, quotas, confidence thresholds, and AI audit metadata.
 
 ### Provider-specific integrations
 Provider-specific email webhooks/bounce handling will only be implemented after the provider/API is explicitly selected. The existing provider-neutral foundation must not be replaced with an invented external contract.
