@@ -100,6 +100,7 @@ export class AuthService {
         this.companies.set(companies);
         this.restoreCompanySelection(companies);
       }),
+      map((response) => response.companies.map((item) => item.company)),
       catchError((error: unknown) => {
         if (this.isUnauthorized(error)) this.clearSession();
         throw error;
