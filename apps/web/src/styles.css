@@ -53,6 +53,12 @@ a {
   outline-offset: 2px;
 }
 
+.ll-route-stage {
+  min-height: inherit;
+  transform: translateZ(0);
+  will-change: opacity, transform;
+}
+
 .ll-card {
   border: 1px solid var(--ll-border);
   border-radius: 1rem;
@@ -137,7 +143,7 @@ a {
   font-size: 0.8125rem;
   font-weight: 600;
   cursor: pointer;
-  transition: transform 160ms ease, background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+  transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
 }
 
 .ll-button-primary {
@@ -148,7 +154,6 @@ a {
 }
 
 .ll-button-primary:hover {
-  transform: translateY(-1px);
   box-shadow: 0 12px 34px rgb(124 58 237 / 0.3);
 }
 
@@ -196,5 +201,10 @@ a {
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
+  }
+
+  .ll-route-stage {
+    transform: none !important;
+    will-change: auto;
   }
 }
