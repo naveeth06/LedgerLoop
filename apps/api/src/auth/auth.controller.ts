@@ -77,8 +77,8 @@ export class AuthController {
     } finally {
       client.release();
     }
-    this.setSessionCookies(response, session.refreshToken);
-    return { user: publicUser(user), ...this.accessTokens.issue(user.id) };
+    const csrfToken = this.setSessionCookies(response, session.refreshToken);
+    return { user: publicUser(user), ...this.accessTokens.issue(user.id), csrfToken };
   }
 
   @Public()
@@ -100,8 +100,8 @@ export class AuthController {
       throw new UnauthorizedException('Invalid email or password.');
     }
     const session = await this.sessions.create(user.id, requestMetadata(request));
-    this.setSessionCookies(response, session.refreshToken);
-    return { user: publicUser(user), ...this.accessTokens.issue(user.id) };
+    const csrfToken = this.setSessionCookies(response, session.refreshToken);
+    return { user: publicUser(user), ...this.accessTokens.issue(user.id), csrfToken };
   }
 
   @Public()
@@ -118,8 +118,8 @@ export class AuthController {
       this.clearSessionCookies(response);
       throw new UnauthorizedException('Session is invalid or expired.');
     }
-    this.setSessionCookies(response, rotated.refreshToken);
-    return this.accessTokens.issue(rotated.userId);
+    const csrfToken = this.setSessionCookies(response, rotated.refreshToken);
+    return { ...this.accessTokens.issue(rotated.userId), csrfToken };
   }
 
   @Public()
@@ -166,13 +166,14 @@ export class AuthController {
     }
   }
 
-  private setSessionCookies(response: Response, refreshToken: string): void {
+  private setSessionCookies(response: Response, refreshToken: string): string {
     const csrfToken = createCsrfToken();
     const secure = process.env.NODE_ENV === 'production' || process.env.COOKIE_SECURE === 'true';
     response.setHeader('Set-Cookie', [
       cookie(REFRESH_COOKIE, refreshToken, { httpOnly: true, secure, sameSite: 'Strict', maxAge: REFRESH_TTL_SECONDS, path: '/api/auth' }),
       cookie(CSRF_COOKIE, csrfToken, { httpOnly: false, secure, sameSite: 'Strict', maxAge: REFRESH_TTL_SECONDS, path: '/api/auth' }),
     ]);
+    return csrfToken;
   }
 
   private clearSessionCookies(response: Response): void {
