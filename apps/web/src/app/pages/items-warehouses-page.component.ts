@@ -3,7 +3,6 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { catchError, finalize, of } from 'rxjs';
 import {
   LucideBoxes,
-  LucideBuilding2,
   LucidePlus,
   LucideRefreshCw,
   LucideSearch,
@@ -41,7 +40,7 @@ type Warehouse = {
 @Component({
   selector: 'll-items-warehouses-page',
   standalone: true,
-  imports: [LucideBoxes, LucideBuilding2, LucidePlus, LucideRefreshCw, LucideSearch, LucideWarehouse],
+  imports: [LucideBoxes, LucidePlus, LucideRefreshCw, LucideSearch, LucideWarehouse],
   template: `
     <section class="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
       <div class="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
@@ -236,7 +235,7 @@ export class ItemsWarehousesPageComponent {
     this.loading.set(true); this.errorMessage.set('');
     const endpoint = this.viewMode() === 'items' ? `/companies/${companyId}/items` : `/companies/${companyId}/warehouses`;
     const options = this.viewMode() === 'items' && this.itemTypeFilter() !== 'all' ? { headers: this.headers(), params: { type: this.itemTypeFilter() } } : { headers: this.headers() };
-    this.http.get<{ items?: Item[]; warehouses?: Warehouse[] }>(`${API_BASE_URL}${endpoint}`, options).pipe(catchError(error => { this.errorMessage.set(error?.error?.message || 'Unable to load master data.'); return of({}); }), finalize(() => this.loading.set(false))).subscribe(response => { if (this.viewMode() === 'items') this.items.set(response.items ?? []); else this.warehouses.set(response.warehouses ?? []); });
+    this.http.get<{ items?: Item[]; warehouses?: Warehouse[] }>(`${API_BASE_URL}${endpoint}`, options).pipe(catchError(error => { this.errorMessage.set(error?.error?.message || 'Unable to load master data.'); return of({items :[]as Item[], warehouses :[]as Warehouse[]}); }), finalize(() => this.loading.set(false))).subscribe(response => { if (this.viewMode() === 'items') this.items.set(response.items ?? []); else this.warehouses.set(response.warehouses ?? []); });
   }
 
   protected openCreateForm(): void { this.formError.set(''); this.createFormOpen.set(true); }

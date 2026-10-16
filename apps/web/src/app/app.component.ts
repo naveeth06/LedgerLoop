@@ -11,7 +11,7 @@ import {
   LucideMenu,
   LucideSettings,
   LucideUsers,
-  LucideWarehouse,
+
   LucideX,
 } from '@lucide/angular';
 import { AuthService } from './services/auth.service';
@@ -23,7 +23,7 @@ import { AuthService } from './services/auth.service';
     RouterLink, RouterLinkActive, RouterOutlet,
     LucideBell, LucideBookOpen, LucideBoxes, LucideBuilding2, LucideChevronDown,
     LucideLayoutDashboard, LucideLogOut, LucideMenu, LucideSettings, LucideUsers,
-    LucideWarehouse, LucideX,
+    LucideX,
   ],
   template: `
     <div class="min-h-screen bg-[var(--ll-bg)] text-[var(--ll-text)]">
