@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import {
   LucideBell,
+  LucideBookOpen,
   LucideBuilding2,
   LucideChevronDown,
   LucideLayoutDashboard,
@@ -20,6 +21,7 @@ import { AuthService } from './services/auth.service';
     RouterLinkActive,
     RouterOutlet,
     LucideBell,
+    LucideBookOpen,
     LucideBuilding2,
     LucideChevronDown,
     LucideLayoutDashboard,
@@ -64,6 +66,19 @@ import { AuthService } from './services/auth.service';
             >
               <svg lucideLayoutDashboard [size]="18"></svg>
               <span>Dashboard</span>
+            </a>
+          </section>
+
+          <section>
+            <p class="ll-nav-label">Accounting</p>
+            <a
+              routerLink="/accounting/accounts"
+              routerLinkActive="ll-nav-active"
+              class="ll-nav-item"
+              (click)="closeSidebar()"
+            >
+              <svg lucideBookOpen [size]="18"></svg>
+              <span>Chart of Accounts</span>
             </a>
           </section>
 
