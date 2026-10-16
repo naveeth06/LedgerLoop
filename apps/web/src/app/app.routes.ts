@@ -4,6 +4,7 @@ import { authGuard } from './auth.guard';
 import { AccountsPageComponent } from './pages/accounts-page.component';
 import { AuthPageComponent } from './pages/auth-page.component';
 import { DashboardPageComponent } from './pages/dashboard-page.component';
+import { ItemsWarehousesPageComponent } from './pages/items-warehouses-page.component';
 import { PartiesPageComponent } from './pages/parties-page.component';
 
 export const routes: Routes = [
@@ -30,6 +31,11 @@ export const routes: Routes = [
     path: 'accounting/parties',
     canActivate: [authGuard],
     component: PartiesPageComponent,
+  },
+  {
+    path: 'accounting/items-warehouses',
+    canActivate: [authGuard],
+    component: ItemsWarehousesPageComponent,
   },
   {
     path: '**',
