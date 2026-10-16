@@ -142,6 +142,7 @@ Money is represented as integer paise. Company-owned resources are protected by 
 - Items & Warehouses web page.
 - Sales Invoices web page with live invoice listing, customer/item selection, multi-line draft creation, and issue/post action.
 - Sales Receipts web page with customer selection, outstanding-invoice loading, partial/multi-invoice allocation, receipt posting, and accounting-state feedback.
+- Purchases Bills web page with supplier selection, multi-line bill creation, GST-aware integer-paise conversion, posting-account configuration, and bill posting.
 
 ---
 
@@ -188,13 +189,17 @@ The backend already contains the majority of the accounting domain capabilities.
    - Unallocated customer-advance handling.
    - Clear accounting-state and posting feedback.
 
-5. **Purchases workspace — next**
-   - Purchase orders.
-   - Bills.
-   - Supplier payments.
-   - Outstanding payables.
+5. **Purchases workspace — implemented foundation**
+   - Supplier bill list.
+   - Multi-line purchase bill creation.
+   - Supplier invoice number, due date, notes, and state-code capture.
+   - GST rate and integer-paise conversion.
+   - Purchase posting-account configuration.
+   - Draft bill creation through the existing tenant-scoped API.
+   - Purchase bill posting through the existing accounting API.
+   - Clear draft/received and posting feedback.
 
-6. **Banking workspace**
+6. **Banking workspace — next**
    - Bank account management.
    - Statement imports.
    - Reconciliation suggestions.
@@ -235,7 +240,7 @@ The backend already contains the majority of the accounting domain capabilities.
 - Complete invoice detail/editing and remaining sales document workflows.
 - Complete the remaining master-data CRUD workflows supported by the API.
 - Connect all existing accounting APIs to the Angular application.
-- Add purchase document and payment workflows.
+- Add purchase order and supplier payment workflows.
 - Add bank statement import and reconciliation screens.
 - Add inventory movement and adjustment screens.
 - Add reusable tables, filters, forms, drawers/dialogs, status badges, and confirmation patterns.
