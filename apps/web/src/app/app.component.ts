@@ -6,7 +6,6 @@ import {
   LucideBoxes,
   LucideBuilding2,
   LucideChevronDown,
-  LucideFilePlus2,
   LucideLayoutDashboard,
   LucideLogOut,
   LucideMenu,
@@ -23,8 +22,8 @@ import { AuthService } from './services/auth.service';
   imports: [
     RouterLink, RouterLinkActive, RouterOutlet,
     LucideBell, LucideBookOpen, LucideBoxes, LucideBuilding2, LucideChevronDown,
-    LucideFilePlus2, LucideLayoutDashboard, LucideLogOut, LucideMenu, LucideReceipt,
-    LucideSettings, LucideUsers, LucideX,
+    LucideLayoutDashboard, LucideLogOut, LucideMenu, LucideReceipt, LucideSettings, LucideUsers,
+    LucideX,
   ],
   template: `
     <div class="min-h-screen bg-[var(--ll-bg)] text-[var(--ll-text)]">
