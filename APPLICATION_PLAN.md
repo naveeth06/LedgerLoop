@@ -97,6 +97,7 @@ LedgerLoop is a multi-tenant accounting application for Indian businesses. The w
 - Purchase Bills.
 - Banking & Reconciliation workspace.
 - Inventory workspace with valuation, movements, stock adjustments, reversal, and posting-account configuration.
+- Reports workspace with Trial Balance, Profit & Loss, Balance Sheet, Receivables ageing, GST summary, and Inventory valuation.
 - Shared GSAP motion system with route transitions, ScrollTrigger reveals, table-row stagger motion, dialog entrance motion, micro-interactions, restrained background parallax, reduced-motion handling, and lifecycle cleanup.
 
 ## Current application plan
@@ -117,16 +118,11 @@ LedgerLoop is a multi-tenant accounting application for Indian businesses. The w
    - Bank account connection, JSON statement import, transaction listing, suggestion review, and user-approved matching.
 8. **Inventory — implemented foundation**
    - Stock/valuation view, immutable movement view, controlled adjustments, reversal action, and inventory posting-account setup.
+9. **Reports — implemented foundation**
+   - Trial Balance, Profit & Loss, Balance Sheet, Receivables ageing, GST summary, and Inventory valuation browser views backed by existing tenant-scoped APIs.
 
 ## Next priorities
 
-9. **Reports workspace**
-   - Trial Balance.
-   - Profit & Loss.
-   - Balance Sheet.
-   - Receivables/payables ageing.
-   - GST summary.
-   - Inventory valuation report views.
 10. **Purchase completion**
     - Purchase orders.
     - Supplier payment workspace.

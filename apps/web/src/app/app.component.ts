@@ -2,7 +2,7 @@ import { DOCUMENT } from '@angular/common';
 import { AfterViewInit, ChangeDetectionStrategy, Component, DestroyRef, ElementRef, ViewChild, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationCancel, NavigationEnd, NavigationError, NavigationStart, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { LucideBell, LucideBookOpen, LucideBoxes, LucideBuilding2, LucideChevronDown, LucideCoins, LucideLandmark, LucideLayoutDashboard, LucideLogOut, LucideMenu, LucideReceipt, LucideSettings, LucideShoppingCart, LucideUsers, LucideX } from '@lucide/angular';
+import { LucideBarChart3, LucideBell, LucideBookOpen, LucideBoxes, LucideBuilding2, LucideChevronDown, LucideCoins, LucideLandmark, LucideLayoutDashboard, LucideLogOut, LucideMenu, LucideReceipt, LucideSettings, LucideShoppingCart, LucideUsers, LucideX } from '@lucide/angular';
 import { filter } from 'rxjs';
 
 import { AuthService } from './services/auth.service';
@@ -15,6 +15,7 @@ import { MotionService } from './services/motion.service';
     RouterLink,
     RouterLinkActive,
     RouterOutlet,
+    LucideBarChart3,
     LucideBell,
     LucideBookOpen,
     LucideBoxes,
@@ -87,6 +88,11 @@ import { MotionService } from './services/motion.service';
           <section>
             <p class="ll-nav-label">Inventory</p>
             <a routerLink="/inventory" routerLinkActive="ll-nav-active" class="ll-nav-item" (click)="closeSidebar()"><svg lucideBoxes [size]="18"></svg><span>Inventory</span></a>
+          </section>
+
+          <section>
+            <p class="ll-nav-label">Reports</p>
+            <a routerLink="/reports" routerLinkActive="ll-nav-active" class="ll-nav-item" (click)="closeSidebar()"><svg lucideBarChart3 [size]="18"></svg><span>Reports</span></a>
           </section>
 
           <section>
