@@ -53,6 +53,7 @@ LedgerLoop is a multi-tenant accounting application for Indian businesses. The w
 - Supplier debit notes and expense workflows.
 
 ### Inventory
+- Consistent inventory action, tab, search, and form-control styling with keyboard-visible focus states.
 - Immutable inventory movements.
 - Weighted-average valuation.
 - Stock warehouse/account configuration.
