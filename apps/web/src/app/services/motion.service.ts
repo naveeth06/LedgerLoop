@@ -105,7 +105,9 @@ export class MotionService {
     requestAnimationFrame(() => {
       if (this.routeStage !== stage) return;
 
-      const host = stage.firstElementChild as HTMLElement | null;
+      const host = Array.from(stage.children).find(
+        (element): element is HTMLElement => element instanceof HTMLElement && element.tagName.toLowerCase() !== 'router-outlet',
+      ) ?? null;
       const pageRoot = host?.querySelector<HTMLElement>('section') ?? host;
 
       gsap.set(stage, { autoAlpha: 1, y: 0 });
