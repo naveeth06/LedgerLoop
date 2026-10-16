@@ -1,225 +1,130 @@
 # LedgerLoop Application Plan
 
-## 1. Purpose
+## Purpose
+LedgerLoop is a multi-tenant accounting application for Indian businesses. The web application exposes the accounting APIs through coherent browser workflows while preserving tenant isolation, auditability, integer-paise money, balanced journals, and immutable posted accounting history.
 
-LedgerLoop is a multi-tenant accounting application for Indian businesses. The application is being built as a real accounting workflow rather than a dashboard-only product: users should be able to configure a company, maintain accounting masters, create business documents, post balanced journals, reconcile banking activity, review reports, and manage reminders from the web application.
+## Implemented foundation
 
-Money is represented as integer paise. Company-owned resources are protected by PostgreSQL forced RLS and tenant transaction context. Posted accounting history is immutable and corrected through explicit reversal workflows.
-
----
-
-## 2. Implemented foundation
-
-### Platform and architecture
-- npm workspace monorepo.
-- Angular standalone web application in `apps/web`.
-- NestJS/Express API in `apps/api`.
-- Worker application in `apps/worker` for scheduled/background processing.
-- PostgreSQL accounting datastore with tenant isolation and RLS.
+### Platform
+- Angular standalone web application.
+- NestJS/Express API.
+- PostgreSQL 16 with forced RLS and tenant transaction context.
 - Redis/BullMQ worker infrastructure.
-- Shared contracts/utilities under `packages/types`.
+- Shared TypeScript contracts/utilities.
 - CI verification for migrations, typechecking, builds, and tests.
 
 ### Identity and tenancy
-- User registration and sign-in.
-- Refresh-session rotation/replay protection.
-- Argon2id password hashing.
-- Access-token authentication and authorization guards.
-- Company creation and company membership context.
-- Company roles including owner, admin, accountant, staff, and viewer.
-- Branch APIs.
-- Tenant-scoped company directory.
-- Audit logging.
-- CSRF/origin protection, CORS, throttling, and validation foundations.
+- Registration/sign-in and refresh-session rotation.
+- Company and membership context.
+- Company roles and authorization guards.
+- Branch/company APIs.
+- Tenant-scoped audit logging.
+- CSRF/origin, CORS, throttling, and validation foundations.
 
-### Accounting core
-- Tenant-scoped chart of accounts API.
-- Account creation with account code, type, optional parent, description, and audit event.
-- Company settings and GST registration APIs.
-- Customer/supplier/both party directory.
-- GST/contact/address party data.
-- Integer-paise credit limits.
-- Item and warehouse directories.
-- HSN/SAC and GST-rate metadata.
-- Inventory flags, prices, and optional branch assignment.
-- Opening trial-balance posting.
-- Opening inventory snapshots.
-- Deterministic CGST/SGST/IGST calculations.
-- Integer-paise half-up GST rounding.
-- Balanced journal-entry and journal-line model.
-- Atomic posting with database balance enforcement.
-- Posted journal and opening-inventory immutability.
-- Explicit posted-journal reversal workflow.
+### Accounting
+- Chart of Accounts and account creation.
+- Opening balances and opening inventory.
+- Deterministic CGST/SGST/IGST calculation and integer-paise rounding.
+- Balanced journal entries and atomic posting.
+- Posted journal immutability and reversal workflow.
 - Tenant-boundary and accounting-integrity tests.
 
+### Master data
+- Customers, suppliers, and combined parties.
+- GST/contact/address party data and credit limits.
+- Items/services, HSN/SAC, GST rates, prices, and inventory tracking.
+- Warehouses.
+
 ### Sales
-- Sales quotation and invoice draft foundation.
-- Tenant-scoped invoice lines.
-- Automatic invoice numbering.
-- Deterministic GST totals.
-- Invoice issue/posting to receivables, revenue, and output GST.
+- Sales invoice creation, numbering, GST totals, and posting.
 - Customer receipts.
-- Automatic receipt numbering.
 - Bank/cash account selection.
-- Partial and multi-invoice receipt allocation.
-- Outstanding-balance validation.
-- Receipt immutability and audit events.
+- Partial and multi-invoice allocation.
+- Outstanding-balance validation and receipt immutability.
 
 ### Purchases
 - Purchase orders.
-- Purchase bills with supplier validation.
-- GST-aware deterministic bill totals.
-- Purchase bill posting to payables.
-- Inventory capitalization for tracked goods.
-- Purchase expense posting for non-inventory lines.
-- Input GST posting.
-- Supplier payments with bill allocation.
-- Payable outstanding protection.
-- Supplier payment immutability and audit events.
+- Purchase bills and deterministic GST totals.
+- Payables posting.
+- Inventory capitalization and expense posting.
+- Input GST.
+- Supplier payments and allocation.
 - Supplier debit notes and expense workflows.
 
 ### Inventory
-- Tenant-scoped immutable inventory movement records.
-- Accounting linkage for inventory movements.
-- Weighted-average inventory valuation.
-- Default stock warehouse/account configuration.
-- Purchase receipt inventory capitalization.
-- Sales COGS and inventory relief.
-- Tenant-scoped inventory adjustments.
-- Posted adjustment immutability.
-- Reversal-safe inventory corrections.
+- Immutable inventory movements.
+- Weighted-average valuation.
+- Stock warehouse/account configuration.
+- Purchase capitalization and sales COGS/inventory relief.
+- Tenant-scoped adjustments and reversal-safe corrections.
 
 ### Banking and reconciliation
 - Tenant-scoped bank accounts.
 - Statement import batches and transactions.
 - External-ID duplicate protection.
-- Secure JSON statement import with a 5 MB request cap.
-- Explicit JSON content-type validation.
-- Control-character scanning.
-- Bank reconciliation against posted journal lines.
-- Tenant-safe reconciliation matching.
+- Secure JSON statement import validation.
+- Reconciliation suggestions against posted journal lines.
+- User-approved reconciliation with account, amount, and date-window checks.
 - One-match-per-journal-line protection.
-- Immutable reconciled state.
-- Deterministic reconciliation confidence bands.
-- Low-confidence matches remain user-approved suggestions and are never auto-posted.
+- Immutable reconciled state and confidence bands.
+- Low-confidence suggestions are never auto-posted.
 
 ### Reporting
 - Trial Balance.
 - Profit & Loss.
 - Balance Sheet.
-- Receivables ageing.
-- Payables ageing.
+- Receivables/payables ageing.
 - GST summary.
 - Inventory valuation.
-- Dashboard reporting API.
-- Dashboard KPIs and chart datasets.
-- Functional financial-year/quarter/month dashboard period filter.
-- Authenticated Angular dashboard consuming live API data.
+- Dashboard KPIs/charts and financial period filtering.
 
-### Reminders and email delivery
-- Tenant-scoped overdue reminder settings.
-- Idempotent overdue reminder event generation.
-- BullMQ hourly scheduling.
-- Reminder acknowledgement APIs.
-- Tenant-scoped email delivery records.
+### Reminders and email
+- Overdue reminder settings and idempotent events.
+- BullMQ scheduling.
+- Tenant-scoped delivery records.
 - Party reminder opt-out.
-- SMTP provider abstraction.
-- Retry/backoff for failed delivery.
-- Deterministic message IDs.
-- Delivery audit events.
-- Provider-independent delivery monitoring summary.
-- Provider-neutral richer reminder templates with validation and escaping.
+- SMTP/provider-neutral delivery abstraction with retry/backoff and audit metadata.
 
-### Web application foundation
-- Angular standalone application shell.
-- Responsive dark LedgerLoop design system.
-- Authenticated browser workflow.
-- Company workspace context.
-- Protected dashboard route.
-- Dashboard connected to live accounting reporting.
-- Chart of Accounts web page.
-- Customers & Suppliers web page.
-- Items & Warehouses web page.
-- Sales Invoices web page with live invoice listing, customer/item selection, multi-line draft creation, and issue/post action.
-- Sales Receipts web page with customer selection, outstanding-invoice loading, partial/multi-invoice allocation, receipt posting, and accounting-state feedback.
-- Purchases Bills web page with supplier selection, multi-line bill creation, GST-aware integer-paise conversion, posting-account configuration, and bill posting.
-- Shared GSAP motion system with route transitions, ScrollTrigger page/section reveals, table-row stagger reveals, dialog entrance motion, navigation/button micro-interactions, and restrained background parallax.
-- Motion respects `prefers-reduced-motion` and keeps animation lifecycle scoped and cleaned up between routes.
+### Web application
+- Responsive dark LedgerLoop application shell.
+- Live Dashboard.
+- Chart of Accounts.
+- Customers & Suppliers.
+- Items & Warehouses.
+- Sales Invoices.
+- Sales Receipts.
+- Purchase Bills.
+- Banking & Reconciliation workspace.
+- Shared GSAP motion system with route transitions, ScrollTrigger reveals, table-row stagger motion, dialog entrance motion, micro-interactions, restrained background parallax, reduced-motion handling, and lifecycle cleanup.
 
----
-
-## 3. Current application plan
-
-The backend already contains the majority of the accounting domain capabilities. The current priority is to expose those capabilities through a complete, coherent web application instead of continuing to populate the dashboard with manually-created demonstration transactions.
-
-### Current priority order
+## Current application plan
 
 1. **Chart of Accounts — implemented**
-   - Live account list.
-   - Search and account-type filtering.
-   - System/custom and active/inactive indicators.
-   - Parent-account display.
-   - Authorized account creation.
-   - Validation and conflict handling.
-
+   - Live list, filtering, account creation, validation, and conflict handling.
 2. **Parties — implemented foundation**
-   - Customer and supplier list.
-   - Create party flow.
-   - GSTIN and contact information.
-   - Credit limits.
-   - Customer/supplier classification.
-   - Reminder toggle presentation.
+   - Customer/supplier directory and creation workflow.
+3. **Items & Warehouses — implemented foundation**
+   - Item/service and warehouse management.
+4. **Sales — implemented foundation**
+   - Invoices and customer receipts, including partial/multi-invoice allocation.
+5. **Purchases — implemented foundation**
+   - Supplier bills and purchase posting configuration.
+6. **Frontend motion — implemented foundation**
+   - Centralized GSAP motion architecture across the authenticated application.
+7. **Banking — implemented foundation**
+   - Bank account connection.
+   - Existing active asset-account selection.
+   - JSON statement import with preview and duplicate-safe submission.
+   - Statement transaction listing.
+   - Reconciliation suggestion review.
+   - User-approved journal-line matching.
 
-3. **Items and warehouses — implemented foundation**
-   - Item/service list and creation form.
-   - HSN/SAC and GST configuration.
-   - Prices and inventory tracking.
-   - Warehouse management.
-   - Validation aligned with the API contract.
-
-4. **Sales workspace — implemented foundation**
-   - Invoice list.
-   - Customer and active-item selection.
-   - Multi-line invoice draft creation.
-   - GST rate and integer-paise price conversion.
-   - Due date, place-of-supply, and notes capture.
-   - Draft invoice creation through the existing tenant-scoped API.
-   - Invoice issue/post workflow through the existing accounting API.
-   - Customer receipt creation and posting.
-   - Outstanding-invoice loading by customer.
-   - Partial and multi-invoice allocation.
-   - Unallocated customer-advance handling.
-   - Clear accounting-state and posting feedback.
-
-5. **Purchases workspace — implemented foundation**
-   - Supplier bill list.
-   - Multi-line purchase bill creation.
-   - Supplier invoice number, due date, notes, and state-code capture.
-   - GST rate and integer-paise conversion.
-   - Purchase posting-account configuration.
-   - Draft bill creation through the existing tenant-scoped API.
-   - Purchase bill posting through the existing accounting API.
-   - Clear draft/received and posting feedback.
-
-6. **Frontend motion system — implemented foundation**
-   - Shared GSAP dependency and motion service.
-   - Route enter/leave transitions integrated with Angular Router lifecycle.
-   - ScrollTrigger reveals for semantic content blocks and accounting tables.
-   - Shared button, icon-button, action, and navigation micro-interactions.
-   - Dynamic dialog entrance animation.
-   - Reduced-motion accessibility handling.
-   - Documented animation architecture and cleanup rules.
-
-7. **Banking workspace — next**
-   - Bank account management.
-   - Statement imports.
-   - Reconciliation suggestions.
-   - User-approved reconciliation.
+## Next priorities
 
 8. **Inventory workspace**
-   - Warehouses.
-   - Stock movements.
+   - Stock movement views.
    - Inventory adjustments.
+   - Warehouse stock views.
    - Valuation views.
 
 9. **Reports workspace**
@@ -230,95 +135,76 @@ The backend already contains the majority of the accounting domain capabilities.
    - GST summary.
    - Inventory valuation.
 
-10. **Reminders workspace**
-   - Reminder settings.
-   - Overdue events.
-   - Email delivery status.
-   - Acknowledgement and monitoring.
+10. **Purchase completion**
+    - Purchase orders.
+    - Supplier payment workspace.
+    - Remaining supplier adjustment workflows.
 
-11. **Application hardening**
+11. **Sales completion**
+    - Invoice detail/edit workflow.
+    - Remaining sales document workflows.
+    - Sales posting-account setup UX where configuration is required.
+
+12. **Reminders workspace**
+    - Reminder settings.
+    - Overdue events.
+    - Email delivery status.
+    - Acknowledgement and monitoring.
+
+13. **Application hardening**
     - Consistent loading, empty, error, and offline states.
-    - Responsive checks at 640/1024/1440px.
+    - Responsive validation at 640/1024/1440px.
     - Keyboard and screen-reader review.
     - Ctrl+K/application command experience.
     - End-to-end browser coverage.
-    - Motion regression review across supported breakpoints and reduced-motion settings.
+    - Motion regression testing across supported breakpoints and reduced-motion settings.
 
----
+## Future plans
 
-## 4. Future plans
-
-### Near-term
-- Complete invoice detail/editing and remaining sales document workflows.
-- Complete the remaining master-data CRUD workflows supported by the API.
-- Connect all existing accounting APIs to the Angular application.
-- Add purchase order and supplier payment workflows.
-- Add bank statement import and reconciliation screens.
-- Add inventory movement and adjustment screens.
-- Add reusable tables, filters, forms, drawers/dialogs, status badges, and confirmation patterns.
-- Add focused web unit/component tests for critical accounting interactions.
-- Add Playwright coverage for invoice-to-payment and statement-import workflows.
-
-### Security and compliance hardening
+### Security and compliance
 - Email verification.
 - Password reset.
-- Google sign-in if required by product scope.
-- Distributed rate limiting.
-- Security monitoring.
+- Optional Google sign-in if product scope requires it.
+- Distributed rate limiting and security monitoring.
 - Full authentication integration coverage.
 - WCAG 2.2 AA review.
-- Keyboard and screen-reader validation.
 
 ### AI capabilities
-AI features will remain advisory rather than authoritative:
-- Claude-backed transaction categorisation suggestions.
+AI remains advisory rather than authoritative:
+- Transaction categorisation suggestions.
 - Receipt extraction and reconciliation suggestions.
-- Validation and human approval before any accounting mutation.
-- Prompt-injection defenses.
-- Sensitive-data redaction.
-- Quotas and confidence thresholds.
-- AI-specific audit metadata.
+- Explicit validation and human approval before accounting mutation.
+- Prompt-injection defenses, sensitive-data redaction, quotas, confidence thresholds, and AI audit metadata.
 
 ### Provider-specific integrations
-Provider-specific email bounce/webhook handling will only be implemented after the intended provider/API is explicitly selected and documented. The current SMTP/provider-neutral foundation must not be replaced with an invented provider contract.
+Provider-specific email webhooks/bounce handling will only be implemented after the provider/API is explicitly selected. The existing provider-neutral foundation must not be replaced with an invented external contract.
 
 ### Release readiness
 - Final environment validation.
-- Linting and lockfile policy.
-- Seed/demo data tooling where appropriate.
-- Dockerfiles when deployment requirements are finalized.
+- Lockfile/linting policy.
+- Seed/demo tooling where appropriate.
+- Docker/deployment artifacts when requirements are finalized.
 - OpenAPI documentation.
-- Complete CI coverage.
-- Full API integration suite.
-- Full Playwright suite.
-- Production deployment and operational documentation.
+- Full CI, API integration, and Playwright coverage.
+- Production operational documentation.
 
----
-
-## 5. Engineering rules for future increments
-
-- Treat the repository and CI as the source of truth.
+## Engineering rules
+- CI is the source of truth; never claim a check passed unless CI reports it passed.
 - Build one focused increment per PR.
-- Do not mark work complete merely because source files exist.
-- Verify migrations, typecheck, build, unit tests, and integration tests through CI where applicable.
-- Do not claim checks passed unless the corresponding CI run actually passed.
-- Preserve PostgreSQL forced RLS and tenant transaction context.
-- Never bypass accounting constraints by manually editing migration history.
-- Store monetary values as integer paise.
-- Post vouchers and journal lines atomically.
+- Preserve forced RLS and tenant transaction context.
+- Never bypass accounting constraints or manually alter migration history.
+- Store money as integer paise.
+- Post vouchers atomically.
 - Posted accounting documents remain immutable; corrections use explicit reversals.
-- Never fabricate dashboard or report metrics in the frontend.
-- AI output remains an untrusted suggestion until explicitly approved by an authorized user.
-- Avoid introducing external providers or APIs that have not been selected by the project.
-- Keep shared UI motion presentation-only; animations must never alter accounting state or business rules.
-- Respect reduced-motion preferences and clean up GSAP contexts/ScrollTriggers when routes change.
+- Never fabricate dashboard/report metrics in the frontend.
+- AI output is untrusted until explicitly approved.
+- Avoid unselected external providers/APIs.
+- Motion is presentation-only and must not change accounting state.
+- Respect reduced motion and clean up GSAP contexts, ScrollTriggers, observers, and listeners.
 
----
-
-## 6. Definition of application completeness
-
-LedgerLoop should be considered application-complete only when a user can move through the normal accounting lifecycle from the browser:
+## Definition of application completeness
+A normal browser workflow should be possible end-to-end:
 
 **Company setup → Masters → Quote/Order → Invoice/Bill → Posting → Receipt/Payment → Bank reconciliation → Inventory → Reports → Reminders**
 
-with tenant isolation, auditability, accounting integrity, responsive UX, accessible motion, and automated verification preserved throughout the workflow.
+with tenant isolation, auditability, accounting integrity, responsive UX, accessible motion, and automated verification preserved throughout.
