@@ -96,8 +96,8 @@ LedgerLoop is a multi-tenant accounting application for Indian businesses. The w
 - Sales Receipts.
 - Purchase Bills.
 - Banking & Reconciliation workspace.
-- Inventory workspace with valuation, movements, stock adjustments, reversal, and posting-account configuration.
-- Reports workspace with Trial Balance, Profit & Loss, Balance Sheet, Receivables ageing, GST summary, and Inventory valuation.
+- Inventory workspace with responsive valuation tables, movements, stock adjustments, reversal, and posting-account configuration.
+- Reports workspace with Trial Balance, Profit & Loss, Balance Sheet, Receivables ageing, GST summary, and Inventory valuation, plus data-backed visual comparisons and accounting-flow explanations.
 - Shared GSAP motion system with route transitions, ScrollTrigger reveals, table-row stagger motion, dialog entrance motion, micro-interactions, restrained background parallax, reduced-motion handling, and lifecycle cleanup.
 
 ## Current application plan
@@ -116,10 +116,10 @@ LedgerLoop is a multi-tenant accounting application for Indian businesses. The w
    - Centralized GSAP motion architecture across the authenticated application.
 7. **Banking — implemented foundation**
    - Bank account connection, JSON statement import, transaction listing, suggestion review, and user-approved matching.
-8. **Inventory — implemented foundation**
-   - Stock/valuation view, immutable movement view, controlled adjustments, reversal action, and inventory posting-account setup.
-9. **Reports — implemented foundation**
-   - Trial Balance, Profit & Loss, Balance Sheet, Receivables ageing, GST summary, and Inventory valuation browser views backed by existing tenant-scoped APIs.
+8. **Inventory — UI refinement**
+   - Improve table readability, responsive behavior, modal scrolling, and focus visibility without changing inventory API or accounting behavior.
+9. **Reports — visual explanations**
+   - Add data-backed comparison charts and report-specific accounting-flow diagrams to explain existing reports.
 
 ## Next priorities
 
