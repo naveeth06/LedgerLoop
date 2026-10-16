@@ -36,9 +36,7 @@ type AuthMode = 'signin' | 'signup';
 
       <section class="relative z-10 w-full max-w-5xl">
         <div class="mb-8 flex items-center justify-center gap-3">
-          <span class="flex h-10 w-10 items-center justify-center rounded-xl border border-violet-400/30 bg-violet-500/10 text-violet-300">
-            <svg lucideBuilding2 [size]="19"></svg>
-          </span>
+          <span class="flex h-10 w-10 items-center justify-center rounded-xl border border-violet-400/30 bg-violet-500/10 text-violet-300"><svg lucideBuilding2 [size]="19"></svg></span>
           <span class="text-base font-semibold tracking-wide text-white">LedgerLoop</span>
         </div>
 
@@ -61,7 +59,6 @@ type AuthMode = 'signin' | 'signup';
                   <p class="ll-eyebrow">Workspace setup</p>
                   <h2 class="mt-2 text-2xl font-semibold text-white">Create your company</h2>
                   <p class="mt-2 text-sm leading-6 text-[var(--ll-text-muted)]">Your account is ready. Create the first company workspace to open the dashboard.</p>
-
                   <form class="mt-7 space-y-5" (ngSubmit)="createCompany()">
                     <label class="block"><span class="mb-2 block text-xs font-medium text-zinc-300">Legal name</span><input class="ll-auth-input" name="legalName" [(ngModel)]="legalName" required maxlength="200" autocomplete="organization" placeholder="Your legal business name"></label>
                     <label class="block"><span class="mb-2 block text-xs font-medium text-zinc-300">Display name</span><input class="ll-auth-input" name="companyDisplayName" [(ngModel)]="companyDisplayName" required maxlength="120" autocomplete="organization" placeholder="How the company appears in LedgerLoop"></label>
@@ -76,14 +73,12 @@ type AuthMode = 'signin' | 'signup';
                 <div>
                   <div class="flex items-center justify-between gap-4">
                     <div><p class="ll-eyebrow">{{ mode === 'signin' ? 'Welcome back' : 'Get started' }}</p><h2 class="mt-2 text-2xl font-semibold text-white">{{ mode === 'signin' ? 'Sign in to LedgerLoop' : 'Create your account' }}</h2></div>
-                    <span class="hidden h-10 w-10 items-center justify-center rounded-xl bg-violet-500/10 text-violet-300 sm:flex"><svg [attr.lucideLogIn]="true" lucideLogIn [size]="18"></svg></span>
+                    <span class="hidden h-10 w-10 items-center justify-center rounded-xl bg-violet-500/10 text-violet-300 sm:flex"><svg lucideLogIn [size]="18"></svg></span>
                   </div>
-
                   <div class="mt-6 grid grid-cols-2 rounded-xl border border-white/8 bg-white/[0.025] p-1">
-                    <button type="button" class="rounded-lg px-3 py-2 text-xs font-semibold transition" [class.bg-white/8]="mode === 'signin'" [class.text-white]="mode === 'signin'" [class.text-[var(--ll-text-muted)]]="mode !== 'signin'" (click)="setMode('signin')">Sign in</button>
-                    <button type="button" class="rounded-lg px-3 py-2 text-xs font-semibold transition" [class.bg-white/8]="mode === 'signup'" [class.text-white]="mode === 'signup'" [class.text-[var(--ll-text-muted)]]="mode !== 'signup'" (click)="setMode('signup')">Create account</button>
+                    <button type="button" class="rounded-lg px-3 py-2 text-xs font-semibold text-white transition" [style.background]="mode === 'signin' ? 'rgb(255 255 255 / 0.08)' : 'transparent'" (click)="setMode('signin')">Sign in</button>
+                    <button type="button" class="rounded-lg px-3 py-2 text-xs font-semibold transition" [style.background]="mode === 'signup' ? 'rgb(255 255 255 / 0.08)' : 'transparent'" [style.color]="mode === 'signup' ? '#fff' : 'var(--ll-text-muted)'" (click)="setMode('signup')">Create account</button>
                   </div>
-
                   <form class="mt-6 space-y-4" (ngSubmit)="submitAuth()">
                     @if (mode === 'signup') {
                       <label class="block"><span class="mb-2 block text-xs font-medium text-zinc-300">Display name</span><input class="ll-auth-input" name="displayName" [(ngModel)]="displayName" required maxlength="120" autocomplete="name" placeholder="Your name"></label>
@@ -96,7 +91,6 @@ type AuthMode = 'signin' | 'signup';
                       <span>{{ loading ? 'Signing you in…' : mode === 'signin' ? 'Sign in' : 'Create account' }}</span>
                     </button>
                   </form>
-
                   <div class="mt-6 flex items-center gap-2 text-[11px] text-[var(--ll-text-muted)]"><svg lucideShieldCheck [size]="14"></svg><span>Sessions use short-lived access tokens and protected refresh cookies.</span></div>
                 </div>
               }
