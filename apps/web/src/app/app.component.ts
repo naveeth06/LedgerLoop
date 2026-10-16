@@ -1,7 +1,7 @@
 import { DOCUMENT } from '@angular/common';
 import { AfterViewInit, ChangeDetectionStrategy, Component, DestroyRef, ElementRef, ViewChild, inject } from '@angular/core';
-import { Router, RouterLink, RouterLinkActive, RouterOutlet, NavigationCancel, NavigationError, NavigationStart } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { NavigationCancel, NavigationEnd, NavigationError, NavigationStart, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { LucideBell, LucideBookOpen, LucideBoxes, LucideBuilding2, LucideChevronDown, LucideCoins, LucideLayoutDashboard, LucideLogOut, LucideMenu, LucideReceipt, LucideSettings, LucideShoppingCart, LucideUsers, LucideX } from '@lucide/angular';
 import { filter } from 'rxjs';
 
@@ -182,7 +182,13 @@ export class AppComponent implements AfterViewInit {
   constructor() {
     this.router.events
       .pipe(
-        filter((event) => event instanceof NavigationStart || event instanceof NavigationCancel || event instanceof NavigationError),
+        filter(
+          (event) =>
+            event instanceof NavigationStart ||
+            event instanceof NavigationEnd ||
+            event instanceof NavigationCancel ||
+            event instanceof NavigationError,
+        ),
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe((event) => {
