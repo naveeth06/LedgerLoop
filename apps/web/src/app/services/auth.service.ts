@@ -33,6 +33,10 @@ interface CreateCompanyResponse {
   company: Company;
 }
 
+interface CurrentUserResponse {
+  user: AuthUser;
+}
+
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly http = inject(HttpClient);
@@ -50,8 +54,8 @@ export class AuthService {
     if (!csrfToken) return;
 
     try {
-      const response = await firstValueFrom(this.refreshSession());
-      if (response.user) this.user.set(response.user);
+      await firstValueFrom(this.refreshSession());
+      await firstValueFrom(this.loadCurrentUser());
       await firstValueFrom(this.loadCompanies());
     } catch {
       this.clearSession();
@@ -74,6 +78,16 @@ export class AuthService {
     ).pipe(tap((response) => this.setAuthenticated(response)));
   }
 
+  loadCurrentUser(): Observable<AuthUser> {
+    return this.http.get<CurrentUserResponse>(`${this.apiBaseUrl}/auth/me`, {
+      headers: this.authorizationHeaders(),
+    }).pipe(tap((response) => this.user.set(response.user)), tap({
+      error: (error: unknown) => {
+        if (this.isUnauthorized(error)) this.clearSession();
+      },
+    }), (source) => source.pipe(tap((response) => response.user)));
+  }
+
   loadCompanies(): Observable<Company[]> {
     return this.http.get<CompaniesResponse>(`${this.apiBaseUrl}/companies`, {
       headers: this.authorizationHeaders(),
@@ -83,7 +97,6 @@ export class AuthService {
         this.companies.set(companies);
         this.restoreCompanySelection(companies);
       }),
-      // A revoked membership should not leave the app looking authenticated.
       catchError((error: unknown) => {
         if (this.isUnauthorized(error)) this.clearSession();
         throw error;
