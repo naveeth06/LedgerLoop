@@ -20,6 +20,7 @@ LedgerLoop is a multi-tenant accounting application for Indian businesses. The w
 - Branch/company APIs.
 - Tenant-scoped audit logging.
 - CSRF/origin, CORS, throttling, and validation foundations.
+- Global Angular bearer-token attachment for authenticated API requests.
 
 ### Accounting
 - Chart of Accounts and account creation.
@@ -95,6 +96,7 @@ LedgerLoop is a multi-tenant accounting application for Indian businesses. The w
 - Sales Receipts.
 - Purchase Bills.
 - Banking & Reconciliation workspace.
+- Inventory workspace with valuation, movements, stock adjustments, reversal, and posting-account configuration.
 - Shared GSAP motion system with route transitions, ScrollTrigger reveals, table-row stagger motion, dialog entrance motion, micro-interactions, restrained background parallax, reduced-motion handling, and lifecycle cleanup.
 
 ## Current application plan
@@ -112,20 +114,11 @@ LedgerLoop is a multi-tenant accounting application for Indian businesses. The w
 6. **Frontend motion — implemented foundation**
    - Centralized GSAP motion architecture across the authenticated application.
 7. **Banking — implemented foundation**
-   - Bank account connection.
-   - Existing active asset-account selection.
-   - JSON statement import with preview and duplicate-safe submission.
-   - Statement transaction listing.
-   - Reconciliation suggestion review.
-   - User-approved journal-line matching.
+   - Bank account connection, JSON statement import, transaction listing, suggestion review, and user-approved matching.
+8. **Inventory — implemented foundation**
+   - Stock/valuation view, immutable movement view, controlled adjustments, reversal action, and inventory posting-account setup.
 
 ## Next priorities
-
-8. **Inventory workspace**
-   - Stock movement views.
-   - Inventory adjustments.
-   - Warehouse stock views.
-   - Valuation views.
 
 9. **Reports workspace**
    - Trial Balance.
@@ -133,24 +126,20 @@ LedgerLoop is a multi-tenant accounting application for Indian businesses. The w
    - Balance Sheet.
    - Receivables/payables ageing.
    - GST summary.
-   - Inventory valuation.
-
+   - Inventory valuation report views.
 10. **Purchase completion**
     - Purchase orders.
     - Supplier payment workspace.
     - Remaining supplier adjustment workflows.
-
 11. **Sales completion**
     - Invoice detail/edit workflow.
     - Remaining sales document workflows.
     - Sales posting-account setup UX where configuration is required.
-
 12. **Reminders workspace**
     - Reminder settings.
     - Overdue events.
     - Email delivery status.
     - Acknowledgement and monitoring.
-
 13. **Application hardening**
     - Consistent loading, empty, error, and offline states.
     - Responsive validation at 640/1024/1440px.

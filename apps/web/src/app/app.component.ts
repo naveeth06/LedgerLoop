@@ -85,6 +85,11 @@ import { MotionService } from './services/motion.service';
           </section>
 
           <section>
+            <p class="ll-nav-label">Inventory</p>
+            <a routerLink="/inventory" routerLinkActive="ll-nav-active" class="ll-nav-item" (click)="closeSidebar()"><svg lucideBoxes [size]="18"></svg><span>Inventory</span></a>
+          </section>
+
+          <section>
             <p class="ll-nav-label">System</p>
             <a href="#" class="ll-nav-item" (click)="$event.preventDefault()"><svg lucideSettings [size]="18"></svg><span>Settings</span></a>
           </section>
