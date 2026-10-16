@@ -141,6 +141,7 @@ Money is represented as integer paise. Company-owned resources are protected by 
 - Customers & Suppliers web page.
 - Items & Warehouses web page.
 - Sales Invoices web page with live invoice listing, customer/item selection, multi-line draft creation, and issue/post action.
+- Sales Receipts web page with customer selection, outstanding-invoice loading, partial/multi-invoice allocation, receipt posting, and accounting-state feedback.
 
 ---
 
@@ -173,7 +174,7 @@ The backend already contains the majority of the accounting domain capabilities.
    - Warehouse management.
    - Validation aligned with the API contract.
 
-4. **Sales workspace — current increment**
+4. **Sales workspace — implemented foundation**
    - Invoice list.
    - Customer and active-item selection.
    - Multi-line invoice draft creation.
@@ -181,11 +182,13 @@ The backend already contains the majority of the accounting domain capabilities.
    - Due date, place-of-supply, and notes capture.
    - Draft invoice creation through the existing tenant-scoped API.
    - Invoice issue/post workflow through the existing accounting API.
-   - Clear GST registration and sales-posting-account setup states.
+   - Customer receipt creation and posting.
+   - Outstanding-invoice loading by customer.
+   - Partial and multi-invoice allocation.
+   - Unallocated customer-advance handling.
+   - Clear accounting-state and posting feedback.
 
-   **Next sales increment:** invoice detail/editing and customer receipts with partial/multi-invoice allocation.
-
-5. **Purchases workspace**
+5. **Purchases workspace — next**
    - Purchase orders.
    - Bills.
    - Supplier payments.
@@ -229,7 +232,7 @@ The backend already contains the majority of the accounting domain capabilities.
 ## 4. Future plans
 
 ### Near-term
-- Complete invoice detail/editing and receipt allocation workflows.
+- Complete invoice detail/editing and remaining sales document workflows.
 - Complete the remaining master-data CRUD workflows supported by the API.
 - Connect all existing accounting APIs to the Angular application.
 - Add purchase document and payment workflows.

@@ -6,6 +6,7 @@ import {
   LucideBoxes,
   LucideBuilding2,
   LucideChevronDown,
+  LucideCoins,
   LucideLayoutDashboard,
   LucideLogOut,
   LucideMenu,
@@ -22,7 +23,7 @@ import { AuthService } from './services/auth.service';
   imports: [
     RouterLink, RouterLinkActive, RouterOutlet,
     LucideBell, LucideBookOpen, LucideBoxes, LucideBuilding2, LucideChevronDown,
-    LucideLayoutDashboard, LucideLogOut, LucideMenu, LucideReceipt, LucideSettings, LucideUsers,
+    LucideCoins, LucideLayoutDashboard, LucideLogOut, LucideMenu, LucideReceipt, LucideSettings, LucideUsers,
     LucideX,
   ],
   template: `
@@ -40,7 +41,7 @@ import { AuthService } from './services/auth.service';
             <a routerLink="/accounting/parties" routerLinkActive="ll-nav-active" class="ll-nav-item" (click)="closeSidebar()"><svg lucideUsers [size]="18"></svg><span>Customers & Suppliers</span></a>
             <a routerLink="/accounting/items-warehouses" routerLinkActive="ll-nav-active" class="ll-nav-item" (click)="closeSidebar()"><svg lucideBoxes [size]="18"></svg><span>Items & Warehouses</span></a>
           </section>
-          <section><p class="ll-nav-label">Sales</p><a routerLink="/sales/invoices" routerLinkActive="ll-nav-active" class="ll-nav-item" (click)="closeSidebar()"><svg lucideReceipt [size]="18"></svg><span>Invoices</span></a></section>
+          <section><p class="ll-nav-label">Sales</p><a routerLink="/sales/invoices" routerLinkActive="ll-nav-active" class="ll-nav-item" (click)="closeSidebar()"><svg lucideReceipt [size]="18"></svg><span>Invoices</span></a><a routerLink="/sales/receipts" routerLinkActive="ll-nav-active" class="ll-nav-item" (click)="closeSidebar()"><svg lucideCoins [size]="18"></svg><span>Receipts</span></a></section>
           <section><p class="ll-nav-label">System</p><a href="#" class="ll-nav-item" (click)="$event.preventDefault()"><svg lucideSettings [size]="18"></svg><span>Settings</span></a></section>
         </nav>
         <div class="border-t border-white/8 p-4"><div class="rounded-xl border border-white/8 bg-white/[0.03] p-3"><p class="text-xs font-medium text-white">{{ auth.selectedCompany()?.display_name || 'Company workspace' }}</p><p class="mt-1 truncate text-xs text-[var(--ll-text-muted)]">{{ auth.user()?.email || 'Current company context' }}</p></div></div>
