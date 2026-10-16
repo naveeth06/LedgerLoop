@@ -8,6 +8,7 @@ import { InventoryPageComponent } from './pages/inventory-page.component';
 import { ItemsWarehousesPageComponent } from './pages/items-warehouses-page.component';
 import { PartiesPageComponent } from './pages/parties-page.component';
 import { PurchasesBillsPageComponent } from './pages/purchases-bills-page.component';
+import { RemindersPageComponent } from './pages/reminders-page.component';
 import { ReportsPageComponent } from './pages/reports-page.component';
 import { SalesPageComponent } from './pages/sales-page.component';
 import { SalesReceiptsPageComponent } from './pages/sales-receipts-page.component';
@@ -27,5 +28,6 @@ export const routes: Routes = [
   { path: 'banking', canActivate: [authGuard], component: BankingPageComponent },
   { path: 'inventory', canActivate: [authGuard], component: InventoryPageComponent },
   { path: 'reports', canActivate: [authGuard], component: ReportsPageComponent },
+  { path: 'reminders', canActivate: [authGuard], component: RemindersPageComponent },
   { path: '**', redirectTo: 'dashboard' },
 ];
