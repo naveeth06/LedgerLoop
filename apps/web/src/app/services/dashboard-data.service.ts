@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { AuthService } from './auth.service';
 
 export interface DashboardData {
   report: 'dashboard';
@@ -36,20 +37,21 @@ export interface DashboardData {
 @Injectable({ providedIn: 'root' })
 export class DashboardDataService {
   private readonly http = inject(HttpClient);
+  private readonly auth = inject(AuthService);
   private readonly apiBaseUrl = 'http://localhost:3000';
 
   getDashboard(fromDate?: string, toDate?: string): Observable<DashboardData> {
-    const companyId = localStorage.getItem('ledgerloop_company_id');
-    const accessToken = localStorage.getItem('ledgerloop_access_token');
-    if (!companyId || !accessToken) {
-      throw new Error('Configure ledgerloop_company_id and ledgerloop_access_token to load live dashboard data.');
+    const company = this.auth.selectedCompany();
+    const accessToken = this.auth.getAccessToken();
+    if (!company || !accessToken) {
+      throw new Error('Select an authenticated company workspace to load live dashboard data.');
     }
 
     let params = new HttpParams();
     if (fromDate) params = params.set('fromDate', fromDate);
     if (toDate) params = params.set('toDate', toDate);
 
-    return this.http.get<DashboardData>(`${this.apiBaseUrl}/companies/${companyId}/dashboard`, {
+    return this.http.get<DashboardData>(`${this.apiBaseUrl}/companies/${company.id}/dashboard`, {
       params,
       headers: new HttpHeaders({ Authorization: `Bearer ${accessToken}` }),
     });
