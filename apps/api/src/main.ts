@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import 'reflect-metadata';
+import express from 'express';
 import { NestFactory } from '@nestjs/core';
 import { z } from 'zod';
 import { AppModule } from './app.module';
@@ -25,7 +26,7 @@ async function bootstrap(): Promise<void> {
 
   const app = await NestFactory.create(AppModule);
   const httpAdapter = app.getHttpAdapter().getInstance();
-  httpAdapter.use(httpAdapter.json({ limit: '5mb' }));
+  httpAdapter.use(express.json({ limit: '5mb' }));
   app.setGlobalPrefix('api');
   app.enableCors({
     origin: environment.data.WEB_ORIGIN,
