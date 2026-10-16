@@ -40,7 +40,7 @@ interface CurrentUserResponse {
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly http = inject(HttpClient);
-  private readonly apiBaseUrl = 'http://localhost:3000';
+  private readonly apiBaseUrl = 'http://localhost:3000/api';
   private readonly csrfStorageKey = 'ledgerloop_csrf_token';
   private readonly companyStorageKey = 'ledgerloop_company_id';
 
