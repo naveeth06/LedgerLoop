@@ -38,7 +38,7 @@ export interface DashboardData {
 export class DashboardDataService {
   private readonly http = inject(HttpClient);
   private readonly auth = inject(AuthService);
-  private readonly apiBaseUrl = 'http://localhost:3000';
+  private readonly apiBaseUrl = 'http://localhost:3000/api';
 
   getDashboard(fromDate?: string, toDate?: string): Observable<DashboardData> {
     const company = this.auth.selectedCompany();
