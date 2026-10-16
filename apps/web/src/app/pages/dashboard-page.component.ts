@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import {
   LucideArrowDownRight,
   LucideArrowUpRight,
@@ -131,6 +131,7 @@ type DashboardPeriod = 'fy' | 'quarter' | 'month';
 })
 export class DashboardPageComponent implements OnInit {
   private readonly dashboardService = inject(DashboardDataService);
+  private readonly changeDetector = inject(ChangeDetectorRef);
   protected data: DashboardData | null = null;
   protected loading = false;
   protected errorMessage = '';
@@ -146,15 +147,25 @@ export class DashboardPageComponent implements OnInit {
   protected loadDashboard(): void {
     this.loading = true;
     this.errorMessage = '';
+    this.changeDetector.markForCheck();
     const { fromDate, toDate } = this.getPeriodRange(this.period);
     try {
       this.dashboardService.getDashboard(fromDate, toDate).subscribe({
-        next: (data) => { this.data = data; this.loading = false; },
-        error: (error: unknown) => { this.errorMessage = error instanceof Error ? error.message : 'The dashboard API could not be loaded.'; this.loading = false; },
+        next: (data) => {
+          this.data = data;
+          this.loading = false;
+          this.changeDetector.markForCheck();
+        },
+        error: (error: unknown) => {
+          this.errorMessage = error instanceof Error ? error.message : 'The dashboard API could not be loaded.';
+          this.loading = false;
+          this.changeDetector.markForCheck();
+        },
       });
     } catch (error: unknown) {
       this.errorMessage = error instanceof Error ? error.message : 'Configure the company workspace to load live data.';
       this.loading = false;
+      this.changeDetector.markForCheck();
     }
   }
 
