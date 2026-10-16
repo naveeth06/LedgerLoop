@@ -1,6 +1,6 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, catchError, firstValueFrom, of, tap } from 'rxjs';
+import { Observable, catchError, firstValueFrom, map, of, tap } from 'rxjs';
 
 export interface AuthUser {
   id: string;
@@ -81,11 +81,14 @@ export class AuthService {
   loadCurrentUser(): Observable<AuthUser> {
     return this.http.get<CurrentUserResponse>(`${this.apiBaseUrl}/auth/me`, {
       headers: this.authorizationHeaders(),
-    }).pipe(tap((response) => this.user.set(response.user)), tap({
-      error: (error: unknown) => {
+    }).pipe(
+      tap((response) => this.user.set(response.user)),
+      map((response) => response.user),
+      catchError((error: unknown) => {
         if (this.isUnauthorized(error)) this.clearSession();
-      },
-    }), (source) => source.pipe(tap((response) => response.user)));
+        throw error;
+      }),
+    );
   }
 
   loadCompanies(): Observable<Company[]> {
