@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import {
   LucideArrowDownRight,
   LucideArrowUpRight,
@@ -110,13 +110,13 @@ type DashboardPeriod = 'fy' | 'quarter' | 'month';
 
       <div class="mt-4 grid gap-4 lg:grid-cols-2">
         @for (chart of mixCharts; track chart.title) {
-          <article class="ll-card p-5 sm:p-6"><div class="flex items-start justify-between"><div><p class="text-sm font-semibold text-white">{{ chart.title }}</p><p class="mt-1 text-xs text-[var(--ll-text-muted)]">{{ chart.caption }}</p></div><svg class="text-[var(--ll-text-muted)]" lucideBarChart3 [size]="18"></svg></div><div class="mt-6 space-y-4">@for (item of chart.items; track item.code) {<div><div class="mb-1 flex justify-between gap-4 text-xs"><span class="truncate text-white">{{ item.label }}</span><span class="shrink-0 text-[var(--ll-text-muted)]">{{ money(item.amount_paise) }}</span></div><div class="h-2 rounded-full bg-white/6"><div class="h-full rounded-full" [class.bg-violet-500\/80]="chart.title === 'Revenue mix'" [class.bg-fuchsia-400\/70]="chart.title === 'Expense mix'" [style.width.%]="relativeBar(item.amount_paise, chart.max)"></div></div></div>} @empty {<div class="ll-chart-empty">No posted account activity.</div>}</div></article>
+          <article class="ll-card p-5 sm:p-6"><div class="flex items-start justify-between"><div><p class="text-sm font-semibold text-white">{{ chart.title }}</p><p class="mt-1 text-xs text-[var(--ll-text-muted)]">{{ chart.caption }}</p></div><svg class="text-[var(--ll-text-muted)]" lucideBarChart3 [size]="18"></svg></div><div class="mt-6 space-y-4">@for (item of chart.items; track item.code) {<div><div class="mb-1 flex justify-between gap-4 text-xs"><span class="truncate text-white">{{ item.label }}</span><span class="shrink-0 text-[var(--ll-text-muted)]">{{ money(item.amount_paise) }}</span></div><div class="h-2 rounded-full bg-white/6"><div class="h-full rounded-full" [class.bg-violet-500\\/80]="chart.title === 'Revenue mix'" [class.bg-fuchsia-400\\/70]="chart.title === 'Expense mix'" [style.width.%]="relativeBar(item.amount_paise, chart.max)"></div></div></div>} @empty {<div class="ll-chart-empty">No posted account activity.</div>}</div></article>
         }
       </div>
 
       <div class="mt-4 grid gap-4 xl:grid-cols-2">
         @for (item of ageingCharts; track item.title) {
-          <article class="ll-card p-5 sm:p-6"><div class="flex items-start justify-between"><div><p class="text-sm font-semibold text-white">{{ item.title }}</p><p class="mt-1 text-xs text-[var(--ll-text-muted)]">{{ item.caption }}</p></div><svg class="text-[var(--ll-text-muted)]" [class.text-violet-300]="item.title === 'Receivables ageing'" [class.text-fuchsia-300]="item.title === 'Payables ageing'" lucideBarChart3 [size]="18"></svg></div><div class="mt-6 grid grid-cols-5 gap-2">@for (bucket of ageingBuckets; track bucket.key) {<div class="min-w-0"><div class="flex h-32 items-end rounded-lg bg-white/[0.025] p-1"><div class="w-full rounded-md" [class.bg-violet-500\/75]="item.title === 'Receivables ageing'" [class.bg-fuchsia-400\/70]="item.title === 'Payables ageing'" [style.height.%]="ageingHeight(item.values, bucket.key, item.max)"></div></div><p class="mt-2 truncate text-center text-[10px] text-[var(--ll-text-muted)]">{{ bucket.label }}</p><p class="mt-1 truncate text-center text-[10px] text-white">{{ money(item.values[bucket.key] || '0') }}</p></div>}</div></article>
+          <article class="ll-card p-5 sm:p-6"><div class="flex items-start justify-between"><div><p class="text-sm font-semibold text-white">{{ item.title }}</p><p class="mt-1 text-xs text-[var(--ll-text-muted)]">{{ item.caption }}</p></div><svg class="text-[var(--ll-text-muted)]" [class.text-violet-300]="item.title === 'Receivables ageing'" [class.text-fuchsia-300]="item.title === 'Payables ageing'" lucideBarChart3 [size]="18"></svg></div><div class="mt-6 grid grid-cols-5 gap-2">@for (bucket of ageingBuckets; track bucket.key) {<div class="min-w-0"><div class="flex h-32 items-end rounded-lg bg-white/[0.025] p-1"><div class="w-full rounded-md" [class.bg-violet-500\\/75]="item.title === 'Receivables ageing'" [class.bg-fuchsia-400\\/70]="item.title === 'Payables ageing'" [style.height.%]="ageingHeight(item.values, bucket.key, item.max)"></div></div><p class="mt-2 truncate text-center text-[10px] text-[var(--ll-text-muted)]">{{ bucket.label }}</p><p class="mt-1 truncate text-center text-[10px] text-white">{{ money(item.values[bucket.key] || '0') }}</p></div>}</div></article>
         }
       </div>
 
@@ -131,6 +131,7 @@ type DashboardPeriod = 'fy' | 'quarter' | 'month';
 })
 export class DashboardPageComponent implements OnInit {
   private readonly dashboardService = inject(DashboardDataService);
+  private readonly changeDetector = inject(ChangeDetectorRef);
   protected data: DashboardData | null = null;
   protected loading = false;
   protected errorMessage = '';
@@ -146,15 +147,25 @@ export class DashboardPageComponent implements OnInit {
   protected loadDashboard(): void {
     this.loading = true;
     this.errorMessage = '';
+    this.changeDetector.markForCheck();
     const { fromDate, toDate } = this.getPeriodRange(this.period);
     try {
       this.dashboardService.getDashboard(fromDate, toDate).subscribe({
-        next: (data) => { this.data = data; this.loading = false; },
-        error: (error: unknown) => { this.errorMessage = error instanceof Error ? error.message : 'The dashboard API could not be loaded.'; this.loading = false; },
+        next: (data) => {
+          this.data = data;
+          this.loading = false;
+          this.changeDetector.markForCheck();
+        },
+        error: (error: unknown) => {
+          this.errorMessage = error instanceof Error ? error.message : 'The dashboard API could not be loaded.';
+          this.loading = false;
+          this.changeDetector.markForCheck();
+        },
       });
     } catch (error: unknown) {
       this.errorMessage = error instanceof Error ? error.message : 'Configure the company workspace to load live data.';
       this.loading = false;
+      this.changeDetector.markForCheck();
     }
   }
 
