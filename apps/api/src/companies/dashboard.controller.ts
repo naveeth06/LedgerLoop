@@ -29,16 +29,16 @@ export class DashboardController {
     validateRange(fromDate, toDate);
 
     return this.tenantAccess.withCompanyTransaction(userId, companyId, async (client) => {
-      const [kpis, pnlTrend, revenueMix, expenseMix, receivables, payables, cashMovement, recentActivity] = await Promise.all([
-        this.loadKpis(client, companyId, fromDate, toDate),
-        this.loadPnlTrend(client, companyId, fromDate, toDate),
-        this.loadAccountMix(client, companyId, fromDate, toDate, 'income'),
-        this.loadAccountMix(client, companyId, fromDate, toDate, 'expense'),
-        this.loadReceivables(client, companyId, toDate),
-        this.loadPayables(client, companyId, toDate),
-        this.loadCashMovement(client, companyId, fromDate, toDate),
-        this.loadRecentActivity(client, companyId),
-      ]);
+      // pg clients are stateful and do not support concurrent queries on the same
+      // client. Keep these report reads sequential inside the tenant transaction.
+      const kpis = await this.loadKpis(client, companyId, fromDate, toDate);
+      const pnlTrend = await this.loadPnlTrend(client, companyId, fromDate, toDate);
+      const revenueMix = await this.loadAccountMix(client, companyId, fromDate, toDate, 'income');
+      const expenseMix = await this.loadAccountMix(client, companyId, fromDate, toDate, 'expense');
+      const receivables = await this.loadReceivables(client, companyId, toDate);
+      const payables = await this.loadPayables(client, companyId, toDate);
+      const cashMovement = await this.loadCashMovement(client, companyId, fromDate, toDate);
+      const recentActivity = await this.loadRecentActivity(client, companyId);
 
       return {
         report: 'dashboard', companyId, fromDate, toDate, kpis,
@@ -213,7 +213,8 @@ export class DashboardController {
 
   private async loadRecentActivity(client: any, companyId: string) {
     const result = await client.query(`
-      SELECT je.id::text AS id, je.entry_number AS reference, je.entry_date::text AS date, je.description, je.source_type AS source
+      SELECT je.id::text AS id, je.entry_number AS reference, je.entry_date::text AS date,
+        je.memo AS description, je.source_type AS source
       FROM journal_entries je WHERE je.company_id = $1 AND je.status = 'posted'
       ORDER BY je.entry_date DESC, je.created_at DESC LIMIT 8
     `, [companyId]);
@@ -234,9 +235,12 @@ function aggregateBuckets(rows: Array<{ bucket: string; amount_paise: string; do
 }
 
 function validateRange(fromDate: string, toDate: string): void {
-  for (const [field, value] of [['fromDate', fromDate], ['toDate', toDate]] as const) {
-    const date = new Date(`${value}T00:00:00.000Z`);
-    if (Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== value) throw new BadRequestException(`${field} must be a valid calendar date.`);
-  }
+  if (!isValidIsoDate(fromDate)) throw new BadRequestException('fromDate must be a valid calendar date.');
+  if (!isValidIsoDate(toDate)) throw new BadRequestException('toDate must be a valid calendar date.');
   if (fromDate > toDate) throw new BadRequestException('fromDate must be on or before toDate.');
+}
+
+function isValidIsoDate(value: string): boolean {
+  const date = new Date(`${value}T00:00:00.000Z`);
+  return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value;
 }
