@@ -9,6 +9,7 @@ import {
   LucideLogOut,
   LucideMenu,
   LucideSettings,
+  LucideUsers,
   LucideX,
 } from '@lucide/angular';
 import { AuthService } from './services/auth.service';
@@ -28,6 +29,7 @@ import { AuthService } from './services/auth.service';
     LucideLogOut,
     LucideMenu,
     LucideSettings,
+    LucideUsers,
     LucideX,
   ],
   template: `
@@ -57,13 +59,7 @@ import { AuthService } from './services/auth.service';
         <nav class="flex-1 space-y-7 overflow-y-auto px-3 py-6" aria-label="Primary navigation">
           <section>
             <p class="ll-nav-label">Workspace</p>
-            <a
-              routerLink="/dashboard"
-              routerLinkActive="ll-nav-active"
-              [routerLinkActiveOptions]="{ exact: true }"
-              class="ll-nav-item"
-              (click)="closeSidebar()"
-            >
+            <a routerLink="/dashboard" routerLinkActive="ll-nav-active" [routerLinkActiveOptions]="{ exact: true }" class="ll-nav-item" (click)="closeSidebar()">
               <svg lucideLayoutDashboard [size]="18"></svg>
               <span>Dashboard</span>
             </a>
@@ -71,14 +67,13 @@ import { AuthService } from './services/auth.service';
 
           <section>
             <p class="ll-nav-label">Accounting</p>
-            <a
-              routerLink="/accounting/accounts"
-              routerLinkActive="ll-nav-active"
-              class="ll-nav-item"
-              (click)="closeSidebar()"
-            >
+            <a routerLink="/accounting/accounts" routerLinkActive="ll-nav-active" class="ll-nav-item" (click)="closeSidebar()">
               <svg lucideBookOpen [size]="18"></svg>
               <span>Chart of Accounts</span>
+            </a>
+            <a routerLink="/accounting/parties" routerLinkActive="ll-nav-active" class="ll-nav-item" (click)="closeSidebar()">
+              <svg lucideUsers [size]="18"></svg>
+              <span>Customers & Suppliers</span>
             </a>
           </section>
 
@@ -100,12 +95,7 @@ import { AuthService } from './services/auth.service';
       </aside>
 
       @if (sidebarOpen) {
-        <button
-          class="fixed inset-0 z-30 bg-black/60 lg:hidden"
-          type="button"
-          aria-label="Close navigation overlay"
-          (click)="closeSidebar()"
-        ></button>
+        <button class="fixed inset-0 z-30 bg-black/60 lg:hidden" type="button" aria-label="Close navigation overlay" (click)="closeSidebar()"></button>
       }
 
       <div class="relative min-h-screen lg:pl-64">
@@ -132,8 +122,13 @@ import { AuthService } from './services/auth.service';
               </button>
               @if (userMenuOpen) {
                 <div class="absolute right-0 top-[calc(100%+8px)] w-52 rounded-xl border border-white/8 bg-[var(--ll-surface-elevated)] p-1.5 shadow-2xl shadow-black/40">
-                  <div class="px-3 py-2"><p class="truncate text-xs font-medium text-white">{{ auth.user()?.displayName || 'Account' }}</p><p class="mt-1 truncate text-[10px] text-[var(--ll-text-muted)]">{{ auth.user()?.email }}</p></div>
-                  <button type="button" class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs text-zinc-300 transition hover:bg-white/[0.05] hover:text-white" (click)="logout()"><svg lucideLogOut [size]="14"></svg>Sign out</button>
+                  <div class="px-3 py-2">
+                    <p class="truncate text-xs font-medium text-white">{{ auth.user()?.displayName || 'Account' }}</p>
+                    <p class="mt-1 truncate text-[10px] text-[var(--ll-text-muted)]">{{ auth.user()?.email }}</p>
+                  </div>
+                  <button type="button" class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs text-zinc-300 transition hover:bg-white/[0.05] hover:text-white" (click)="logout()">
+                    <svg lucideLogOut [size]="14"></svg>Sign out
+                  </button>
                 </div>
               }
             </div>
