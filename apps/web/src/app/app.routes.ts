@@ -11,6 +11,7 @@ import { PurchasesBillsPageComponent } from './pages/purchases-bills-page.compon
 import { ReportsPageComponent } from './pages/reports-page.component';
 import { SalesPageComponent } from './pages/sales-page.component';
 import { SalesReceiptsPageComponent } from './pages/sales-receipts-page.component';
+import { SupplierPaymentsPageComponent } from './pages/supplier-payments-page.component';
 
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
@@ -22,6 +23,7 @@ export const routes: Routes = [
   { path: 'sales/invoices', canActivate: [authGuard], component: SalesPageComponent },
   { path: 'sales/receipts', canActivate: [authGuard], component: SalesReceiptsPageComponent },
   { path: 'purchases/bills', canActivate: [authGuard], component: PurchasesBillsPageComponent },
+  { path: 'purchases/payments', canActivate: [authGuard], component: SupplierPaymentsPageComponent },
   { path: 'banking', canActivate: [authGuard], component: BankingPageComponent },
   { path: 'inventory', canActivate: [authGuard], component: InventoryPageComponent },
   { path: 'reports', canActivate: [authGuard], component: ReportsPageComponent },
