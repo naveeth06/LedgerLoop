@@ -1,5 +1,9 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { buildReminderEmailTemplate, formatPaise } from './reminder-email-template';
+
+afterEach(() => {
+  vi.useRealTimers();
+});
 
 describe('formatPaise', () => {
   it('formats integer paise as Indian rupees', () => {
@@ -15,7 +19,10 @@ describe('formatPaise', () => {
 });
 
 describe('buildReminderEmailTemplate', () => {
-  it('builds text and html content without exposing raw html', () => {
+  it('builds accessible text and escaped html content', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-10-16T12:00:00Z'));
+
     const template = buildReminderEmailTemplate({
       invoiceNumber: 'INV-<42>',
       dueDate: '2026-10-15',
@@ -23,15 +30,17 @@ describe('buildReminderEmailTemplate', () => {
       reminderSequence: 2,
     });
 
-    expect(template.subject).toBe('Payment reminder: invoice INV-<42>');
+    expect(template.subject).toBe('Payment reminder #2: invoice INV-<42>');
+    expect(template.text).toContain('Payment follow-up');
+    expect(template.text).toContain('Status: 1 day overdue');
     expect(template.text).toContain('Outstanding amount: ₹1,250.50');
-    expect(template.text).toContain('payment reminder #2');
     expect(template.html).toContain('INV-&lt;42&gt;');
     expect(template.html).toContain('₹1,250.50');
+    expect(template.html).toContain('role="presentation"');
     expect(template.html).not.toContain('<42>');
   });
 
-  it('uses the first-reminder label for sequence one', () => {
+  it('uses a friendly first-reminder tone', () => {
     const template = buildReminderEmailTemplate({
       invoiceNumber: 'INV-1',
       dueDate: '2026-10-15',
@@ -39,7 +48,30 @@ describe('buildReminderEmailTemplate', () => {
       reminderSequence: 1,
     });
 
-    expect(template.text).toContain('payment reminder.');
-    expect(template.text).not.toContain('payment reminder #1');
+    expect(template.subject).toBe('Payment reminder: invoice INV-1');
+    expect(template.text).toContain('Our records show that the invoice below is still outstanding.');
+    expect(template.text).not.toContain('Payment follow-up');
+  });
+
+  it('uses the escalation tone for later reminders without threatening language', () => {
+    const template = buildReminderEmailTemplate({
+      invoiceNumber: 'INV-3',
+      dueDate: '2026-10-15',
+      outstandingPaise: '100',
+      reminderSequence: 3,
+    });
+
+    expect(template.subject).toBe('Payment reminder #3: invoice INV-3');
+    expect(template.text).toContain('after previous reminders');
+    expect(template.text).not.toMatch(/legal action|penalty|collection agency/i);
+  });
+
+  it('rejects invalid template inputs', () => {
+    expect(() => buildReminderEmailTemplate({ invoiceNumber: ' ', dueDate: '2026-10-15', outstandingPaise: '100', reminderSequence: 1 }))
+      .toThrow('invoiceNumber must not be empty');
+    expect(() => buildReminderEmailTemplate({ invoiceNumber: 'INV-1', dueDate: '2026-02-30', outstandingPaise: '100', reminderSequence: 1 }))
+      .toThrow('dueDate must be a valid calendar date');
+    expect(() => buildReminderEmailTemplate({ invoiceNumber: 'INV-1', dueDate: '2026-10-15', outstandingPaise: '100', reminderSequence: 0 }))
+      .toThrow('reminderSequence must be a positive integer');
   });
 });
