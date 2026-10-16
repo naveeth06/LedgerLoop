@@ -44,12 +44,13 @@ LedgerLoop is a multi-tenant accounting application for Indian businesses. The w
 - Outstanding-balance validation and receipt immutability.
 
 ### Purchases
-- Purchase orders.
+- Purchase orders foundation in the API.
 - Purchase bills and deterministic GST totals.
 - Payables posting.
 - Inventory capitalization and expense posting.
 - Input GST.
-- Supplier payments and allocation.
+- Supplier payments with partial/multi-bill allocation.
+- Supplier payment posting to bank/cash and configured supplier payable.
 - Supplier debit notes and expense workflows.
 
 ### Inventory
@@ -96,6 +97,7 @@ LedgerLoop is a multi-tenant accounting application for Indian businesses. The w
 - Sales Invoices.
 - Sales Receipts.
 - Purchase Bills.
+- Supplier Payments with bill allocation and explicit posting.
 - Banking & Reconciliation workspace.
 - Inventory workspace with responsive valuation tables, movements, stock adjustments, reversal, and posting-account configuration.
 - Reports workspace with Trial Balance, Profit & Loss, Balance Sheet, Receivables ageing, GST summary, and Inventory valuation, plus data-backed visual comparisons and accounting-flow explanations.
@@ -112,32 +114,34 @@ LedgerLoop is a multi-tenant accounting application for Indian businesses. The w
 4. **Sales — implemented foundation**
    - Invoices and customer receipts, including partial/multi-invoice allocation.
 5. **Purchases — implemented foundation**
-   - Supplier bills and purchase posting configuration.
+   - Supplier bills, purchase posting configuration, and supplier payments.
 6. **Frontend motion — implemented foundation**
    - Centralized GSAP motion architecture across the authenticated application.
 7. **Banking — implemented foundation**
    - Bank account connection, JSON statement import, transaction listing, suggestion review, and user-approved matching.
-8. **Inventory — UI refinement**
-   - Improve table readability, responsive behavior, modal scrolling, and focus visibility without changing inventory API or accounting behavior.
-9. **Reports — visual explanations**
-   - Add data-backed comparison charts and report-specific accounting-flow diagrams to explain existing reports.
+8. **Inventory — implemented foundation**
+   - Valuation, movements, adjustments/reversal, posting setup, and responsive UI refinement.
+9. **Reports — implemented foundation**
+   - Live financial reports with data-backed comparison charts and report-specific accounting-flow explanations.
+10. **Supplier payments — implemented**
+    - Supplier selection, outstanding received-bill lookup, partial/multi-bill allocation, integer-paise conversion, explicit payment posting, and purchase posting-setup feedback.
 
 ## Next priorities
 
-10. **Purchase completion**
-    - Purchase orders.
-    - Supplier payment workspace.
-    - Remaining supplier adjustment workflows.
 11. **Sales completion**
     - Invoice detail/edit workflow.
-    - Remaining sales document workflows.
     - Sales posting-account setup UX where configuration is required.
-12. **Reminders workspace**
+    - Remaining sales document workflows.
+12. **Purchase completion**
+    - Purchase order browser/create workflow.
+    - Supplier payment history/detail workflow.
+    - Remaining supplier adjustment workflows.
+13. **Reminders workspace**
     - Reminder settings.
     - Overdue events.
     - Email delivery status.
     - Acknowledgement and monitoring.
-13. **Application hardening**
+14. **Application hardening**
     - Consistent loading, empty, error, and offline states.
     - Responsive validation at 640/1024/1440px.
     - Keyboard and screen-reader review.
