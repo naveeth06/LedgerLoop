@@ -1,27 +1,67 @@
-# LedgerLoop — Application Plan
+# LedgerLoop Application Plan
 
-LedgerLoop is an India-focused, GST-aware accounting platform for small businesses and accountants. The application is being built as a secure multi-tenant accounting system with tenant-scoped data access, auditable financial mutations, integer-paise monetary storage, and a progressively richer web workspace.
+## Purpose
+LedgerLoop is a multi-tenant accounting application for Indian businesses. The web application exposes accounting APIs through coherent browser workflows while preserving tenant isolation, auditability, integer-paise money, balanced journals, and immutable posted accounting history.
 
-## Current scope
+## Implemented foundation
 
-### Platform foundation
-- npm workspaces with NestJS API and Angular web application.
-- PostgreSQL 16 with tenant-scoped tables, forced row-level security and transaction-scoped company/user context.
-- Audit logging for sensitive tenant mutations.
-- Argon2id password hashing, refresh-session rotation and replay-triggered session-family revocation.
-- Signed short-lived access tokens, CSRF/origin protections and credentialed CORS.
-- GitHub Actions validation for migrations, typecheck, build, unit tests and PostgreSQL integration.
+### Platform and identity
+- Angular standalone web application with responsive dark application shell.
+- NestJS/Express API, PostgreSQL 16, Redis/BullMQ infrastructure.
+- Company/membership context, authorization guards, tenant-scoped audit logging, validation, CSRF/origin, CORS and throttling foundations.
+- Global Angular bearer-token attachment for authenticated API requests.
 
-### Accounting foundation
-- Company onboarding, memberships and branch directory.
-- Chart of Accounts with tenant-scoped custom accounts and protected system accounts.
-- GST registrations and party master data.
+### Accounting
+- Chart of Accounts, opening balances and opening inventory.
+- Deterministic CGST/SGST/IGST calculation and integer-paise rounding.
+- Balanced journal entries, atomic posting, posted-entry immutability and reversal workflow.
+- Tenant-boundary and accounting-integrity tests.
+
+### Master data
+- Customers, suppliers and combined parties.
+- Party create, edit and active/inactive status workflow.
+- GST/contact/address party data and credit limits.
 - Items/services, HSN/SAC, GST rates, prices and inventory tracking.
 - Item create, edit and active/inactive status workflow; item codes remain immutable during edits.
 - Warehouses with optional branch assignment and active/inactive state.
 - Warehouse edit and active/inactive status workflow; warehouse codes remain immutable during edits.
-- Journal entries, opening balances and opening inventory snapshots.
-- Sales invoices, receipts, purchase bills, supplier payments, inventory movements, bank imports/reconciliation and reminders foundations.
+- Chart of Accounts custom-account edit and active/inactive workflow; system accounts remain protected.
+
+### Sales
+- Sales invoice creation, numbering, GST totals and posting.
+- Tenant-scoped sales invoice detail with line-level GST/totals and linked posting journal metadata.
+- Customer receipts with bank/cash selection and partial/multi-invoice allocation.
+- Outstanding-balance validation and receipt immutability.
+
+### Purchases
+- Purchase-order API foundation.
+- Purchase bills, deterministic GST, payables posting, inventory capitalization/expense posting and input GST.
+- Supplier payments with partial/multi-bill allocation and explicit bank/cash posting.
+- Supplier debit-note and expense API foundations.
+
+### Inventory
+- Immutable inventory movements and weighted-average valuation.
+- Warehouse/account configuration.
+- Purchase capitalization and sales COGS/inventory relief.
+- Tenant-scoped stock adjustments and reversal-safe corrections.
+- Responsive inventory tables, tabs, forms and action controls.
+
+### Banking and reconciliation
+- Tenant-scoped bank accounts and statement imports.
+- External-ID duplicate protection and secure JSON import validation.
+- Reconciliation suggestions, confidence bands and explicit user-approved matching.
+- One-match-per-journal-line protection and immutable reconciled state.
+
+### Reporting
+- Trial Balance, Profit & Loss, Balance Sheet, receivables/payables ageing, GST summary and inventory valuation.
+- Dashboard KPIs/charts and financial period filtering.
+- Report-specific data-backed visual comparisons and accounting-flow explanations.
+
+### Reminders and email
+- Overdue reminder settings and idempotent events.
+- BullMQ scheduling and tenant-scoped delivery records.
+- Party reminder opt-out.
+- Provider-neutral email delivery abstraction with retry/backoff and audit metadata.
 
 ### Web application
 - Dashboard, Chart of Accounts, Customers & Suppliers, Items & Warehouses.
@@ -84,3 +124,58 @@ LedgerLoop is an India-focused, GST-aware accounting platform for small business
    - Remaining supplier adjustment workflows.
 16. **Application hardening**
    - Consistent loading, empty, error and offline states.
+   - Responsive validation at 640/1024/1440px.
+   - Keyboard and screen-reader review.
+   - Ctrl+K/application command experience.
+   - End-to-end browser coverage.
+   - Motion regression testing across supported breakpoints and reduced-motion settings.
+
+## Future plans
+
+### Security and compliance
+- Email verification.
+- Password reset.
+- Optional Google sign-in if product scope requires it.
+- Distributed rate limiting and security monitoring.
+- Full authentication integration coverage.
+- WCAG 2.2 AA review.
+
+### AI capabilities
+AI remains advisory rather than authoritative:
+- Transaction categorisation suggestions.
+- Receipt extraction and reconciliation suggestions.
+- Explicit validation and human approval before accounting mutation.
+- Prompt-injection defenses, sensitive-data redaction, quotas, confidence thresholds and AI audit metadata.
+
+### Provider-specific integrations
+Provider-specific email webhooks/bounce handling will only be implemented after a provider/API is explicitly selected. The existing provider-neutral foundation must not be replaced with an invented external contract.
+
+### Release readiness
+- Final environment validation.
+- Lockfile/linting policy.
+- Seed/demo tooling where appropriate.
+- Docker/deployment artifacts when requirements are finalized.
+- OpenAPI documentation.
+- Full CI, API integration and Playwright coverage.
+- Production operational documentation.
+
+## Engineering rules
+- CI is the source of truth; never claim a check passed unless CI reports it passed.
+- Build one focused increment per PR.
+- Preserve forced RLS and tenant transaction context.
+- Never bypass accounting constraints or manually alter migration history.
+- Store money as integer paise.
+- Post vouchers atomically.
+- Posted accounting documents remain immutable; corrections use explicit reversals.
+- Never fabricate dashboard/report metrics in the frontend.
+- AI output is untrusted until explicitly approved.
+- Avoid unselected external providers/APIs.
+- Motion is presentation-only and must not change accounting state.
+- Respect reduced motion and clean up GSAP contexts, ScrollTriggers, observers and listeners.
+
+## Definition of application completeness
+A normal browser workflow should be possible end-to-end:
+
+**Company setup → Masters → Quote/Order → Invoice/Bill → Posting → Receipt/Payment → Bank reconciliation → Inventory → Reports → Reminders**
+
+with tenant isolation, auditability, accounting integrity, responsive UX, accessible motion and automated verification preserved throughout.
