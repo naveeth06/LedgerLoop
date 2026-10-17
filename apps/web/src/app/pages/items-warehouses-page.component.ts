@@ -221,15 +221,21 @@ export class ItemsWarehousesPageComponent {
   resetForm(): void { this.editingItem.set(null); this.editingWarehouse.set(null); this.formError.set(''); this.itemCode.set(this.nextItemCode()); this.itemName.set(''); this.itemType.set('goods'); this.hsnSac.set(''); this.unitCode.set('unit'); this.gstRate.set('0'); this.sellingPrice.set('0.00'); this.purchasePrice.set('0.00'); this.trackInventory.set(true); this.warehouseCode.set(this.nextWarehouseCode()); this.warehouseName.set(''); this.warehouseBranchId.set(''); this.warehouseAddress.set(''); }
 
   private nextItemCode(): string {
-    const existing = new Set(this.items().map((item) => item.item_code.toUpperCase()));
-    for (let index = 1; index <= 999; index += 1) { const candidate = `ITEM-${String(index).padStart(3, '0')}`; if (!existing.has(candidate)) return candidate; }
-    return `ITEM-${Date.now().toString().slice(-8)}`;
+    const highestExisting = this.items()
+      .map((item) => item.item_code.toUpperCase().match(/^ITEM-(\d+)$/))
+      .map((match) => match ? Number(match[1]) : 0)
+      .filter((value) => Number.isSafeInteger(value))
+      .reduce((highest, value) => Math.max(highest, value), 0);
+    return `ITEM-${String(highestExisting + 1).padStart(3, '0')}`;
   }
 
   private nextWarehouseCode(): string {
-    const existing = new Set(this.warehouses().map((warehouse) => warehouse.warehouse_code.toUpperCase()));
-    for (let index = 1; index <= 999; index += 1) { const candidate = `WH-${String(index).padStart(3, '0')}`; if (!existing.has(candidate)) return candidate; }
-    return `WH-${Date.now().toString().slice(-8)}`;
+    const highestExisting = this.warehouses()
+      .map((warehouse) => warehouse.warehouse_code.toUpperCase().match(/^WH-(\d+)$/))
+      .map((match) => match ? Number(match[1]) : 0)
+      .filter((value) => Number.isSafeInteger(value))
+      .reduce((highest, value) => Math.max(highest, value), 0);
+    return `WH-${String(highestExisting + 1).padStart(3, '0')}`;
   }
 
   onItemTypeChange(value: string): void { this.itemType.set(value === 'service' ? 'service' : 'goods'); }
