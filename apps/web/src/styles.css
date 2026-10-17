@@ -13,6 +13,9 @@
   --ll-border: rgba(255, 255, 255, 0.08);
   --ll-primary: #8b5cf6;
   --ll-secondary: #d946ef;
+  --ll-primary-soft: #a78bfa;
+  --ll-secondary-soft: #f0abfc;
+  --ll-focus: #c4b5fd;
   --ll-success: #34d399;
   --ll-warning: #fbbf24;
   --ll-danger: #fb7185;
@@ -49,7 +52,7 @@ a {
 }
 
 :focus-visible {
-  outline: 2px solid rgb(167 139 250 / 0.85);
+  outline: 2px solid color-mix(in srgb, var(--ll-focus) 85%, transparent);
   outline-offset: 2px;
 }
 
@@ -68,7 +71,7 @@ a {
 }
 
 .ll-eyebrow {
-  color: #a78bfa;
+  color: var(--ll-primary-soft);
   font-size: 0.6875rem;
   font-weight: 700;
   letter-spacing: 0.14em;
@@ -107,8 +110,8 @@ a {
 
 .ll-nav-active {
   color: #fff;
-  border-color: rgb(139 92 246 / 0.18);
-  background: linear-gradient(90deg, rgb(139 92 246 / 0.16), rgb(217 70 239 / 0.06));
+  border-color: color-mix(in srgb, var(--ll-primary) 18%, transparent);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--ll-primary) 16%, transparent), color-mix(in srgb, var(--ll-secondary) 6%, transparent));
 }
 
 .ll-icon-button {
@@ -127,7 +130,7 @@ a {
 
 .ll-icon-button:hover {
   color: #fff;
-  border-color: rgb(167 139 250 / 0.22);
+  border-color: color-mix(in srgb, var(--ll-primary-soft) 22%, transparent);
   background: rgb(255 255 255 / 0.05);
 }
 
@@ -147,14 +150,14 @@ a {
 }
 
 .ll-button-primary {
-  border: 1px solid rgb(167 139 250 / 0.3);
+  border: 1px solid color-mix(in srgb, var(--ll-primary-soft) 30%, transparent);
   color: #fff;
-  background: linear-gradient(135deg, #7c3aed, #c026d3);
-  box-shadow: 0 8px 28px rgb(124 58 237 / 0.22);
+  background: linear-gradient(135deg, var(--ll-primary), var(--ll-secondary));
+  box-shadow: 0 8px 28px color-mix(in srgb, var(--ll-primary) 22%, transparent);
 }
 
 .ll-button-primary:hover {
-  box-shadow: 0 12px 34px rgb(124 58 237 / 0.3);
+  box-shadow: 0 12px 34px color-mix(in srgb, var(--ll-primary) 30%, transparent);
 }
 
 .ll-button-secondary {
@@ -164,7 +167,7 @@ a {
 }
 
 .ll-button-secondary:hover {
-  border-color: rgb(167 139 250 / 0.2);
+  border-color: color-mix(in srgb, var(--ll-primary-soft) 20%, transparent);
   color: #fff;
   background: rgb(255 255 255 / 0.05);
 }
@@ -181,16 +184,211 @@ a {
 .ll-ambient-purple {
   top: -18rem;
   left: 28%;
-  background: #7c3aed;
+  background: var(--ll-primary);
 }
 
 .ll-grid {
   position: absolute;
   inset: 0;
   opacity: 0.055;
-  background-image: linear-gradient(rgb(167 139 250 / 0.45) 1px, transparent 1px), linear-gradient(90deg, rgb(167 139 250 / 0.45) 1px, transparent 1px);
+  background-image: linear-gradient(color-mix(in srgb, var(--ll-primary-soft) 45%, transparent) 1px, transparent 1px), linear-gradient(90deg, color-mix(in srgb, var(--ll-primary-soft) 45%, transparent) 1px, transparent 1px);
   background-size: 48px 48px;
   mask-image: linear-gradient(to bottom, black, transparent 55%);
+}
+
+/*
+ * Existing pages use Tailwind utility colors extensively. These narrow global
+ * mappings make those existing utilities consume the active theme without
+ * forcing a large, risky component-by-component rewrite.
+ */
+html[data-ll-theme] [class*="text-violet-"] {
+  color: var(--ll-primary-soft) !important;
+}
+
+html[data-ll-theme] [class*="text-fuchsia-"] {
+  color: var(--ll-secondary-soft) !important;
+}
+
+html[data-ll-theme] [class*="bg-violet-"] {
+  background-color: color-mix(in srgb, var(--ll-primary) 78%, transparent) !important;
+}
+
+html[data-ll-theme] [class*="bg-fuchsia-"] {
+  background-color: color-mix(in srgb, var(--ll-secondary) 70%, transparent) !important;
+}
+
+html[data-ll-theme] [class*="border-violet-"] {
+  border-color: color-mix(in srgb, var(--ll-primary-soft) 30%, transparent) !important;
+}
+
+html[data-ll-theme] [class*="border-fuchsia-"] {
+  border-color: color-mix(in srgb, var(--ll-secondary-soft) 30%, transparent) !important;
+}
+
+html[data-ll-theme] [class*="from-violet-"] {
+  --tw-gradient-from: var(--ll-primary) var(--tw-gradient-from-position) !important;
+  --tw-gradient-to: color-mix(in srgb, var(--ll-primary) 0%, transparent) var(--tw-gradient-to-position) !important;
+}
+
+html[data-ll-theme] [class*="to-fuchsia-"] {
+  --tw-gradient-to: var(--ll-secondary) var(--tw-gradient-to-position) !important;
+}
+
+html[data-ll-theme] [class*="text-white"] {
+  color: var(--ll-text) !important;
+}
+
+html[data-ll-theme] [class*="text-zinc-300"],
+html[data-ll-theme] [class*="text-zinc-400"],
+html[data-ll-theme] [class*="text-zinc-500"],
+html[data-ll-theme] [class*="text-zinc-600"] {
+  color: var(--ll-text-muted) !important;
+}
+
+html[data-ll-theme] [class*="bg-white/"] {
+  background-color: color-mix(in srgb, var(--ll-text) 4%, transparent) !important;
+}
+
+html[data-ll-theme] [class*="border-white/"] {
+  border-color: var(--ll-border) !important;
+}
+
+html[data-ll-theme] [class*="divide-white/"] {
+  --tw-divide-opacity: 1;
+  border-color: var(--ll-border) !important;
+}
+
+.ll-theme-selector {
+  position: relative;
+}
+
+.ll-theme-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  min-height: 2.5rem;
+  padding: 0.375rem 0.625rem;
+  border: 1px solid var(--ll-border);
+  border-radius: 0.75rem;
+  color: var(--ll-text);
+  background: rgb(255 255 255 / 0.025);
+  cursor: pointer;
+  transition: border-color 160ms ease, background-color 160ms ease;
+}
+
+.ll-theme-trigger:hover,
+.ll-theme-trigger[aria-expanded="true"] {
+  border-color: color-mix(in srgb, var(--ll-primary-soft) 28%, transparent);
+  background: rgb(255 255 255 / 0.05);
+}
+
+.ll-theme-swatch {
+  display: inline-flex;
+  width: 1.75rem;
+  height: 1.75rem;
+  flex: 0 0 auto;
+  border-radius: 0.625rem;
+  background: linear-gradient(135deg, var(--swatch-primary), var(--swatch-secondary));
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.18);
+}
+
+.ll-theme-menu {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  z-index: 60;
+  width: min(20rem, calc(100vw - 2rem));
+  padding: 0.5rem;
+  border: 1px solid var(--ll-border);
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--ll-surface-elevated) 96%, black);
+  box-shadow: 0 24px 70px rgb(0 0 0 / 0.35);
+  backdrop-filter: blur(20px);
+}
+
+.ll-theme-menu-header {
+  padding: 0.625rem 0.625rem 0.5rem;
+}
+
+.ll-theme-menu-title {
+  margin: 0;
+  color: var(--ll-text);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.ll-theme-menu-description {
+  margin: 0.2rem 0 0;
+  color: var(--ll-text-muted);
+  font-size: 0.6875rem;
+}
+
+.ll-theme-option {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem;
+  border: 1px solid transparent;
+  border-radius: 0.75rem;
+  color: var(--ll-text);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 160ms ease, border-color 160ms ease;
+}
+
+.ll-theme-option:hover {
+  background: rgb(255 255 255 / 0.04);
+}
+
+.ll-theme-option-active {
+  border-color: color-mix(in srgb, var(--ll-primary-soft) 24%, transparent);
+  background: color-mix(in srgb, var(--ll-primary) 8%, transparent);
+}
+
+.ll-theme-option-copy {
+  min-width: 0;
+  flex: 1;
+}
+
+.ll-theme-option-name {
+  display: block;
+  color: var(--ll-text);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.ll-theme-option-description {
+  display: block;
+  margin-top: 0.125rem;
+  overflow: hidden;
+  color: var(--ll-text-muted);
+  font-size: 0.625rem;
+  line-height: 1rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ll-theme-check {
+  display: inline-flex;
+  width: 1.5rem;
+  height: 1.5rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  color: var(--ll-primary-soft);
+  background: color-mix(in srgb, var(--ll-primary) 12%, transparent);
+}
+
+@media (max-width: 640px) {
+  .ll-theme-trigger-label {
+    display: none;
+  }
+
+  .ll-theme-menu {
+    right: -0.25rem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
