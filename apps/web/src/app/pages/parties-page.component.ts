@@ -181,9 +181,12 @@ export class PartiesPageComponent {
 
   private suggestedCode(type: PartyType): string {
     const prefix = type === 'supplier' ? 'SUP' : 'CUST';
-    const existing = new Set(this.parties().map((party) => party.party_code.toUpperCase()));
-    for (let index = 1; index <= 999; index += 1) { const candidate = `${prefix}-${String(index).padStart(3, '0')}`; if (!existing.has(candidate)) return candidate; }
-    return `${prefix}-${Date.now().toString().slice(-8)}`;
+    const highestExisting = this.parties()
+      .map((party) => party.party_code.toUpperCase().match(new RegExp(`^${prefix}-(\\d+)$`)))
+      .map((match) => match ? Number(match[1]) : 0)
+      .filter((value) => Number.isSafeInteger(value))
+      .reduce((highest, value) => Math.max(highest, value), 0);
+    return `${prefix}-${String(highestExisting + 1).padStart(3, '0')}`;
   }
 
   private readApiError(error: unknown, fallback: string): string {

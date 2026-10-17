@@ -222,8 +222,14 @@ export class AccountsPageComponent {
   private nextAccountCode(type: AccountType): string {
     const starts: Record<AccountType, number> = { asset: 1300, liability: 2200, equity: 3100, income: 4100, expense: 5100 };
     const used = new Set(this.accounts().map((account) => account.account_code.toUpperCase()));
-    let candidate = starts[type];
-    while (used.has(String(candidate))) candidate += 10;
+    const minimum = starts[type];
+    const highestExisting = this.accounts()
+      .filter((account) => account.account_type === type)
+      .map((account) => Number(account.account_code))
+      .filter((value) => Number.isSafeInteger(value) && value >= minimum)
+      .reduce((highest, value) => Math.max(highest, value), minimum - 1);
+    let candidate = highestExisting + 1;
+    while (used.has(String(candidate))) candidate += 1;
     return String(candidate);
   }
 
