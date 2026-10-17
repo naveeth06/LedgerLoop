@@ -19,6 +19,7 @@ LedgerLoop is a multi-tenant accounting application for Indian businesses. The w
 
 ### Master data
 - Customers, suppliers and combined parties.
+- Party create, edit and active/inactive status workflow.
 - GST/contact/address party data and credit limits.
 - Items/services, HSN/SAC, GST rates, prices and inventory tracking.
 - Warehouses.
@@ -67,11 +68,13 @@ LedgerLoop is a multi-tenant accounting application for Indian businesses. The w
 - Inventory and Reports workspaces.
 - Reminders workspace with policy controls, overdue event monitoring, acknowledgement and delivery-status monitoring.
 - Shared GSAP motion system with route transitions, ScrollTrigger reveals, micro-interactions, reduced-motion handling and lifecycle cleanup.
+- Customer/supplier edit and active/inactive controls.
 
 ## Current application plan
 
 1. **Chart of Accounts — implemented**
-2. **Parties — implemented foundation**
+2. **Parties — implemented**
+   - Create, edit and active/inactive status.
 3. **Items & Warehouses — implemented foundation**
 4. **Sales — implemented foundation**
    - Invoices and receipts with partial/multi-invoice allocation.
@@ -94,11 +97,11 @@ LedgerLoop is a multi-tenant accounting application for Indian businesses. The w
 12. **Sales completion**
    - Sales posting-account setup UX where configuration is required.
    - Remaining sales document workflows.
-13. **Purchase completion**
+14. **Purchase completion**
    - Purchase-order browser/create workflow using the existing API foundation.
    - Supplier payment history/detail workflow.
    - Remaining supplier adjustment workflows.
-14. **Application hardening**
+15. **Application hardening**
    - Consistent loading, empty, error and offline states.
    - Responsive validation at 640/1024/1440px.
    - Keyboard and screen-reader review.
