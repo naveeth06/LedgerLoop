@@ -111,8 +111,10 @@ export class AppComponent implements AfterViewInit {
           this.motion.routeLeave(stage);
           this.userMenuOpen = false;
           this.themeMenuOpen = false;
-          this.showShell.set(false);
-          this.sidebarOpen = false;
+          if (event.url.startsWith('/auth')) {
+            this.showShell.set(false);
+            this.sidebarOpen = false;
+          }
           return;
         }
 
@@ -123,11 +125,12 @@ export class AppComponent implements AfterViewInit {
           this.sidebarOpen = !isAuthRoute && (this.document.defaultView?.innerWidth ?? 1024) >= 1024;
         } else {
           this.navigationPending.set(false);
-          this.showShell.set(false);
-          this.sidebarOpen = false;
+          if (event instanceof NavigationCancel || event instanceof NavigationError) {
+            this.motion.routeEnter(stage);
+          }
         }
 
-        this.motion.routeEnter(stage);
+        if (event instanceof NavigationEnd) this.motion.routeEnter(stage);
       });
   }
 
