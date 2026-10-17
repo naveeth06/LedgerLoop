@@ -1,4 +1,4 @@
-import { BadRequestException, Body, ConflictException, Controller, Get, Param, Post, Query, Req } from '@nestjs/common';
+import { BadRequestException, Body, ConflictException, Controller, Get, Param, Patch, Post, Query, Req } from '@nestjs/common';
 import { z } from 'zod';
 import { CompanyRoles } from '../auth/roles.decorator';
 import type { AuthenticatedRequest } from '../auth/current-user';
@@ -6,22 +6,33 @@ import { AuditService } from '../database/audit.service';
 import { TenantAccessService } from '../database/tenant-access.service';
 
 const itemTypes = ['goods', 'service'] as const;
-const createItemSchema = z.object({
-  itemCode: z.string().trim().min(1).max(32).regex(/^[A-Za-z0-9._-]+$/),
+
+const itemFieldsSchema = z.object({
   name: z.string().trim().min(1).max(200),
-  itemType: z.enum(itemTypes).default('goods'),
+  itemType: z.enum(itemTypes),
   hsnSac: z.string().trim().regex(/^[0-9]{4,8}$/).optional(),
-  unitCode: z.string().trim().min(1).max(16).default('unit'),
-  // Basis points: 1800 represents 18.00%. Tax calculation is a separate increment.
-  gstRateBps: z.number().int().min(0).max(10000).default(0),
-  sellingPricePaise: z.string().regex(/^(0|[1-9][0-9]{0,17})$/).default('0'),
-  purchasePricePaise: z.string().regex(/^(0|[1-9][0-9]{0,17})$/).default('0'),
-  trackInventory: z.boolean().optional(),
+  unitCode: z.string().trim().min(1).max(16),
+  gstRateBps: z.number().int().min(0).max(10000),
+  sellingPricePaise: z.string().regex(/^(0|[1-9][0-9]{0,17})$/),
+  purchasePricePaise: z.string().regex(/^(0|[1-9][0-9]{0,17})$/),
+  trackInventory: z.boolean(),
 }).strict().superRefine((value, context) => {
-  if (value.itemType === 'service' && value.trackInventory === true) {
+  if (value.itemType === 'service' && value.trackInventory) {
     context.addIssue({ code: 'custom', path: ['trackInventory'], message: 'Services cannot track inventory.' });
   }
 });
+
+const createItemSchema = z.object({
+  itemCode: z.string().trim().min(1).max(32).regex(/^[A-Za-z0-9._-]+$/),
+  ...itemFieldsSchema.shape,
+}).strict().superRefine((value, context) => {
+  if (value.itemType === 'service' && value.trackInventory) {
+    context.addIssue({ code: 'custom', path: ['trackInventory'], message: 'Services cannot track inventory.' });
+  }
+});
+
+const updateItemSchema = itemFieldsSchema;
+
 const createWarehouseSchema = z.object({
   warehouseCode: z.string().trim().min(1).max(32).regex(/^[A-Za-z0-9._-]+$/),
   name: z.string().trim().min(1).max(160),
@@ -62,7 +73,7 @@ export class ItemsController {
     const parsed = createItemSchema.safeParse(body);
     if (!parsed.success) throw new BadRequestException('Item details are invalid.');
     const data = parsed.data;
-    const trackInventory = data.itemType === 'service' ? false : (data.trackInventory ?? true);
+    const trackInventory = data.itemType === 'service' ? false : data.trackInventory;
     try {
       return await this.tenantAccess.withCompanyTransaction(userId, companyId, async (client) => {
         const inserted = await client.query(
@@ -86,6 +97,64 @@ export class ItemsController {
       if (isUniqueViolation(error)) throw new ConflictException('An item with this code already exists in the company.');
       throw error;
     }
+  }
+
+  @Patch(':itemId')
+  @CompanyRoles('owner', 'admin', 'accountant')
+  async updateItem(@Param('companyId') companyId: string, @Param('itemId') itemId: string,
+    @Body() body: unknown, @Req() request: AuthenticatedRequest) {
+    const userId = request.user?.sub;
+    if (!userId) throw new BadRequestException('Authenticated user is required.');
+    const parsed = updateItemSchema.safeParse(body);
+    if (!parsed.success) throw new BadRequestException('Item details are invalid.');
+    const data = parsed.data;
+    const trackInventory = data.itemType === 'service' ? false : data.trackInventory;
+    return this.tenantAccess.withCompanyTransaction(userId, companyId, async (client) => {
+      const updated = await client.query(
+        `UPDATE company_items
+            SET name = $3, item_type = $4, hsn_sac = $5, unit_code = $6, gst_rate_bps = $7,
+                selling_price_paise = $8::bigint, purchase_price_paise = $9::bigint,
+                track_inventory = $10, updated_at = NOW()
+          WHERE company_id = $1 AND id = $2
+        RETURNING id, company_id, item_code, name, item_type, hsn_sac, unit_code, gst_rate_bps,
+                  selling_price_paise, purchase_price_paise, track_inventory, is_active, created_at, updated_at`,
+        [companyId, itemId, data.name, data.itemType, data.hsnSac ?? null, data.unitCode,
+          data.gstRateBps, data.sellingPricePaise, data.purchasePricePaise, trackInventory],
+      );
+      const item = updated.rows[0];
+      if (!item) throw new BadRequestException('Item was not found in this company.');
+      await this.audit.record(client, {
+        actorUserId: userId, action: 'COMPANY_ITEM_UPDATED', entityType: 'company_item', entityId: item.id,
+        metadata: { companyId, itemCode: item.item_code, itemType: item.item_type },
+      });
+      return { item };
+    });
+  }
+
+  @Patch(':itemId/status')
+  @CompanyRoles('owner', 'admin', 'accountant')
+  async updateItemStatus(@Param('companyId') companyId: string, @Param('itemId') itemId: string,
+    @Body() body: unknown, @Req() request: AuthenticatedRequest) {
+    const userId = request.user?.sub;
+    if (!userId) throw new BadRequestException('Authenticated user is required.');
+    const parsed = z.object({ isActive: z.boolean() }).strict().safeParse(body);
+    if (!parsed.success) throw new BadRequestException('Item status is invalid.');
+    return this.tenantAccess.withCompanyTransaction(userId, companyId, async (client) => {
+      const updated = await client.query(
+        `UPDATE company_items SET is_active = $3, updated_at = NOW()
+          WHERE company_id = $1 AND id = $2
+        RETURNING id, company_id, item_code, name, item_type, hsn_sac, unit_code, gst_rate_bps,
+                  selling_price_paise, purchase_price_paise, track_inventory, is_active, created_at, updated_at`,
+        [companyId, itemId, parsed.data.isActive],
+      );
+      const item = updated.rows[0];
+      if (!item) throw new BadRequestException('Item was not found in this company.');
+      await this.audit.record(client, {
+        actorUserId: userId, action: 'COMPANY_ITEM_STATUS_UPDATED', entityType: 'company_item', entityId: item.id,
+        metadata: { companyId, itemCode: item.item_code, isActive: item.is_active },
+      });
+      return { item };
+    });
   }
 }
 
