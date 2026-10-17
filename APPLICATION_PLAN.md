@@ -24,6 +24,7 @@ LedgerLoop is a multi-tenant accounting application for Indian businesses. The w
 - Items/services, HSN/SAC, GST rates, prices and inventory tracking.
 - Item create, edit and active/inactive status workflow; item codes remain immutable during edits.
 - Warehouses with optional branch assignment and active/inactive state.
+- Chart of Accounts custom-account edit and active/inactive workflow; system accounts remain protected.
 
 ### Sales
 - Sales invoice creation, numbering, GST totals and posting.
@@ -71,10 +72,15 @@ LedgerLoop is a multi-tenant accounting application for Indian businesses. The w
 - Shared GSAP motion system with route transitions, ScrollTrigger reveals, micro-interactions, reduced-motion handling and lifecycle cleanup.
 - Customer/supplier edit and active/inactive controls.
 - Item edit and active/inactive controls.
+- Chart of Accounts edit and active/inactive controls for custom accounts; system accounts are visibly protected.
 
 ## Current application plan
 
 1. **Chart of Accounts — implemented**
+   - Create custom accounts.
+   - Edit custom account name, parent and description.
+   - Activate/deactivate custom accounts.
+   - System accounts remain protected from edits and deactivation.
 2. **Parties — implemented**
    - Create, edit and active/inactive status.
 3. **Items & Warehouses — implemented foundation**
@@ -100,7 +106,6 @@ LedgerLoop is a multi-tenant accounting application for Indian businesses. The w
 
 12. **Master-data completion**
    - Warehouse edit and active/inactive workflow.
-   - Chart of Accounts edit/activate/deactivate where accounting safety permits.
    - Bank-account edit/deactivation.
    - GST registration management UX.
 13. **Sales completion**
