@@ -44,9 +44,8 @@ const PARTY_TYPES: PartyType[] = ['customer', 'supplier', 'both'];
         <div class="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-t-2xl border border-white/10 bg-[var(--ll-surface-elevated)] p-5 shadow-2xl shadow-black/50 sm:rounded-2xl sm:p-6" role="dialog" aria-modal="true" aria-labelledby="party-form-title" (click)="$event.stopPropagation()">
           <div class="flex items-start justify-between gap-4"><div><p class="ll-eyebrow">Party master</p><h2 id="party-form-title" class="mt-1 text-lg font-semibold text-white">{{ editingId() ? 'Edit party' : 'Create party' }}</h2></div><button type="button" class="ll-icon-button" aria-label="Close form" title="Close" (click)="closeForm()">×</button></div>
           <form class="mt-6 space-y-5" (submit)="saveParty($event)">
-            @if (!editingId()) { <label><span class="ll-label">Party code</span><input class="ll-input mt-1.5 w-full" maxlength="32" required [value]="formPartyCode()" (input)="formPartyCode.set($any($event.target).value)" placeholder="e.g. CUST-001" /><span class="ll-help">Unique code for this customer or supplier. A suggested code is filled automatically.</span></label> }
-            @else { <div><span class="ll-label">Party code</span><p class="mt-1.5 rounded-xl border border-white/8 bg-white/[0.02] px-3 py-2.5 font-mono text-sm text-zinc-300">{{ formPartyCode() }}</p></div> }
-            <div class="grid gap-4 sm:grid-cols-2"><label><span class="ll-label">Name</span><input class="ll-input mt-1.5 w-full" maxlength="200" required [value]="formName()" (input)="formName.set($any($event.target).value)" placeholder="e.g. Acme Supplies" /></label><label><span class="ll-label">Party type</span><select class="ll-input mt-1.5 w-full" [value]="formPartyType()" (change)="onPartyTypeChange($any($event.target).value)">@for (type of partyTypes; track type) { <option [value]="type">{{ typeLabel(type) }}</option> }</select></label></div>
+            <label><span class="ll-label">Party code</span><input class="ll-input mt-1.5 w-full opacity-60" disabled maxlength="32" [value]="formPartyCode()" placeholder="Generated automatically" /><span class="ll-help">Automatically generated from the party type. Codes cannot be changed by users.</span></label>
+            <div class="grid gap-4 sm:grid-cols-2"><label><span class="ll-label">Name</span><input class="ll-input mt-1.5 w-full" maxlength="200" required [value]="formName()" (input)="formName.set($any($event.target).value)" placeholder="e.g. Acme Supplies" /></label><label><span class="ll-label">Party type</span><select class="ll-input mt-1.5 w-full" [disabled]="!!editingId()" [value]="formPartyType()" (change)="onPartyTypeChange($any($event.target).value)">@for (type of partyTypes; track type) { <option [value]="type">{{ typeLabel(type) }}</option> }</select></label></div>
             <div class="grid gap-4 sm:grid-cols-2"><label><span class="ll-label">GSTIN <span class="font-normal text-zinc-500">(optional)</span></span><input class="ll-input mt-1.5 w-full font-mono uppercase" maxlength="15" [value]="formGstin()" (input)="formGstin.set($any($event.target).value.toUpperCase())" placeholder="e.g. 33AAAAA0000A1Z5" /></label><label><span class="ll-label">Credit limit (₹)</span><input class="ll-input mt-1.5 w-full" inputmode="decimal" [value]="formCreditLimit()" (input)="formCreditLimit.set($any($event.target).value)" placeholder="0.00" /></label></div>
             <div class="grid gap-4 sm:grid-cols-2"><label><span class="ll-label">Email <span class="font-normal text-zinc-500">(optional)</span></span><input class="ll-input mt-1.5 w-full" type="email" autocomplete="email" [value]="formEmail()" (input)="formEmail.set($any($event.target).value)" placeholder="billing@company.com" /></label><label><span class="ll-label">Phone <span class="font-normal text-zinc-500">(optional)</span></span><input class="ll-input mt-1.5 w-full" type="tel" autocomplete="tel" [value]="formPhone()" (input)="formPhone.set($any($event.target).value)" placeholder="e.g. +91 98765 43210" /></label></div>
             @if (formError()) { <p class="rounded-lg border border-rose-400/20 bg-rose-500/10 px-3 py-2 text-xs leading-5 text-rose-200" role="alert">{{ formError() }}</p> }
@@ -129,9 +128,10 @@ export class PartiesPageComponent {
   protected closeForm(): void { if (!this.saving()) this.formOpen.set(false); }
 
   protected onPartyTypeChange(value: string): void {
+    if (this.editingId()) return;
     const type = PARTY_TYPES.includes(value as PartyType) ? value as PartyType : 'customer';
     this.formPartyType.set(type);
-    if (!this.editingId() && /^(CUST|SUP)-\d{3}$/.test(this.formPartyCode())) this.formPartyCode.set(this.suggestedCode(type));
+    this.formPartyCode.set(this.suggestedCode(type));
   }
 
   protected saveParty(event: Event): void {
@@ -142,7 +142,7 @@ export class PartiesPageComponent {
     const name = this.formName().trim();
     const partyCode = this.formPartyCode().trim();
     const credit = this.toPaise(this.formCreditLimit());
-    if (!partyCode) { this.formError.set('Party code is required.'); return; }
+    if (!partyCode) { this.formError.set('A party code could not be generated. Please refresh and try again.'); return; }
     if (!name || credit === null) { this.formError.set('Enter a party name and a valid non-negative credit limit.'); return; }
     const body = { name, partyType: this.formPartyType(), gstin: this.formGstin().trim() || undefined, email: this.formEmail().trim() || undefined, phone: this.formPhone().trim() || undefined, creditLimitPaise: credit };
     this.saving.set(true); this.formError.set('');

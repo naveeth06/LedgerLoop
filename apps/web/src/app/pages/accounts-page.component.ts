@@ -72,7 +72,7 @@ type LedgerAccount = {
         <section class="w-full max-w-lg rounded-t-2xl border border-white/10 bg-[var(--ll-surface-elevated)] p-5 shadow-2xl shadow-black/50 sm:rounded-2xl" role="dialog" aria-modal="true" [attr.aria-labelledby]="formMode() === 'create' ? 'new-account-title' : 'edit-account-title'" (click)="$event.stopPropagation()">
           <div class="flex items-start justify-between gap-4"><div><p class="text-xs font-medium uppercase tracking-[0.14em] text-violet-300">Ledger setup</p><h2 [id]="formMode() === 'create' ? 'new-account-title' : 'edit-account-title'" class="mt-1 text-lg font-semibold text-white">{{ formMode() === 'create' ? 'Create account' : 'Edit account' }}</h2></div><button type="button" class="ll-icon-button" aria-label="Close" (click)="closeForm()">×</button></div>
           <form class="mt-5 space-y-4" (submit)="saveForm($event)">
-            <div class="grid gap-4 sm:grid-cols-2"><label class="block"><span class="ll-label">Account code</span><input class="ll-input mt-1.5 w-full" [class.opacity-60]="formMode() === 'edit'" [readOnly]="formMode() === 'edit'" required maxlength="32" [value]="formAccountCode()" (input)="formAccountCode.set($any($event.target).value)" /></label><label class="block"><span class="ll-label">Account type</span><select class="ll-input mt-1.5 w-full" [disabled]="formMode() === 'edit'" [value]="formAccountType()" (change)="formAccountType.set($any($event.target).value)">@for (type of accountTypes; track type) { <option [value]="type">{{ typeLabel(type) }}</option> }</select></label></div>
+            <div class="grid gap-4 sm:grid-cols-2"><label class="block"><span class="ll-label">Account code</span><input class="ll-input mt-1.5 w-full opacity-60" [disabled]="formMode() === 'create'" [readOnly]="formMode() === 'edit'" required maxlength="32" [value]="formAccountCode()" placeholder="Generated automatically" /><span class="ll-help">Automatically generated for this company and account type.</span></label><label class="block"><span class="ll-label">Account type</span><select class="ll-input mt-1.5 w-full" [disabled]="formMode() === 'edit'" [value]="formAccountType()" (change)="onAccountTypeChange($any($event.target).value)">@for (type of accountTypes; track type) { <option [value]="type">{{ typeLabel(type) }}</option> }</select></label></div>
             <label class="block"><span class="ll-label">Account name</span><input class="ll-input mt-1.5 w-full" maxlength="160" required [value]="formName()" (input)="formName.set($any($event.target).value)" placeholder="e.g. Software subscriptions" /></label>
             <label class="block"><span class="ll-label">Parent account <span class="font-normal text-zinc-600">(optional)</span></span><select class="ll-input mt-1.5 w-full" [value]="formParentAccountId()" (change)="formParentAccountId.set($any($event.target).value)"><option value="">No parent</option>@for (account of editableParentAccounts(); track account.id) { <option [value]="account.id">{{ account.account_code }} · {{ account.name }}</option> }</select></label>
             <label class="block"><span class="ll-label">Description <span class="font-normal text-zinc-600">(optional)</span></span><textarea class="ll-input mt-1.5 min-h-24 w-full resize-y" maxlength="2000" [value]="formDescription()" (input)="formDescription.set($any($event.target).value)" placeholder="What this account is used for"></textarea></label>
@@ -166,12 +166,19 @@ export class AccountsPageComponent {
   }
 
   protected openCreateForm(): void {
-    this.formMode.set('create'); this.editingAccountId.set(null); this.formError.set(''); this.formAccountCode.set(''); this.formName.set(''); this.formAccountType.set('expense'); this.formParentAccountId.set(''); this.formDescription.set(''); this.formOpen.set(true);
+    this.formMode.set('create'); this.editingAccountId.set(null); this.formError.set(''); this.formAccountType.set('expense'); this.formAccountCode.set(this.nextAccountCode('expense')); this.formName.set(''); this.formParentAccountId.set(''); this.formDescription.set(''); this.formOpen.set(true);
   }
 
   protected openEditForm(account: LedgerAccount): void {
     if (account.is_system) return;
     this.formMode.set('edit'); this.editingAccountId.set(account.id); this.formError.set(''); this.formAccountCode.set(account.account_code); this.formName.set(account.name); this.formAccountType.set(account.account_type); this.formParentAccountId.set(account.parent_account_id ?? ''); this.formDescription.set(account.description ?? ''); this.formOpen.set(true);
+  }
+
+  protected onAccountTypeChange(value: string): void {
+    if (this.formMode() === 'edit') return;
+    const type = ACCOUNT_TYPES.includes(value as AccountType) ? value as AccountType : 'expense';
+    this.formAccountType.set(type);
+    this.formAccountCode.set(this.nextAccountCode(type));
   }
 
   protected closeForm(): void { if (!this.saving()) this.formOpen.set(false); }
@@ -182,11 +189,13 @@ export class AccountsPageComponent {
     if (!companyId) { this.formError.set('No company is selected.'); return; }
     const name = this.formName().trim();
     if (!name) { this.formError.set('Account name is required.'); return; }
+    const accountCode = this.formAccountCode().trim();
+    if (!accountCode) { this.formError.set('A ledger account code could not be generated. Please refresh and try again.'); return; }
     this.saving.set(true); this.formError.set('');
     const headers = new HttpHeaders({ Authorization: `Bearer ${this.auth.getAccessToken()}` });
     const body = { name, parentAccountId: this.formParentAccountId() || null, ...(this.formDescription().trim() ? { description: this.formDescription().trim() } : {}) };
     if (this.formMode() === 'create') {
-      const createBody = { accountCode: this.formAccountCode().trim(), ...body, accountType: this.formAccountType() };
+      const createBody = { accountCode, ...body, accountType: this.formAccountType() };
       this.http.post<{ account: LedgerAccount }>(`${API_BASE_URL}/companies/${companyId}/accounts`, createBody, { headers }).pipe(
         takeUntilDestroyed(this.destroyRef), catchError((error: unknown) => { this.formError.set(this.errorFromResponse(error, 'create')); return of(null); }), finalize(() => this.saving.set(false)),
       ).subscribe((response) => { if (!response) return; this.accounts.update((accounts) => [...accounts, response.account].sort((a, b) => a.account_code.localeCompare(b.account_code))); this.formOpen.set(false); });
@@ -210,10 +219,18 @@ export class AccountsPageComponent {
     ).subscribe((response) => { if (response) this.accounts.update((accounts) => accounts.map((item) => item.id === response.account.id ? response.account : item)); });
   }
 
+  private nextAccountCode(type: AccountType): string {
+    const starts: Record<AccountType, number> = { asset: 1300, liability: 2200, equity: 3100, income: 4100, expense: 5100 };
+    const used = new Set(this.accounts().map((account) => account.account_code.toUpperCase()));
+    let candidate = starts[type];
+    while (used.has(String(candidate))) candidate += 10;
+    return String(candidate);
+  }
+
   private errorFromResponse(error: unknown, action: 'create' | 'update' | 'status'): string {
     if (typeof error === 'object' && error !== null && 'status' in error) {
       const status = (error as { status?: unknown }).status;
-      if (status === 409) return action === 'create' ? 'An account with this code already exists.' : 'The account update conflicts with an existing account.';
+      if (status === 409) return action === 'create' ? 'The automatically generated account code is already in use. Please refresh and try again.' : 'The account update conflicts with an existing account.';
       if (status === 400) return 'Please check the account details and try again.';
       if (status === 403) return 'You do not have permission to change this account.';
     }

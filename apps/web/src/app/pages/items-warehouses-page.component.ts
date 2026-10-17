@@ -107,7 +107,7 @@ type Warehouse = {
 
           @if (viewMode() === 'items') {
             <form class="mt-6 space-y-5" (submit)="saveItem($event)">
-              <div class="grid gap-4 sm:grid-cols-2"><label><span class="ll-label">Item code</span><input class="ll-input mt-1.5 w-full" [class.opacity-60]="!!editingItem()" [readOnly]="!!editingItem()" required maxlength="32" [value]="itemCode()" (input)="itemCode.set($any($event.target).value)" placeholder="e.g. ITEM-001" /><span class="ll-help">Unique code used across sales and inventory.</span></label><label><span class="ll-label">Type</span><select class="ll-input mt-1.5 w-full" [value]="itemType()" (change)="itemType.set($any($event.target).value)"><option value="goods">Goods</option><option value="service">Service</option></select></label></div>
+              <div class="grid gap-4 sm:grid-cols-2"><label><span class="ll-label">Item code</span><input class="ll-input mt-1.5 w-full opacity-60" disabled maxlength="32" [value]="itemCode()" placeholder="Generated automatically" /><span class="ll-help">Automatically generated and locked for this item.</span></label><label><span class="ll-label">Type</span><select class="ll-input mt-1.5 w-full" [disabled]="!!editingItem()" [value]="itemType()" (change)="onItemTypeChange($any($event.target).value)"><option value="goods">Goods</option><option value="service">Service</option></select></label></div>
               <label><span class="ll-label">Name</span><input class="ll-input mt-1.5 w-full" required maxlength="200" [value]="itemName()" (input)="itemName.set($any($event.target).value)" placeholder="e.g. Office chair" /></label>
               <div class="grid gap-4 sm:grid-cols-3"><label><span class="ll-label">HSN / SAC</span><input class="ll-input mt-1.5 w-full" maxlength="8" pattern="[0-9]{4,8}" inputmode="numeric" [value]="hsnSac()" (input)="hsnSac.set($any($event.target).value)" placeholder="e.g. 940330" /></label><label><span class="ll-label">Unit</span><input class="ll-input mt-1.5 w-full" maxlength="16" [value]="unitCode()" (input)="unitCode.set($any($event.target).value)" placeholder="e.g. pcs" /></label><label><span class="ll-label">GST rate</span><input class="ll-input mt-1.5 w-full" type="number" min="0" max="100" step="0.01" [value]="gstRate()" (input)="gstRate.set($any($event.target).value)" placeholder="e.g. 18" /></label></div>
               <div class="grid gap-4 sm:grid-cols-2"><label><span class="ll-label">Selling price (₹)</span><input class="ll-input mt-1.5 w-full" inputmode="decimal" [value]="sellingPrice()" (input)="sellingPrice.set($any($event.target).value)" placeholder="0.00" /></label><label><span class="ll-label">Purchase price (₹)</span><input class="ll-input mt-1.5 w-full" inputmode="decimal" [value]="purchasePrice()" (input)="purchasePrice.set($any($event.target).value)" placeholder="0.00" /></label></div>
@@ -117,7 +117,7 @@ type Warehouse = {
             </form>
           } @else {
             <form class="mt-6 space-y-5" (submit)="saveWarehouse($event)">
-              <div class="grid gap-4 sm:grid-cols-2"><label><span class="ll-label">Warehouse code</span><input class="ll-input mt-1.5 w-full" [class.opacity-60]="!!editingWarehouse()" [readOnly]="!!editingWarehouse()" required maxlength="32" [value]="warehouseCode()" (input)="warehouseCode.set($any($event.target).value)" placeholder="e.g. MAIN" /><span class="ll-help">Unique code for this stock location.</span></label><label><span class="ll-label">Warehouse name</span><input class="ll-input mt-1.5 w-full" required maxlength="160" [value]="warehouseName()" (input)="warehouseName.set($any($event.target).value)" placeholder="e.g. Main warehouse" /></label></div>
+              <div class="grid gap-4 sm:grid-cols-2"><label><span class="ll-label">Warehouse code</span><input class="ll-input mt-1.5 w-full opacity-60" disabled maxlength="32" [value]="warehouseCode()" placeholder="Generated automatically" /><span class="ll-help">Automatically generated and locked for this warehouse.</span></label><label><span class="ll-label">Warehouse name</span><input class="ll-input mt-1.5 w-full" required maxlength="160" [value]="warehouseName()" (input)="warehouseName.set($any($event.target).value)" placeholder="e.g. Main warehouse" /></label></div>
               <label><span class="ll-label">Branch ID <span class="font-normal text-zinc-500">(optional)</span></span><input class="ll-input mt-1.5 w-full" [value]="warehouseBranchId()" (input)="warehouseBranchId.set($any($event.target).value)" placeholder="Paste branch UUID" /></label>
               <label><span class="ll-label">Address <span class="font-normal text-zinc-500">(optional JSON)</span></span><textarea class="ll-input mt-1.5 min-h-28 w-full resize-y font-mono text-xs" [value]="warehouseAddress()" (input)="warehouseAddress.set($any($event.target).value)" placeholder='{"line1":"12 Market Road","city":"Chennai","state":"Tamil Nadu","pincode":"600001"}'></textarea><span class="ll-help">Enter a JSON object. Leave blank if the warehouse has no address yet.</span></label>
               @if (formError()) { <p class="rounded-lg border border-rose-400/20 bg-rose-500/10 px-3 py-2 text-xs leading-5 text-rose-200">{{ formError() }}</p> }
@@ -218,7 +218,21 @@ export class ItemsWarehousesPageComponent {
     this.warehouseBranchId.set(warehouse.branch_id ?? ''); this.warehouseAddress.set(JSON.stringify(warehouse.address ?? {}, null, 2)); this.formOpen.set(true);
   }
   closeForm(): void { if (this.saving()) return; this.formOpen.set(false); this.formError.set(''); this.editingItem.set(null); this.editingWarehouse.set(null); }
-  resetForm(): void { this.editingItem.set(null); this.editingWarehouse.set(null); this.formError.set(''); this.itemCode.set(''); this.itemName.set(''); this.itemType.set('goods'); this.hsnSac.set(''); this.unitCode.set('unit'); this.gstRate.set('0'); this.sellingPrice.set('0.00'); this.purchasePrice.set('0.00'); this.trackInventory.set(true); this.warehouseCode.set(''); this.warehouseName.set(''); this.warehouseBranchId.set(''); this.warehouseAddress.set(''); }
+  resetForm(): void { this.editingItem.set(null); this.editingWarehouse.set(null); this.formError.set(''); this.itemCode.set(this.nextItemCode()); this.itemName.set(''); this.itemType.set('goods'); this.hsnSac.set(''); this.unitCode.set('unit'); this.gstRate.set('0'); this.sellingPrice.set('0.00'); this.purchasePrice.set('0.00'); this.trackInventory.set(true); this.warehouseCode.set(this.nextWarehouseCode()); this.warehouseName.set(''); this.warehouseBranchId.set(''); this.warehouseAddress.set(''); }
+
+  private nextItemCode(): string {
+    const existing = new Set(this.items().map((item) => item.item_code.toUpperCase()));
+    for (let index = 1; index <= 999; index += 1) { const candidate = `ITEM-${String(index).padStart(3, '0')}`; if (!existing.has(candidate)) return candidate; }
+    return `ITEM-${Date.now().toString().slice(-8)}`;
+  }
+
+  private nextWarehouseCode(): string {
+    const existing = new Set(this.warehouses().map((warehouse) => warehouse.warehouse_code.toUpperCase()));
+    for (let index = 1; index <= 999; index += 1) { const candidate = `WH-${String(index).padStart(3, '0')}`; if (!existing.has(candidate)) return candidate; }
+    return `WH-${Date.now().toString().slice(-8)}`;
+  }
+
+  onItemTypeChange(value: string): void { this.itemType.set(value === 'service' ? 'service' : 'goods'); }
 
   private toPaise(value: string): string {
     const normalized = value.trim();
@@ -230,11 +244,13 @@ export class ItemsWarehousesPageComponent {
   saveItem(event: Event): void {
     event.preventDefault(); this.formError.set('');
     try {
+      const itemCode = this.itemCode().trim();
       const payload = { name: this.itemName().trim(), itemType: this.itemType(), hsnSac: this.hsnSac().trim() || undefined, unitCode: this.unitCode().trim(), gstRateBps: Math.round(Number(this.gstRate()) * 100), sellingPricePaise: this.toPaise(this.sellingPrice()), purchasePricePaise: this.toPaise(this.purchasePrice()), trackInventory: this.itemType() === 'goods' && this.trackInventory() };
+      if (!itemCode) throw new Error('An item code could not be generated. Please refresh and try again.');
       if (!payload.name || !payload.unitCode || !Number.isFinite(payload.gstRateBps) || payload.gstRateBps < 0 || payload.gstRateBps > 10000) throw new Error('Check the item details and GST rate.');
       const companyId = this.auth.selectedCompany()?.id; if (!companyId) return;
       this.saving.set(true); const item = this.editingItem();
-      const request$ = item ? this.http.patch(`${API_BASE_URL}/companies/${companyId}/items/${item.id}`, payload) : this.http.post(`${API_BASE_URL}/companies/${companyId}/items`, { itemCode: this.itemCode().trim(), ...payload });
+      const request$ = item ? this.http.patch(`${API_BASE_URL}/companies/${companyId}/items/${item.id}`, payload) : this.http.post(`${API_BASE_URL}/companies/${companyId}/items`, { itemCode, ...payload });
       request$.pipe(catchError((error) => { this.formError.set(error?.error?.message || 'Unable to save item. Check the details.'); return of(null); }), finalize(() => this.saving.set(false))).subscribe((response) => { if (response) { this.closeForm(); this.loadCurrentView(); } });
     } catch (error) { this.formError.set(error instanceof Error ? error.message : 'Unable to save item.'); }
   }
@@ -252,11 +268,12 @@ export class ItemsWarehousesPageComponent {
     catch (error) { this.formError.set(error instanceof Error ? error.message : 'Address must be valid JSON.'); return; }
     const companyId = this.auth.selectedCompany()?.id; if (!companyId) return;
     const name = this.warehouseName().trim(); if (!name) { this.formError.set('Warehouse name is required.'); return; }
+    const warehouseCode = this.warehouseCode().trim(); if (!warehouseCode) { this.formError.set('A warehouse code could not be generated. Please refresh and try again.'); return; }
     const branchId = this.warehouseBranchId().trim();
     if (branchId && !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(branchId)) { this.formError.set('Branch ID must be a valid UUID.'); return; }
     this.saving.set(true);
     const warehouse = this.editingWarehouse(); const payload = { name, branchId: branchId || undefined, address };
-    const request$ = warehouse ? this.http.patch(`${API_BASE_URL}/companies/${companyId}/warehouses/${warehouse.id}`, payload) : this.http.post(`${API_BASE_URL}/companies/${companyId}/warehouses`, { warehouseCode: this.warehouseCode().trim(), ...payload });
+    const request$ = warehouse ? this.http.patch(`${API_BASE_URL}/companies/${companyId}/warehouses/${warehouse.id}`, payload) : this.http.post(`${API_BASE_URL}/companies/${companyId}/warehouses`, { warehouseCode, ...payload });
     request$.pipe(catchError((error) => { this.formError.set(error?.error?.message || 'Unable to save warehouse. Check the details.'); return of(null); }), finalize(() => this.saving.set(false))).subscribe((response) => { if (response) { this.closeForm(); this.loadCurrentView(); } });
   }
 
