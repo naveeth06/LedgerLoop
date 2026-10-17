@@ -29,7 +29,10 @@ describe('ItemsController', () => {
       item_type: 'goods', hsn_sac: null, unit_code: 'unit', gst_rate_bps: 1800, selling_price_paise: '12500',
       purchase_price_paise: '8000', track_inventory: true, is_active: true, created_at: new Date(), updated_at: new Date() };
     const { controller, audit } = makeController(ItemsController, async (callback) => callback({ query: vi.fn(async () => ({ rows: [item] })) }));
-    const result = await (controller as ItemsController).createItem(companyId, { itemCode: 'sku-01', name: 'Notebook', gstRateBps: 1800, sellingPricePaise: '12500', purchasePricePaise: '8000' }, { user: { sub: userId } } as never);
+    const result = await (controller as ItemsController).createItem(companyId, {
+      itemCode: 'sku-01', name: 'Notebook', itemType: 'goods', hsnSac: undefined, unitCode: 'unit',
+      gstRateBps: 1800, sellingPricePaise: '12500', purchasePricePaise: '8000', trackInventory: true,
+    }, { user: { sub: userId } } as never);
     expect(result.item).toEqual(item);
     expect(audit.record).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ actorUserId: userId, action: 'COMPANY_ITEM_CREATED', entityType: 'company_item', entityId: item.id, metadata: { companyId, itemCode: 'SKU-01', itemType: 'goods' } }));
   });
