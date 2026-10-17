@@ -39,7 +39,7 @@ import { ThemeService } from './services/theme.service';
           </nav>
           <div class="border-t border-white/8 p-4"><div class="rounded-xl border border-white/8 bg-white/[0.03] p-3"><p class="text-xs font-medium text-white">{{ auth.selectedCompany()?.display_name || 'Company workspace' }}</p><p class="mt-1 truncate text-xs text-[var(--ll-text-muted)]">{{ auth.user()?.email || 'Current company context' }}</p></div></div>
         </aside>
-        @if (sidebarOpen) { <button class="fixed inset-0 z-30 bg-black/60 lg:hidden" type="button" aria-label="Close navigation overlay" (click)="closeSidebar()"></button> }
+        @if (sidebarOpen) { <button class="ll-sidebar-scrim fixed inset-0 z-30 lg:hidden" type="button" aria-label="Close navigation overlay" (click)="closeSidebar()"></button> }
       }
 
       <div class="ll-sidebar-content" [class.ll-sidebar-open]="showShell() && sidebarOpen">
@@ -73,11 +73,12 @@ import { ThemeService } from './services/theme.service';
                 }
               </div>
               <button class="ll-icon-button" type="button" aria-label="Notifications" title="Notifications" routerLink="/reminders"><svg lucideBell [size]="18"></svg></button>
-              <div class="relative"><button class="flex items-center gap-2 rounded-xl border border-white/8 bg-white/[0.03] px-2.5 py-2 text-left transition hover:border-violet-400/20 hover:bg-white/[0.05]" type="button" aria-label="Open user menu" title="Open user menu" (click)="userMenuOpen = !userMenuOpen"><span class="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500/80 to-fuchsia-500/70 text-xs font-semibold text-white">{{ initials }}</span><span class="hidden max-w-32 truncate text-xs font-medium text-white sm:block">{{ auth.user()?.displayName || 'Account' }}</span><svg class="hidden text-[var(--ll-text-muted)] sm:block" lucideChevronDown [size]="14"></svg></button>@if (userMenuOpen) {<div class="absolute right-0 top-[calc(100%+8px)] w-52 rounded-xl border border-white/8 bg-[var(--ll-surface-elevated)] p-1.5 shadow-2xl shadow-black/40"><div class="px-3 py-2"><p class="truncate text-xs font-medium text-white">{{ auth.user()?.displayName || 'Account' }}</p><p class="mt-1 truncate text-[10px] text-[var(--ll-text-muted)]">{{ auth.user()?.email }}</p></div><button type="button" class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs text-zinc-300 transition hover:bg-white/[0.05] hover:text-white" (click)="logout()"><svg lucideLogOut [size]="14"></svg>Sign out</button></div>}</div>
+              <div class="relative"><button class="flex items-center gap-2 rounded-xl border border-white/8 bg-white/[0.03] px-2.5 py-2 text-left transition hover:border-violet-400/20 hover:bg-white/[0.05]" type="button" aria-label="Open user menu" title="Open user menu" (click)="userMenuOpen = !userMenuOpen"><span class="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500/80 to-fuchsia-500/70 text-xs font-semibold text-white">{{ initials }}</span><span class="hidden max-w-32 truncate text-xs font-medium text-white sm:block">{{ auth.user()?.displayName || 'Account' }}</span><svg class="hidden text-[var(--ll-text-muted)] sm:block" lucideChevronDown [size]="14"></svg></button>@if (userMenuOpen) {<div class="ll-user-menu absolute right-0 top-[calc(100%+8px)] w-52 rounded-xl border border-white/8 bg-[var(--ll-surface-elevated)] p-1.5 shadow-2xl shadow-black/40"><div class="px-3 py-2"><p class="truncate text-xs font-medium text-white">{{ auth.user()?.displayName || 'Account' }}</p><p class="mt-1 truncate text-[10px] text-[var(--ll-text-muted)]">{{ auth.user()?.email }}</p></div><button type="button" class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs text-zinc-300 transition hover:bg-white/[0.05] hover:text-white" (click)="logout()"><svg lucideLogOut [size]="14"></svg>Sign out</button></div>}</div>
             </div>
           </header>
         }
 
+        <div class="ll-route-progress" [class.ll-route-progress-active]="navigationPending()" aria-hidden="true"></div>
         <main class="relative min-h-screen"><div #routeStage class="ll-route-stage"><router-outlet></router-outlet></div></main>
       </div>
     </div>
@@ -93,37 +94,43 @@ export class AppComponent implements AfterViewInit {
   private readonly document = inject(DOCUMENT);
   private readonly motion = inject(MotionService);
   @ViewChild('routeStage', { static: true }) private routeStage?: ElementRef<HTMLElement>;
-  protected readonly showShell = signal(!this.router.url.startsWith('/auth'));
+  protected readonly showShell = signal(false);
+  protected readonly navigationPending = signal(false);
   protected sidebarOpen = false;
   protected userMenuOpen = false;
   protected themeMenuOpen = false;
 
   constructor() {
-    const viewportWidth = this.document.defaultView?.innerWidth ?? 1024;
-    this.sidebarOpen = viewportWidth >= 1024 && this.showShell();
-
     this.router.events
       .pipe(filter((event) => event instanceof NavigationStart || event instanceof NavigationEnd || event instanceof NavigationCancel || event instanceof NavigationError), takeUntilDestroyed(this.destroyRef))
       .subscribe((event) => {
         const stage = this.routeStage?.nativeElement ?? null;
+
         if (event instanceof NavigationStart) {
+          this.navigationPending.set(true);
           this.motion.routeLeave(stage);
           this.userMenuOpen = false;
           this.themeMenuOpen = false;
-          this.showShell.set(!event.url.startsWith('/auth'));
-          this.sidebarOpen = false;
+          if (event.url.startsWith('/auth')) {
+            this.showShell.set(false);
+            this.sidebarOpen = false;
+          }
           return;
         }
 
         if (event instanceof NavigationEnd) {
           const isAuthRoute = event.urlAfterRedirects.startsWith('/auth');
+          this.navigationPending.set(false);
           this.showShell.set(!isAuthRoute);
-          if (!isAuthRoute) {
-            this.sidebarOpen = (this.document.defaultView?.innerWidth ?? 1024) >= 1024;
+          this.sidebarOpen = !isAuthRoute && (this.document.defaultView?.innerWidth ?? 1024) >= 1024;
+        } else {
+          this.navigationPending.set(false);
+          if (event instanceof NavigationCancel || event instanceof NavigationError) {
+            this.motion.routeEnter(stage);
           }
         }
 
-        this.motion.routeEnter(stage);
+        if (event instanceof NavigationEnd) this.motion.routeEnter(stage);
       });
   }
 

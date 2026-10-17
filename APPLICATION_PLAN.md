@@ -71,7 +71,11 @@ LedgerLoop is a multi-tenant accounting application for Indian businesses. The w
 - Inventory and Reports workspaces.
 - Reminders workspace with policy controls, overdue event monitoring, acknowledgement and delivery-status monitoring.
 - Shared GSAP motion system with route transitions, ScrollTrigger reveals, micro-interactions, reduced-motion handling and lifecycle cleanup.
+- Premium route/content motion refined with calmer easing, restrained staggered reveals and safer viewport animation targeting.
+- Table/list motion kept intentionally restrained; table rows are not individually animated on scroll.
+- Application shell/sidebar motion, navigation progress feedback, dialog/menu transitions and interactive control feedback refined.
 - Application-wide theme customization with five persistent dual-color palettes and a shared CSS-variable theme system.
+- Theme-aware elevation, borders, focus treatment and ambient transitions refined without replacing the existing theme architecture.
 - Customer/supplier edit and active/inactive controls.
 - Item edit and active/inactive controls.
 - Warehouse edit and active/inactive controls; warehouse codes remain immutable and inactive warehouses remain available for historical references.
@@ -95,6 +99,9 @@ LedgerLoop is a multi-tenant accounting application for Indian businesses. The w
 5. **Purchases — implemented foundation**
    - Bills and supplier payments with explicit posting.
 6. **Frontend motion — implemented foundation**
+   - Existing GSAP/MotionService architecture retained and refined rather than replaced.
+   - Route transitions, shell motion, viewport reveals, dialogs and micro-interactions use a consistent restrained motion language.
+   - Reduced-motion and lifecycle cleanup remain mandatory.
 7. **Application theming — implemented**
    - Five professional dual-color palettes.
    - Runtime switching without reload.

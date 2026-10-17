@@ -79,7 +79,7 @@
 ## Phase 5 — Reminders and AI
 - [x] BullMQ overdue reminder events with retries, idempotency, tenant context and audit.
 - [x] Email reminder delivery foundation with SMTP provider abstraction, party opt-out, delivery state, retry/backoff and audit metadata.
-- [x] Provider-independent delivery monitoring summary with tenant-scoped status counts.
+- [x] Provider-independent reminder delivery monitoring summary with tenant-scoped status counts.
 - [ ] Provider-specific delivery monitoring, bounce handling and richer templates.
 - [ ] Claude-backed categorisation scoped to current-company ledger candidates.
 - [ ] Receipt extraction/reconciliation suggestions with validation and human approval.
@@ -118,6 +118,20 @@
 35. **Completed:** SMTP email reminder delivery with tenant-scoped delivery records, party opt-out, deterministic message IDs, retry/backoff, provider abstraction and delivery audit events.
 36. **Completed:** provider-independent reminder delivery monitoring summary with tenant-scoped status counts and focused controller coverage.
 37. **In progress:** reminder delivery hardening with provider-neutral richer templates and tests. Provider-specific bounce/webhook handling remains intentionally deferred until the intended email provider/API is documented; no provider has been assumed.
+38. **Completed:** frontend premium motion and visual polish foundation. Existing GSAP motion service was refined for calmer route transitions, restrained viewport reveals, safer interaction feedback, dialog polish and lifecycle cleanup; global UI transitions, sidebar/shell motion, navigation progress feedback, menu transitions, theme transitions and reduced-motion handling were also refined. No business or API behavior changed.
+
+## Premium motion and UI polish
+
+- [x] Existing GSAP/MotionService architecture extended rather than replaced.
+- [x] Route transitions tuned toward slower, subtle fade/translate motion with coordinated content reveals.
+- [x] Scroll reveals narrowed to useful page-level content and cards; table-row animation was removed to protect usability and performance.
+- [x] Interactive controls receive restrained hover/press feedback using transform/opacity-friendly motion.
+- [x] Dialog, menu, theme-selector and sidebar/shell transitions receive consistent timing and easing.
+- [x] Application-wide navigation progress feedback added without changing route semantics.
+- [x] Global smooth scrolling removed in favor of native scrolling so keyboard/accessibility behavior is not overridden.
+- [x] `prefers-reduced-motion` remains respected across CSS and GSAP behavior.
+- [x] Theme-aware borders, surfaces, focus treatment, elevation and ambient UI transitions refined through the existing CSS-variable theme system.
+- [x] `APPLICATION_PLAN.md` added because no pre-existing file existed; it records the dedicated application polish scope without replacing the accounting roadmap in this file.
 
 ## Acceptance gates
 

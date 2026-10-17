@@ -15,12 +15,19 @@ const INTERACTIVE_SELECTOR = [
   '.ll-nav-item',
 ].join(',');
 
+const REVEAL_SELECTOR = [
+  'article',
+  'form',
+  'table',
+  '.ll-card',
+  '[data-motion="reveal"]',
+].join(',');
+
 type GsapContext = ReturnType<typeof gsap.context>;
 
 @Injectable({ providedIn: 'root' })
 export class MotionService {
   private readonly document = inject(DOCUMENT);
-  private readonly reducedMotion = this.document.defaultView?.matchMedia('(prefers-reduced-motion: reduce)');
 
   private routeContext: GsapContext | null = null;
   private shellContext: GsapContext | null = null;
@@ -46,26 +53,26 @@ export class MotionService {
 
       if (ambient) {
         gsap.to(ambient, {
-          y: 70,
+          y: 56,
           ease: 'none',
           scrollTrigger: {
             trigger: this.document.documentElement,
             start: 'top top',
             end: 'bottom bottom',
-            scrub: 1.2,
+            scrub: 1.5,
           },
         });
       }
 
       if (grid) {
         gsap.to(grid, {
-          opacity: 0.075,
+          opacity: 0.07,
           ease: 'none',
           scrollTrigger: {
             trigger: this.document.documentElement,
             start: 'top top',
             end: '45% top',
-            scrub: 1,
+            scrub: 1.2,
           },
         });
       }
@@ -84,9 +91,9 @@ export class MotionService {
     gsap.killTweensOf(stage);
     gsap.to(stage, {
       autoAlpha: 0,
-      y: -5,
-      duration: 0.12,
-      ease: 'power2.in',
+      y: -4,
+      duration: 0.24,
+      ease: 'power2.inOut',
       overwrite: true,
     });
   }
@@ -124,12 +131,12 @@ export class MotionService {
         if (topLevelBlocks.length) {
           gsap.fromTo(
             topLevelBlocks,
-            { autoAlpha: 0, y: 14 },
+            { autoAlpha: 0, y: 12 },
             {
               autoAlpha: 1,
               y: 0,
-              duration: 0.48,
-              stagger: 0.045,
+              duration: 0.56,
+              stagger: 0.055,
               ease: 'power3.out',
               clearProps: 'transform,opacity,visibility',
             },
@@ -152,13 +159,14 @@ export class MotionService {
     this.dialogObserver = null;
     this.interactionCleanup = null;
     this.interactionRoot = null;
+    this.routeStage = null;
   }
 
   private setupScrollReveals(pageRoot: HTMLElement, topLevelBlocks: HTMLElement[]): void {
     const topLevel = new Set(topLevelBlocks);
-    const candidates = Array.from(
-      pageRoot.querySelectorAll<HTMLElement>('article, table, form, div[class*="rounded-2xl"], [data-motion="reveal"]'),
-    ).filter((element) => !topLevel.has(element) && !element.closest('[role="dialog"]'));
+    const candidates = Array.from(pageRoot.querySelectorAll<HTMLElement>(REVEAL_SELECTOR))
+      .filter((element) => !topLevel.has(element) && !element.closest('[role="dialog"]'))
+      .filter((element) => !element.closest('[data-motion="no-reveal"]'));
 
     for (const element of candidates) {
       if (element.dataset['llMotionReady'] === 'true') continue;
@@ -166,11 +174,11 @@ export class MotionService {
 
       gsap.fromTo(
         element,
-        { autoAlpha: 0, y: 18 },
+        { autoAlpha: 0, y: 16 },
         {
           autoAlpha: 1,
           y: 0,
-          duration: 0.5,
+          duration: 0.46,
           ease: 'power3.out',
           clearProps: 'transform,opacity,visibility',
           scrollTrigger: {
@@ -180,34 +188,6 @@ export class MotionService {
           },
         },
       );
-
-      if (element.tagName === 'TABLE') {
-        const rows = Array.from(element.querySelectorAll<HTMLElement>('tbody tr')).filter(
-          (row) => row.dataset['llMotionRow'] !== 'true',
-        );
-
-        for (const row of rows) row.dataset['llMotionRow'] = 'true';
-
-        if (rows.length) {
-          gsap.fromTo(
-            rows,
-            { autoAlpha: 0, y: 8 },
-            {
-              autoAlpha: 1,
-              y: 0,
-              duration: 0.32,
-              stagger: 0.025,
-              ease: 'power2.out',
-              clearProps: 'transform,opacity,visibility',
-              scrollTrigger: {
-                trigger: element,
-                start: 'top 82%',
-                once: true,
-              },
-            },
-          );
-        }
-      }
     }
   }
 
@@ -220,8 +200,8 @@ export class MotionService {
 
       gsap.to(element, {
         y: element.classList.contains('ll-icon-button') ? -1 : -1.5,
-        scale: element.classList.contains('ll-icon-button') ? 1.035 : 1.01,
-        duration: 0.18,
+        scale: element.classList.contains('ll-icon-button') ? 1.03 : 1.008,
+        duration: 0.2,
         ease: 'power2.out',
         overwrite: true,
       });
@@ -236,7 +216,7 @@ export class MotionService {
       gsap.to(element, {
         y: 0,
         scale: 1,
-        duration: 0.2,
+        duration: 0.24,
         ease: 'power2.out',
         overwrite: true,
       });
@@ -248,8 +228,8 @@ export class MotionService {
       if (!element || element.hasAttribute('disabled')) return;
 
       gsap.to(element, {
-        scale: element.classList.contains('ll-icon-button') ? 0.96 : 0.985,
-        duration: 0.08,
+        scale: element.classList.contains('ll-icon-button') ? 0.97 : 0.985,
+        duration: 0.1,
         ease: 'power2.out',
         overwrite: true,
       });
@@ -262,8 +242,8 @@ export class MotionService {
 
       gsap.to(element, {
         scale: 1,
-        duration: 0.16,
-        ease: 'back.out(2)',
+        duration: 0.18,
+        ease: 'power2.out',
         overwrite: true,
       });
     };
@@ -306,12 +286,12 @@ export class MotionService {
 
     gsap.fromTo(
       dialog,
-      { autoAlpha: 0, y: 12, scale: 0.985 },
+      { autoAlpha: 0, y: 10, scale: 0.988 },
       {
         autoAlpha: 1,
         y: 0,
         scale: 1,
-        duration: 0.28,
+        duration: 0.34,
         ease: 'power3.out',
         clearProps: 'transform,opacity,visibility',
       },
@@ -325,6 +305,6 @@ export class MotionService {
   }
 
   private prefersReducedMotion(): boolean {
-    return this.reducedMotion?.matches ?? false;
+    return this.document.defaultView?.matchMedia('(prefers-reduced-motion: reduce)').matches ?? false;
   }
 }
