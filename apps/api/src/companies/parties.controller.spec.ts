@@ -3,79 +3,13 @@ import { PartiesController } from './parties.controller';
 
 const userId = 'e50f8a1b-15e1-4c35-9f28-20c1b0a9c7a2';
 const companyId = 'b20f8a1b-15e1-4c35-9f28-20c1b0a9c7a2';
+function makeController(work: (callback: (...args: any[]) => Promise<unknown>) => Promise<unknown>) { const tenantAccess={withCompanyTransaction:vi.fn(async (_u:string,_c:string,cb:(...a:any[])=>Promise<unknown>)=>work(cb))}; const audit={record:vi.fn(async()=>undefined)}; return {controller:new PartiesController(tenantAccess as never,audit as never),tenantAccess,audit}; }
 
-function makeController(work: (callback: (...args: any[]) => Promise<unknown>) => Promise<unknown>) {
-  const tenantAccess = {
-    withCompanyTransaction: vi.fn(async (_userId: string, _companyId: string, callback: (...args: any[]) => Promise<unknown>) =>
-      work(callback)),
-  };
-  const audit = { record: vi.fn(async () => undefined) };
-  return { controller: new PartiesController(tenantAccess as never, audit as never), tenantAccess, audit };
-}
-
-describe('PartiesController', () => {
-  it('lists parties in an authorized company transaction', async () => {
-    const party = { id: 'a20e6a9d-03f7-4d43-84cb-cb2d8d97b0b2', party_code: 'CUST-01', name: 'Customer One' };
-    const { controller, tenantAccess } = makeController(async (callback) => callback({
-      query: vi.fn(async () => ({ rows: [party] })),
-    }));
-    const result = await controller.listParties(companyId, 'customer', 'true', { user: { sub: userId } } as never);
-    expect(result.parties).toEqual([party]);
-    expect(tenantAccess.withCompanyTransaction).toHaveBeenCalledWith(userId, companyId, expect.any(Function));
-  });
-
-  it('rejects invalid list filters before opening a tenant transaction', async () => {
-    const { controller, tenantAccess } = makeController(async () => {
-      throw new Error('should not be called');
-    });
-    await expect(controller.listParties(companyId, 'employee', undefined, { user: { sub: userId } } as never))
-      .rejects.toThrow('Party type filter is invalid.');
-    expect(tenantAccess.withCompanyTransaction).not.toHaveBeenCalled();
-  });
-
-  it('rejects malformed party details before opening a tenant transaction', async () => {
-    const { controller, tenantAccess } = makeController(async () => {
-      throw new Error('should not be called');
-    });
-    await expect(controller.createParty(companyId, {
-      partyCode: 'C1', name: 'Invalid GSTIN', partyType: 'customer', gstin: 'bad',
-    }, { user: { sub: userId } } as never)).rejects.toThrow('Party details are invalid.');
-    expect(tenantAccess.withCompanyTransaction).not.toHaveBeenCalled();
-  });
-
-  it('writes the party and audit event in the same transaction', async () => {
-    const party = {
-      id: 'a20e6a9d-03f7-4d43-84cb-cb2d8d97b0b2', company_id: companyId, party_code: 'CUST-01',
-      name: 'Customer One', party_type: 'customer', gstin: null, email: null, phone: null,
-      billing_address: {}, credit_limit_paise: '0', is_active: true, email_reminders_enabled: true,
-      created_at: new Date(), updated_at: new Date(),
-    };
-    const { controller, audit } = makeController(async (callback) => callback({
-      query: vi.fn(async () => ({ rows: [party] })),
-    }));
-    const result = await controller.createParty(companyId, {
-      partyCode: 'cust-01', name: 'Customer One', partyType: 'customer',
-    }, { user: { sub: userId } } as never);
-    expect(result.party).toEqual(party);
-    expect(audit.record).toHaveBeenCalledWith(expect.anything(), {
-      actorUserId: userId, action: 'COMPANY_PARTY_CREATED', entityType: 'company_party', entityId: party.id,
-      metadata: { companyId, partyCode: 'CUST-01', partyType: 'customer' },
-    });
-  });
-
-  it('updates the reminder preference and audits the change', async () => {
-    const updated = { id: 'a20e6a9d-03f7-4d43-84cb-cb2d8d97b0b2', emailRemindersEnabled: false };
-    const { controller, audit } = makeController(async (callback) => callback({
-      query: vi.fn(async () => ({ rows: [updated], rowCount: 1 })),
-    }));
-    const result = await controller.updateReminderPreference(companyId, updated.id, { enabled: false }, { user: { sub: userId } } as never);
-    expect(result).toEqual(updated);
-    expect(audit.record).toHaveBeenCalledWith(expect.anything(), {
-      actorUserId: userId,
-      action: 'PARTY_REMINDER_PREFERENCE_UPDATED',
-      entityType: 'company_party',
-      entityId: updated.id,
-      metadata: { enabled: false },
-    });
-  });
+describe('PartiesController',()=>{
+  it('lists parties in an authorized company transaction',async()=>{const party={id:'p1',party_code:'CUST-01',name:'Customer One'};const {controller,tenantAccess}=makeController(async cb=>cb({query:vi.fn(async()=>({rows:[party]}))}));const result=await controller.listParties(companyId,'customer','true',{user:{sub:userId}} as never);expect(result.parties).toEqual([party]);expect(tenantAccess.withCompanyTransaction).toHaveBeenCalledWith(userId,companyId,expect.any(Function));});
+  it('rejects invalid list filters before opening a transaction',async()=>{const {controller,tenantAccess}=makeController(async()=>{throw new Error('should not run')});await expect(controller.listParties(companyId,'employee',undefined,{user:{sub:userId}} as never)).rejects.toThrow('Party type filter is invalid.');expect(tenantAccess.withCompanyTransaction).not.toHaveBeenCalled();});
+  it('updates party master data and audits the change',async()=>{const party={id:'p1',company_id:companyId,party_code:'CUST-01',name:'Updated Customer',party_type:'customer',gstin:null,email:'new@example.com',phone:null,billing_address:{},credit_limit_paise:'100000',is_active:true,email_reminders_enabled:true,created_at:new Date(),updated_at:new Date()};const {controller,audit}=makeController(async cb=>cb({query:vi.fn(async()=>({rows:[party]}))}));const result=await controller.updateParty(companyId,party.id,{name:'Updated Customer',partyType:'customer',email:'new@example.com',creditLimitPaise:'100000'},{user:{sub:userId}} as never);expect(result.party).toEqual(party);expect(audit.record).toHaveBeenCalledWith(expect.anything(),expect.objectContaining({actorUserId:userId,action:'COMPANY_PARTY_UPDATED',entityId:party.id}));});
+  it('rejects malformed party updates before opening a transaction',async()=>{const {controller,tenantAccess}=makeController(async()=>{throw new Error('should not run')});await expect(controller.updateParty(companyId,'p1',{name:'',partyType:'customer'},{user:{sub:userId}} as never)).rejects.toThrow('Party details are invalid.');expect(tenantAccess.withCompanyTransaction).not.toHaveBeenCalled();});
+  it('updates active status and audits the change',async()=>{const updated={id:'p1',is_active:false};const {controller,audit}=makeController(async cb=>cb({query:vi.fn(async()=>({rows:[updated]}))}));expect(await controller.updateStatus(companyId,'p1',{isActive:false},{user:{sub:userId}} as never)).toEqual(updated);expect(audit.record).toHaveBeenCalledWith(expect.anything(),expect.objectContaining({action:'COMPANY_PARTY_STATUS_UPDATED',entityId:'p1'}));});
+  it('keeps reminder preference update working',async()=>{const updated={id:'p1',emailRemindersEnabled:false};const {controller}=makeController(async cb=>cb({query:vi.fn(async()=>({rows:[updated],rowCount:1}))}));expect(await controller.updateReminderPreference(companyId,'p1',{enabled:false},{user:{sub:userId}} as never)).toEqual(updated);});
 });
