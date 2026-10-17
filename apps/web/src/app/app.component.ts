@@ -46,7 +46,9 @@ import { ThemeService } from './services/theme.service';
         @if (showShell()) {
           <header class="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-white/8 bg-[var(--ll-bg)]/90 px-4 backdrop-blur-xl sm:px-6">
             <div class="flex min-w-0 items-center gap-3">
-              <button class="ll-icon-button" type="button" [attr.aria-label]="sidebarOpen ? 'Close navigation' : 'Open navigation'" [attr.title]="sidebarOpen ? 'Close navigation' : 'Open navigation'" (click)="toggleSidebar()"><svg [attr.lucideMenu]="!sidebarOpen ? '' : null" [attr.lucideX]="sidebarOpen ? '' : null" [size]="20"></svg></button>
+              <button class="ll-icon-button" type="button" [attr.aria-label]="sidebarOpen ? 'Close navigation' : 'Open navigation'" [attr.title]="sidebarOpen ? 'Close navigation' : 'Open navigation'" (click)="toggleSidebar()">
+                @if (sidebarOpen) { <svg lucideX [size]="20"></svg> } @else { <svg lucideMenu [size]="20"></svg> }
+              </button>
               <div class="hidden min-w-0 sm:block"><p class="truncate text-sm font-medium text-white">{{ auth.selectedCompany()?.display_name || 'LedgerLoop' }}</p><p class="text-xs text-[var(--ll-text-muted)]">Accounting workspace</p></div>
             </div>
             <div class="flex items-center gap-2">
