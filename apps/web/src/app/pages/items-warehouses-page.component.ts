@@ -76,7 +76,7 @@ type Warehouse = {
           <div class="overflow-x-auto"><table class="min-w-full text-left text-sm"><thead class="border-b border-white/8 bg-white/[0.015] text-xs uppercase tracking-[0.08em] text-zinc-500"><tr><th class="px-5 py-3.5 font-medium">Item</th><th class="px-5 py-3.5 font-medium">Type</th><th class="px-5 py-3.5 font-medium">HSN / SAC</th><th class="px-5 py-3.5 font-medium">GST</th><th class="px-5 py-3.5 font-medium">Selling price</th><th class="px-5 py-3.5 font-medium">Inventory</th><th class="px-5 py-3.5 font-medium">Status</th><th class="px-5 py-3.5 text-right font-medium">Actions</th></tr></thead>
             <tbody class="divide-y divide-white/6">@for (item of filteredItems(); track item.id) { <tr class="transition hover:bg-white/[0.025]"><td class="min-w-56 px-5 py-4"><p class="font-medium text-white">{{ item.name }}</p><p class="mt-1 font-mono text-[11px] text-zinc-500">{{ item.item_code }}</p></td><td class="whitespace-nowrap px-5 py-4"><span class="ll-type">{{ item.item_type === 'goods' ? 'Goods' : 'Service' }}</span></td><td class="px-5 py-4 font-mono text-xs text-zinc-400">{{ item.hsn_sac || '—' }}</td><td class="px-5 py-4 text-xs text-zinc-300">{{ item.gst_rate_bps / 100 }}%</td><td class="whitespace-nowrap px-5 py-4 text-xs text-zinc-300">{{ formatPaise(item.selling_price_paise) }}</td><td class="whitespace-nowrap px-5 py-4 text-xs text-zinc-400">{{ item.track_inventory ? 'Tracked' : 'Not tracked' }}</td><td class="whitespace-nowrap px-5 py-4"><span class="ll-status" [class.ll-status-inactive]="!item.is_active">{{ item.is_active ? 'Active' : 'Inactive' }}</span></td><td class="whitespace-nowrap px-5 py-4"><div class="flex justify-end gap-1"><button type="button" class="ll-icon-button" [attr.aria-label]="'Edit ' + item.name" (click)="openEditItem(item)"><svg lucideEdit3 [size]="15"></svg></button><button type="button" class="ll-icon-button" [attr.aria-label]="item.is_active ? 'Deactivate ' + item.name : 'Activate ' + item.name" [disabled]="saving()" (click)="toggleItemStatus(item)"><svg lucideToggleLeft [size]="16"></svg></button></div></td></tr> }</tbody></table></div>
         } @else {
-          <div class="overflow-x-auto"><table class="min-w-full text-left text-sm"><thead class="border-b border-white/8 bg-white/[0.015] text-xs uppercase tracking-[0.08em] text-zinc-500"><tr><th class="px-5 py-3.5 font-medium">Warehouse</th><th class="px-5 py-3.5 font-medium">Branch</th><th class="px-5 py-3.5 font-medium">Address</th><th class="px-5 py-3.5 font-medium">Status</th></tr></thead><tbody class="divide-y divide-white/6">@for (warehouse of filteredWarehouses(); track warehouse.id) { <tr class="transition hover:bg-white/[0.025]"><td class="min-w-64 px-5 py-4"><p class="font-medium text-white">{{ warehouse.name }}</p><p class="mt-1 font-mono text-[11px] text-zinc-500">{{ warehouse.warehouse_code }}</p></td><td class="px-5 py-4 font-mono text-xs text-zinc-500">{{ warehouse.branch_id || '—' }}</td><td class="max-w-md px-5 py-4 text-xs text-zinc-400">{{ addressSummary(warehouse.address) }}</td><td class="whitespace-nowrap px-5 py-4"><span class="ll-status" [class.ll-status-inactive]="!warehouse.is_active">{{ warehouse.is_active ? 'Active' : 'Inactive' }}</span></td></tr> }</tbody></table></div>
+          <div class="overflow-x-auto"><table class="min-w-full text-left text-sm"><thead class="border-b border-white/8 bg-white/[0.015] text-xs uppercase tracking-[0.08em] text-zinc-500"><tr><th class="px-5 py-3.5 font-medium">Warehouse</th><th class="px-5 py-3.5 font-medium">Branch</th><th class="px-5 py-3.5 font-medium">Address</th><th class="px-5 py-3.5 font-medium">Status</th><th class="px-5 py-3.5 text-right font-medium">Actions</th></tr></thead><tbody class="divide-y divide-white/6">@for (warehouse of filteredWarehouses(); track warehouse.id) { <tr class="transition hover:bg-white/[0.025]"><td class="min-w-64 px-5 py-4"><p class="font-medium text-white">{{ warehouse.name }}</p><p class="mt-1 font-mono text-[11px] text-zinc-500">{{ warehouse.warehouse_code }}</p></td><td class="px-5 py-4 font-mono text-xs text-zinc-500">{{ warehouse.branch_id || '—' }}</td><td class="max-w-md px-5 py-4 text-xs text-zinc-400">{{ addressSummary(warehouse.address) }}</td><td class="whitespace-nowrap px-5 py-4"><span class="ll-status" [class.ll-status-inactive]="!warehouse.is_active">{{ warehouse.is_active ? 'Active' : 'Inactive' }}</span></td><td class="whitespace-nowrap px-5 py-4"><div class="flex justify-end gap-1"><button type="button" class="ll-icon-button" [attr.aria-label]="'Edit ' + warehouse.name" (click)="openEditWarehouse(warehouse)"><svg lucideEdit3 [size]="15"></svg></button><button type="button" class="ll-icon-button" [attr.aria-label]="warehouse.is_active ? 'Deactivate ' + warehouse.name : 'Activate ' + warehouse.name" [disabled]="saving()" (click)="toggleWarehouseStatus(warehouse)"><svg lucideToggleLeft [size]="16"></svg></button></div></td></tr> }</tbody></table></div>
         }
         @if (currentRows().length) { <div class="border-t border-white/8 px-5 py-3 text-xs text-[var(--ll-text-muted)]">Showing {{ filteredRows().length }} of {{ currentRows().length }} records</div> }
       </div>
@@ -85,7 +85,7 @@ type Warehouse = {
     @if (formOpen()) {
       <div class="fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-0 backdrop-blur-sm sm:items-center sm:p-6" role="presentation" (click)="closeForm()">
         <div class="w-full max-w-2xl rounded-t-2xl border border-white/10 bg-[var(--ll-surface-elevated)] p-5 shadow-2xl shadow-black/50 sm:rounded-2xl" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
-          <div class="flex items-start justify-between gap-4"><div><p class="text-xs font-medium uppercase tracking-[0.14em] text-violet-300">{{ editingItem() ? 'Edit item' : (viewMode() === 'items' ? 'Item master' : 'Warehouse master') }}</p><h2 class="mt-1 text-lg font-semibold text-white">{{ editingItem() ? 'Update item' : ('Create ' + (viewMode() === 'items' ? 'item' : 'warehouse')) }}</h2></div><button type="button" class="ll-icon-button" aria-label="Close" (click)="closeForm()">×</button></div>
+          <div class="flex items-start justify-between gap-4"><div><p class="text-xs font-medium uppercase tracking-[0.14em] text-violet-300">{{ editingItem() ? 'Edit item' : (editingWarehouse() ? 'Edit warehouse' : (viewMode() === 'items' ? 'Item master' : 'Warehouse master')) }}</p><h2 class="mt-1 text-lg font-semibold text-white">{{ editingItem() ? 'Update item' : (editingWarehouse() ? 'Update warehouse' : ('Create ' + (viewMode() === 'items' ? 'item' : 'warehouse'))) }}</h2></div><button type="button" class="ll-icon-button" aria-label="Close" (click)="closeForm()">×</button></div>
           @if (viewMode() === 'items') {
             <form class="mt-5 space-y-4" (submit)="saveItem($event)">
               <div class="grid gap-4 sm:grid-cols-2"><label><span class="ll-label">Item code</span><input class="ll-input mt-1.5 w-full" [class.opacity-60]="!!editingItem()" [readOnly]="!!editingItem()" required maxlength="32" [value]="itemCode()" (input)="itemCode.set($any($event.target).value)" placeholder="ITEM-001" /></label><label><span class="ll-label">Type</span><select class="ll-input mt-1.5 w-full" [value]="itemType()" (change)="itemType.set($any($event.target).value)"><option value="goods">Goods</option><option value="service">Service</option></select></label></div>
@@ -97,7 +97,13 @@ type Warehouse = {
               <div class="flex justify-end gap-2 border-t border-white/8 pt-4"><button type="button" class="ll-secondary-button" (click)="closeForm()">Cancel</button><button type="submit" class="ll-primary-button" [disabled]="saving()">{{ saving() ? 'Saving…' : (editingItem() ? 'Save changes' : 'Create item') }}</button></div>
             </form>
           } @else {
-            <form class="mt-5 space-y-4" (submit)="createWarehouse($event)"><div class="grid gap-4 sm:grid-cols-2"><label><span class="ll-label">Warehouse code</span><input class="ll-input mt-1.5 w-full" required maxlength="32" [value]="warehouseCode()" (input)="warehouseCode.set($any($event.target).value)" placeholder="MAIN" /></label><label><span class="ll-label">Name</span><input class="ll-input mt-1.5 w-full" required maxlength="160" [value]="warehouseName()" (input)="warehouseName.set($any($event.target).value)" placeholder="Main warehouse" /></label></div><label><span class="ll-label">Branch ID (optional)</span><input class="ll-input mt-1.5 w-full" [value]="warehouseBranchId()" (input)="warehouseBranchId.set($any($event.target).value)" placeholder="UUID" /></label><label><span class="ll-label">Address JSON (optional)</span><textarea class="ll-input mt-1.5 min-h-28 w-full font-mono text-xs" [value]="warehouseAddress()" (input)="warehouseAddress.set($any($event.target).value)" placeholder='{"line1":"..."}'></textarea></label>@if (formError()) { <p class="rounded-lg border border-rose-400/20 bg-rose-500/10 px-3 py-2 text-xs text-rose-200">{{ formError() }}</p> }<div class="flex justify-end gap-2 border-t border-white/8 pt-4"><button type="button" class="ll-secondary-button" (click)="closeForm()">Cancel</button><button type="submit" class="ll-primary-button" [disabled]="saving()">{{ saving() ? 'Creating…' : 'Create warehouse' }}</button></div></form>
+            <form class="mt-5 space-y-4" (submit)="saveWarehouse($event)">
+              <div class="grid gap-4 sm:grid-cols-2"><label><span class="ll-label">Warehouse code</span><input class="ll-input mt-1.5 w-full" [class.opacity-60]="!!editingWarehouse()" [readOnly]="!!editingWarehouse()" required maxlength="32" [value]="warehouseCode()" (input)="warehouseCode.set($any($event.target).value)" placeholder="MAIN" /></label><label><span class="ll-label">Name</span><input class="ll-input mt-1.5 w-full" required maxlength="160" [value]="warehouseName()" (input)="warehouseName.set($any($event.target).value)" placeholder="Main warehouse" /></label></div>
+              <label><span class="ll-label">Branch ID (optional)</span><input class="ll-input mt-1.5 w-full" [value]="warehouseBranchId()" (input)="warehouseBranchId.set($any($event.target).value)" placeholder="UUID" /></label>
+              <label><span class="ll-label">Address JSON (optional)</span><textarea class="ll-input mt-1.5 min-h-28 w-full font-mono text-xs" [value]="warehouseAddress()" (input)="warehouseAddress.set($any($event.target).value)" placeholder='{"line1":"..."}'></textarea></label>
+              @if (formError()) { <p class="rounded-lg border border-rose-400/20 bg-rose-500/10 px-3 py-2 text-xs text-rose-200">{{ formError() }}</p> }
+              <div class="flex justify-end gap-2 border-t border-white/8 pt-4"><button type="button" class="ll-secondary-button" (click)="closeForm()">Cancel</button><button type="submit" class="ll-primary-button" [disabled]="saving()">{{ saving() ? 'Saving…' : (editingWarehouse() ? 'Save changes' : 'Create warehouse') }}</button></div>
+            </form>
           }
         </div>
       </div>
@@ -119,6 +125,7 @@ export class ItemsWarehousesPageComponent {
   readonly formError = signal('');
   readonly formOpen = signal(false);
   readonly editingItem = signal<Item | null>(null);
+  readonly editingWarehouse = signal<Warehouse | null>(null);
 
   readonly itemCode = signal('');
   readonly itemName = signal('');
@@ -166,13 +173,19 @@ export class ItemsWarehousesPageComponent {
 
   openCreateForm(): void { this.resetForm(); this.formOpen.set(true); }
   openEditItem(item: Item): void {
+    this.editingWarehouse.set(null);
     this.editingItem.set(item); this.formError.set(''); this.itemCode.set(item.item_code); this.itemName.set(item.name); this.itemType.set(item.item_type);
     this.hsnSac.set(item.hsn_sac ?? ''); this.unitCode.set(item.unit_code); this.gstRate.set(String(item.gst_rate_bps / 100));
     this.sellingPrice.set((Number(item.selling_price_paise) / 100).toFixed(2)); this.purchasePrice.set((Number(item.purchase_price_paise) / 100).toFixed(2));
     this.trackInventory.set(item.track_inventory); this.formOpen.set(true);
   }
-  closeForm(): void { this.formOpen.set(false); this.formError.set(''); this.editingItem.set(null); }
-  resetForm(): void { this.editingItem.set(null); this.formError.set(''); this.itemCode.set(''); this.itemName.set(''); this.itemType.set('goods'); this.hsnSac.set(''); this.unitCode.set('unit'); this.gstRate.set('0'); this.sellingPrice.set('0.00'); this.purchasePrice.set('0.00'); this.trackInventory.set(true); this.warehouseCode.set(''); this.warehouseName.set(''); this.warehouseBranchId.set(''); this.warehouseAddress.set(''); }
+  openEditWarehouse(warehouse: Warehouse): void {
+    this.editingItem.set(null);
+    this.editingWarehouse.set(warehouse); this.formError.set(''); this.warehouseCode.set(warehouse.warehouse_code); this.warehouseName.set(warehouse.name);
+    this.warehouseBranchId.set(warehouse.branch_id ?? ''); this.warehouseAddress.set(JSON.stringify(warehouse.address ?? {}, null, 2)); this.formOpen.set(true);
+  }
+  closeForm(): void { this.formOpen.set(false); this.formError.set(''); this.editingItem.set(null); this.editingWarehouse.set(null); }
+  resetForm(): void { this.editingItem.set(null); this.editingWarehouse.set(null); this.formError.set(''); this.itemCode.set(''); this.itemName.set(''); this.itemType.set('goods'); this.hsnSac.set(''); this.unitCode.set('unit'); this.gstRate.set('0'); this.sellingPrice.set('0.00'); this.purchasePrice.set('0.00'); this.trackInventory.set(true); this.warehouseCode.set(''); this.warehouseName.set(''); this.warehouseBranchId.set(''); this.warehouseAddress.set(''); }
 
   private toPaise(value: string): string {
     const normalized = value.trim();
@@ -204,15 +217,45 @@ export class ItemsWarehousesPageComponent {
     ).subscribe((response) => { if (response) this.loadCurrentView(); });
   }
 
-  createWarehouse(event: Event): void {
+  saveWarehouse(event: Event): void {
     event.preventDefault(); this.formError.set('');
     let address: Record<string, unknown> = {};
-    try { if (this.warehouseAddress().trim()) address = JSON.parse(this.warehouseAddress()); } catch { this.formError.set('Address must be valid JSON.'); return; }
+    try {
+      if (this.warehouseAddress().trim()) address = JSON.parse(this.warehouseAddress());
+      if (typeof address !== 'object' || address === null || Array.isArray(address)) throw new Error('Address must be a JSON object.');
+    } catch (error) {
+      this.formError.set(error instanceof Error ? error.message : 'Address must be valid JSON.');
+      return;
+    }
     const companyId = this.auth.selectedCompany()?.id; if (!companyId) return;
+    const name = this.warehouseName().trim();
+    if (!name) { this.formError.set('Warehouse name is required.'); return; }
+    const branchId = this.warehouseBranchId().trim();
+    if (branchId && !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(branchId)) {
+      this.formError.set('Branch ID must be a valid UUID.');
+      return;
+    }
     this.saving.set(true);
-    this.http.post(`${API_BASE_URL}/companies/${companyId}/warehouses`, { warehouseCode: this.warehouseCode().trim(), name: this.warehouseName().trim(), branchId: this.warehouseBranchId().trim() || undefined, address }).pipe(
-      catchError((error) => { this.formError.set(error?.error?.message || 'Unable to create warehouse.'); return of(null); }),
+    const warehouse = this.editingWarehouse();
+    const payload = { name, branchId: branchId || undefined, address };
+    const request$ = warehouse
+      ? this.http.patch(`${API_BASE_URL}/companies/${companyId}/warehouses/${warehouse.id}`, payload)
+      : this.http.post(`${API_BASE_URL}/companies/${companyId}/warehouses`, { warehouseCode: this.warehouseCode().trim(), ...payload });
+    request$.pipe(
+      catchError((error) => { this.formError.set(error?.error?.message || 'Unable to save warehouse.'); return of(null); }),
       finalize(() => this.saving.set(false)),
     ).subscribe((response) => { if (response) { this.closeForm(); this.loadCurrentView(); } });
   }
+
+  toggleWarehouseStatus(warehouse: Warehouse): void {
+    const companyId = this.auth.selectedCompany()?.id; if (!companyId) return;
+    const next = !warehouse.is_active;
+    this.saving.set(true); this.errorMessage.set('');
+    this.http.patch(`${API_BASE_URL}/companies/${companyId}/warehouses/${warehouse.id}/status`, { isActive: next }).pipe(
+      catchError((error) => { this.errorMessage.set(error?.error?.message || 'Unable to update warehouse status.'); return of(null); }),
+      finalize(() => this.saving.set(false)),
+    ).subscribe((response) => { if (response) this.loadCurrentView(); });
+  }
+
+  createWarehouse(event: Event): void { this.saveWarehouse(event); }
 }
