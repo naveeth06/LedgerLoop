@@ -22,14 +22,14 @@ Implemented foundation:
 - Opening trial-balance posting and opening inventory snapshots, including atomic journal posting, same-company references, forced RLS and deterministic paise valuation.
 - GitHub Actions checks for migrations, type-checking, build, unit tests and PostgreSQL integration.
 
-Still not implemented: Angular web app, email verification/password reset, Google sign-in, deterministic GST calculation, invoice/payment workflows, reporting, reminders, and AI features. This scaffold is not a production accounting system.
+Still not implemented: email verification/password reset, Google sign-in, complete production hardening, and some remaining application workflows. This project is not yet a production accounting system.
 
 ## Requirements and local setup
 
 - Node.js 22 or newer and npm
 - Git
 - PostgreSQL 16 or newer for local database work
-- Docker is optional and can be deferred; CI runs PostgreSQL integration checks on GitHub-hosted runners.
+- Docker is optional for local PostgreSQL, Redis and MinIO services; CI runs PostgreSQL integration checks on GitHub-hosted runners.
 
 Copy `.env.example` to `.env` and replace `AUTH_TOKEN_SECRET` and `CSRF_SECRET` with unique secrets of at least 32 bytes. Configure `WEB_ORIGIN` to the exact browser origin serving the web app. Keep `COOKIE_SECURE=false` for local HTTP development only; production must use HTTPS and Secure cookies. Never commit real secrets.
 
@@ -49,6 +49,101 @@ node apps/api/dist/main.js
 ```
 
 The API health endpoint is `http://localhost:3000/api/health`. It currently confirms only that the HTTP process is running; it does not check database connectivity.
+
+## Docker local services
+
+LedgerLoop does not currently require Docker Compose. The commands below start the individual infrastructure services expected by `.env.example`.
+
+### PostgreSQL 16
+
+```sh
+docker pull postgres:16
+docker run --name ledgerloop-postgres \
+  -e POSTGRES_DB=ledgerloop \
+  -e POSTGRES_USER=ledgerloop \
+  -e POSTGRES_PASSWORD=local_dev_only_change_me \
+  -p 5432:5432 \
+  -d postgres:16
+```
+
+Start/stop/remove the container:
+
+```sh
+docker start ledgerloop-postgres
+docker stop ledgerloop-postgres
+docker rm ledgerloop-postgres
+```
+
+Open `psql` inside the container:
+
+```sh
+docker exec -it ledgerloop-postgres psql -U ledgerloop -d ledgerloop
+```
+
+Run migrations after PostgreSQL is ready:
+
+```sh
+npm run db:migrate --workspace @ledgerloop/api
+```
+
+### Redis 7
+
+```sh
+docker pull redis:7
+docker run --name ledgerloop-redis \
+  -p 6379:6379 \
+  -d redis:7
+```
+
+Check Redis:
+
+```sh
+docker exec -it ledgerloop-redis redis-cli ping
+```
+
+Start/stop/remove:
+
+```sh
+docker start ledgerloop-redis
+docker stop ledgerloop-redis
+docker rm ledgerloop-redis
+```
+
+### MinIO for local S3-compatible storage
+
+The `.env.example` file points S3-compatible storage at `http://localhost:9000`.
+
+```sh
+docker pull minio/minio:latest
+docker run --name ledgerloop-minio \
+  -p 9000:9000 \
+  -p 9001:9001 \
+  -e MINIO_ROOT_USER=ledgerloop_local \
+  -e MINIO_ROOT_PASSWORD=local_dev_only_change_me \
+  -d minio/minio:latest server /data --console-address ":9001"
+```
+
+The MinIO API is available at `http://localhost:9000` and the local console at `http://localhost:9001`.
+
+```sh
+docker start ledgerloop-minio
+docker stop ledgerloop-minio
+docker rm ledgerloop-minio
+```
+
+### Useful Docker checks
+
+```sh
+docker ps
+docker logs ledgerloop-postgres
+docker logs ledgerloop-redis
+docker logs ledgerloop-minio
+docker inspect ledgerloop-postgres
+docker inspect ledgerloop-redis
+docker inspect ledgerloop-minio
+```
+
+These commands are for local development only. Do not reuse the example passwords or expose these development services publicly.
 
 ## Authentication
 
@@ -91,16 +186,20 @@ Protected routes require `Authorization: Bearer <accessToken>`. The global guard
 - `GET /api/companies/:companyId/parties` — list parties for an active company member. Optional query filters: `type=customer|supplier|both` and `active=true|false`. The type filter also includes `both` parties.
 - `POST /api/companies/:companyId/parties` — create a party; requires owner/admin/accountant role. Fields: `partyCode`, `name`, `partyType` (`customer`, `supplier`, `both`), optional `gstin`, `email`, `phone`, `billingAddress` object, and `creditLimitPaise` as a decimal string.
 - Party codes are unique per company and normalized to uppercase. Credit limits are non-negative PostgreSQL BIGINT values passed as decimal strings to avoid JavaScript precision loss.
-- Parties are protected by forced RLS. Creation and `COMPANY_PARTY_CREATED` audit event share a transaction. The runtime role has SELECT/INSERT only; update/deactivation workflows are future work.
+- `PATCH /api/companies/:companyId/parties/:partyId` — update editable party master data; party code remains immutable.
+- `PATCH /api/companies/:companyId/parties/:partyId/status` — activate/deactivate a party without deleting its historical references.
+- Parties are protected by forced RLS and all create/update/status writes are audited inside the tenant transaction.
 
 ## Items and warehouses
 
 - `GET /api/companies/:companyId/items` — list items for active members; optional `type=goods|service` and `active=true|false` filters.
 - `POST /api/companies/:companyId/items` — create an item; owner/admin/accountant only. Supports `itemCode`, `name`, `itemType`, optional numeric `hsnSac`, `unitCode`, `gstRateBps`, `sellingPricePaise`, `purchasePricePaise` and `trackInventory`.
+- `PATCH /api/companies/:companyId/items/:itemId` — update item master fields; the item code remains immutable. Services cannot track inventory.
+- `PATCH /api/companies/:companyId/items/:itemId/status` — activate/deactivate an item without deleting historical references.
 - GST rates are stored as integer basis points (`1800` = `18.00%`). Prices are decimal strings of integer paise to avoid JavaScript precision loss. Tax calculation and tax splitting are not implemented by this directory API.
 - `GET /api/companies/:companyId/warehouses` — list warehouses; optional `active=true|false`.
 - `POST /api/companies/:companyId/warehouses` — create a warehouse; owner/admin/accountant only. Supports `warehouseCode`, `name`, optional `branchId` and JSON `address`.
-- Item codes and warehouse codes are unique per company. Warehouses can be company-wide or branch-specific; both the API and composite database foreign key prevent cross-company branch assignment. Both tables use forced RLS and creation audit events. The runtime role has SELECT/INSERT only; update/deactivation workflows are future work.
+- Item codes and warehouse codes are unique per company. Warehouses can be company-wide or branch-specific; both the API and composite database foreign key prevent cross-company branch assignment. Both tables use forced RLS and creation/update audit events. Warehouse update/deactivation workflows remain a follow-up increment.
 
 ## Journals and opening balances
 
@@ -133,4 +232,4 @@ Request-facing code must use transaction helpers and active-membership verificat
 
 Persisted monetary amounts must be integer paise. The shared `parseRupeesToPaise` helper uses `BigInt` conversion and rejects floats, negative amounts, exponent notation, separators, and more than two fractional digits.
 
-Values in `.env.example` are development placeholders only. Email verification/password reset, Google sign-in, distributed rate limiting, reversal workflows, GST calculations, file scanning, complete audit coverage, and AI safeguards remain pending. This scaffold is not production-ready.
+Values in `.env.example` are development placeholders only. Email verification/password reset, Google sign-in, distributed rate limiting, reversal workflows, GST calculations, file scanning, complete audit coverage, and AI safeguards remain pending. This project is not production-ready.

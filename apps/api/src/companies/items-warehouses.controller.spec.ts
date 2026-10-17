@@ -29,7 +29,10 @@ describe('ItemsController', () => {
       item_type: 'goods', hsn_sac: null, unit_code: 'unit', gst_rate_bps: 1800, selling_price_paise: '12500',
       purchase_price_paise: '8000', track_inventory: true, is_active: true, created_at: new Date(), updated_at: new Date() };
     const { controller, audit } = makeController(ItemsController, async (callback) => callback({ query: vi.fn(async () => ({ rows: [item] })) }));
-    const result = await (controller as ItemsController).createItem(companyId, { itemCode: 'sku-01', name: 'Notebook', gstRateBps: 1800, sellingPricePaise: '12500', purchasePricePaise: '8000' }, { user: { sub: userId } } as never);
+    const result = await (controller as ItemsController).createItem(companyId, {
+      itemCode: 'sku-01', name: 'Notebook', itemType: 'goods', hsnSac: undefined, unitCode: 'unit',
+      gstRateBps: 1800, sellingPricePaise: '12500', purchasePricePaise: '8000', trackInventory: true,
+    }, { user: { sub: userId } } as never);
     expect(result.item).toEqual(item);
     expect(audit.record).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ actorUserId: userId, action: 'COMPANY_ITEM_CREATED', entityType: 'company_item', entityId: item.id, metadata: { companyId, itemCode: 'SKU-01', itemType: 'goods' } }));
   });
@@ -37,6 +40,31 @@ describe('ItemsController', () => {
     const { controller, tenantAccess } = makeController(ItemsController, async () => { throw new Error('should not be called'); });
     await expect((controller as ItemsController).createItem(companyId, { itemCode: 'CONSULT', name: 'Consulting', itemType: 'service', trackInventory: true }, { user: { sub: userId } } as never)).rejects.toThrow('Item details are invalid.');
     expect(tenantAccess.withCompanyTransaction).not.toHaveBeenCalled();
+  });
+  it('updates item master data and records an audit event', async () => {
+    const item = { id: 'item-1', company_id: companyId, item_code: 'SKU-01', name: 'Updated Notebook', item_type: 'goods', is_active: true };
+    const { controller, tenantAccess, audit } = makeController(ItemsController, async (callback) => callback({ query: vi.fn(async () => ({ rows: [item] })) }));
+    const result = await (controller as ItemsController).updateItem(companyId, 'item-1', {
+      name: 'Updated Notebook', itemType: 'goods', unitCode: 'unit', gstRateBps: 1800,
+      sellingPricePaise: '15000', purchasePricePaise: '9000', trackInventory: true,
+    }, { user: { sub: userId } } as never);
+    expect(result.item).toEqual(item);
+    expect(tenantAccess.withCompanyTransaction).toHaveBeenCalledWith(userId, companyId, expect.any(Function));
+    expect(audit.record).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ actorUserId: userId, action: 'COMPANY_ITEM_UPDATED', entityType: 'company_item', entityId: 'item-1' }));
+  });
+  it('rejects malformed item updates before opening a transaction', async () => {
+    const { controller, tenantAccess } = makeController(ItemsController, async () => { throw new Error('should not run'); });
+    await expect((controller as ItemsController).updateItem(companyId, 'item-1', {
+      name: '', itemType: 'goods', unitCode: 'unit', gstRateBps: 1800,
+      sellingPricePaise: '15000', purchasePricePaise: '9000', trackInventory: true,
+    }, { user: { sub: userId } } as never)).rejects.toThrow('Item details are invalid.');
+    expect(tenantAccess.withCompanyTransaction).not.toHaveBeenCalled();
+  });
+  it('updates active status and records an audit event', async () => {
+    const item = { id: 'item-1', item_code: 'SKU-01', is_active: false };
+    const { controller, audit } = makeController(ItemsController, async (callback) => callback({ query: vi.fn(async () => ({ rows: [item] })) }));
+    expect(await (controller as ItemsController).updateItemStatus(companyId, 'item-1', { isActive: false }, { user: { sub: userId } } as never)).toEqual({ item });
+    expect(audit.record).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ actorUserId: userId, action: 'COMPANY_ITEM_STATUS_UPDATED', entityType: 'company_item', entityId: 'item-1' }));
   });
 });
 
