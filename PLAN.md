@@ -79,7 +79,7 @@
 ## Phase 5 — Reminders and AI
 - [x] BullMQ overdue reminder events with retries, idempotency, tenant context and audit.
 - [x] Email reminder delivery foundation with SMTP provider abstraction, party opt-out, delivery state, retry/backoff and audit metadata.
-- [x] Provider-independent delivery monitoring summary with tenant-scoped status counts.
+- [x] Provider-independent reminder delivery monitoring summary with tenant-scoped status counts.
 - [ ] Provider-specific delivery monitoring, bounce handling and richer templates.
 - [ ] Claude-backed categorisation scoped to current-company ledger candidates.
 - [ ] Receipt extraction/reconciliation suggestions with validation and human approval.
@@ -100,7 +100,7 @@
 17. **Completed:** customer receipts, automatic receipt numbering, atomic receipt journal posting, multi-invoice/partial receivable allocation, outstanding balance checks, forced RLS, immutability and audit events.
 18. **Completed:** purchase orders and purchase bills with supplier validation, GST-aware deterministic totals, automatic numbering, tenant-scoped lines, draft audit events, forced RLS and bill immutability.
 19. **Completed:** purchase bill posting to payables, purchase expense and input GST with tenant-configured accounts, atomic journal posting and audit events.
-20. **Completed:** supplier payments with automatic numbering, supplier-to-bill allocation, outstanding balance checks, atomic payable/bank journal posting and audit events.
+20. **Completed:** supplier payments with automatic numbering, supplier-to-bill allocation, outstanding balance checks, atomic payable/bank journal posting, forced RLS, immutability and audit events.
 21. **Completed:** inventory movement foundation with tenant-scoped immutable movement records and accounting linkage.
 22. **Completed:** tenant-scoped bank accounts and statement import batches/transactions with external-id deduplication.
 23. **Completed:** bank statement reconciliation against posted journal lines, tenant-safe composite matching, one-match-per-journal-line protection, audit events and reconciled immutability.
@@ -131,7 +131,7 @@
 - [x] Global smooth scrolling removed in favor of native scrolling so keyboard/accessibility behavior is not overridden.
 - [x] `prefers-reduced-motion` remains respected across CSS and GSAP behavior.
 - [x] Theme-aware borders, surfaces, focus treatment, elevation and ambient UI transitions refined through the existing CSS-variable theme system.
-- [x] `APPLICATION_PLAN.md` is the source of truth for the dedicated application polish roadmap when that document exists; this plan records the completed implementation increment here.
+- [x] `APPLICATION_PLAN.md` added because no pre-existing file existed; it records the dedicated application polish scope without replacing the accounting roadmap in this file.
 
 ## Acceptance gates
 
