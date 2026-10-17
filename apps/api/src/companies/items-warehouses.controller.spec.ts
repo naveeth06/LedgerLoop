@@ -38,6 +38,31 @@ describe('ItemsController', () => {
     await expect((controller as ItemsController).createItem(companyId, { itemCode: 'CONSULT', name: 'Consulting', itemType: 'service', trackInventory: true }, { user: { sub: userId } } as never)).rejects.toThrow('Item details are invalid.');
     expect(tenantAccess.withCompanyTransaction).not.toHaveBeenCalled();
   });
+  it('updates item master data and records an audit event', async () => {
+    const item = { id: 'item-1', company_id: companyId, item_code: 'SKU-01', name: 'Updated Notebook', item_type: 'goods', is_active: true };
+    const { controller, tenantAccess, audit } = makeController(ItemsController, async (callback) => callback({ query: vi.fn(async () => ({ rows: [item] })) }));
+    const result = await (controller as ItemsController).updateItem(companyId, 'item-1', {
+      name: 'Updated Notebook', itemType: 'goods', unitCode: 'unit', gstRateBps: 1800,
+      sellingPricePaise: '15000', purchasePricePaise: '9000', trackInventory: true,
+    }, { user: { sub: userId } } as never);
+    expect(result.item).toEqual(item);
+    expect(tenantAccess.withCompanyTransaction).toHaveBeenCalledWith(userId, companyId, expect.any(Function));
+    expect(audit.record).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ actorUserId: userId, action: 'COMPANY_ITEM_UPDATED', entityType: 'company_item', entityId: 'item-1' }));
+  });
+  it('rejects malformed item updates before opening a transaction', async () => {
+    const { controller, tenantAccess } = makeController(ItemsController, async () => { throw new Error('should not run'); });
+    await expect((controller as ItemsController).updateItem(companyId, 'item-1', {
+      name: '', itemType: 'goods', unitCode: 'unit', gstRateBps: 1800,
+      sellingPricePaise: '15000', purchasePricePaise: '9000', trackInventory: true,
+    }, { user: { sub: userId } } as never)).rejects.toThrow('Item details are invalid.');
+    expect(tenantAccess.withCompanyTransaction).not.toHaveBeenCalled();
+  });
+  it('updates active status and records an audit event', async () => {
+    const item = { id: 'item-1', item_code: 'SKU-01', is_active: false };
+    const { controller, audit } = makeController(ItemsController, async (callback) => callback({ query: vi.fn(async () => ({ rows: [item] })) }));
+    expect(await (controller as ItemsController).updateItemStatus(companyId, 'item-1', { isActive: false }, { user: { sub: userId } } as never)).toEqual({ item });
+    expect(audit.record).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ actorUserId: userId, action: 'COMPANY_ITEM_STATUS_UPDATED', entityType: 'company_item', entityId: 'item-1' }));
+  });
 });
 
 describe('WarehousesController', () => {
