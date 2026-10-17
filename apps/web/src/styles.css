@@ -196,71 +196,41 @@ a {
   mask-image: linear-gradient(to bottom, black, transparent 55%);
 }
 
-/*
- * Existing pages use Tailwind utility colors extensively. These narrow global
- * mappings make those existing utilities consume the active theme without
- * forcing a large, risky component-by-component rewrite.
- */
-html[data-ll-theme] [class*="text-violet-"] {
-  color: var(--ll-primary-soft) !important;
-}
+/* Existing Tailwind color utilities are mapped to the active palette. */
+html[data-ll-theme] [class*="text-violet-"] { color: var(--ll-primary-soft) !important; }
+html[data-ll-theme] [class*="text-fuchsia-"] { color: var(--ll-secondary-soft) !important; }
 
-html[data-ll-theme] [class*="text-fuchsia-"] {
-  color: var(--ll-secondary-soft) !important;
-}
+html[data-ll-theme] [class*="bg-violet-"] { background-color: color-mix(in srgb, var(--ll-primary) 78%, transparent) !important; }
+html[data-ll-theme] [class*="bg-fuchsia-"] { background-color: color-mix(in srgb, var(--ll-secondary) 70%, transparent) !important; }
+html[data-ll-theme] [class*="bg-violet-500\/10"] { background-color: color-mix(in srgb, var(--ll-primary) 10%, transparent) !important; }
+html[data-ll-theme] [class*="bg-violet-500\/15"] { background-color: color-mix(in srgb, var(--ll-primary) 15%, transparent) !important; }
+html[data-ll-theme] [class*="bg-violet-500\/16"] { background-color: color-mix(in srgb, var(--ll-primary) 16%, transparent) !important; }
+html[data-ll-theme] [class*="bg-violet-500\/75"] { background-color: color-mix(in srgb, var(--ll-primary) 75%, transparent) !important; }
+html[data-ll-theme] [class*="bg-violet-500\/80"] { background-color: color-mix(in srgb, var(--ll-primary) 80%, transparent) !important; }
+html[data-ll-theme] [class*="bg-fuchsia-400\/60"] { background-color: color-mix(in srgb, var(--ll-secondary) 60%, transparent) !important; }
+html[data-ll-theme] [class*="bg-fuchsia-400\/70"] { background-color: color-mix(in srgb, var(--ll-secondary) 70%, transparent) !important; }
 
-html[data-ll-theme] [class*="bg-violet-"] {
-  background-color: color-mix(in srgb, var(--ll-primary) 78%, transparent) !important;
-}
-
-html[data-ll-theme] [class*="bg-fuchsia-"] {
-  background-color: color-mix(in srgb, var(--ll-secondary) 70%, transparent) !important;
-}
-
-html[data-ll-theme] [class*="border-violet-"] {
-  border-color: color-mix(in srgb, var(--ll-primary-soft) 30%, transparent) !important;
-}
-
-html[data-ll-theme] [class*="border-fuchsia-"] {
-  border-color: color-mix(in srgb, var(--ll-secondary-soft) 30%, transparent) !important;
-}
+html[data-ll-theme] [class*="border-violet-"] { border-color: color-mix(in srgb, var(--ll-primary-soft) 30%, transparent) !important; }
+html[data-ll-theme] [class*="border-fuchsia-"] { border-color: color-mix(in srgb, var(--ll-secondary-soft) 30%, transparent) !important; }
 
 html[data-ll-theme] [class*="from-violet-"] {
   --tw-gradient-from: var(--ll-primary) var(--tw-gradient-from-position) !important;
   --tw-gradient-to: color-mix(in srgb, var(--ll-primary) 0%, transparent) var(--tw-gradient-to-position) !important;
 }
+html[data-ll-theme] [class*="to-fuchsia-"] { --tw-gradient-to: var(--ll-secondary) var(--tw-gradient-to-position) !important; }
+html[data-ll-theme] [class*="from-violet-500\/80"] { --tw-gradient-from: color-mix(in srgb, var(--ll-primary) 80%, transparent) var(--tw-gradient-from-position) !important; }
+html[data-ll-theme] [class*="to-fuchsia-500\/70"] { --tw-gradient-to: color-mix(in srgb, var(--ll-secondary) 70%, transparent) var(--tw-gradient-to-position) !important; }
 
-html[data-ll-theme] [class*="to-fuchsia-"] {
-  --tw-gradient-to: var(--ll-secondary) var(--tw-gradient-to-position) !important;
-}
-
-html[data-ll-theme] [class*="text-white"] {
-  color: var(--ll-text) !important;
-}
-
+html[data-ll-theme] [class*="text-white"] { color: var(--ll-text) !important; }
 html[data-ll-theme] [class*="text-zinc-300"],
 html[data-ll-theme] [class*="text-zinc-400"],
 html[data-ll-theme] [class*="text-zinc-500"],
-html[data-ll-theme] [class*="text-zinc-600"] {
-  color: var(--ll-text-muted) !important;
-}
+html[data-ll-theme] [class*="text-zinc-600"] { color: var(--ll-text-muted) !important; }
+html[data-ll-theme] [class*="bg-white/"] { background-color: color-mix(in srgb, var(--ll-text) 4%, transparent) !important; }
+html[data-ll-theme] [class*="border-white/"] { border-color: var(--ll-border) !important; }
+html[data-ll-theme] [class*="divide-white/"] { border-color: var(--ll-border) !important; }
 
-html[data-ll-theme] [class*="bg-white/"] {
-  background-color: color-mix(in srgb, var(--ll-text) 4%, transparent) !important;
-}
-
-html[data-ll-theme] [class*="border-white/"] {
-  border-color: var(--ll-border) !important;
-}
-
-html[data-ll-theme] [class*="divide-white/"] {
-  --tw-divide-opacity: 1;
-  border-color: var(--ll-border) !important;
-}
-
-.ll-theme-selector {
-  position: relative;
-}
+.ll-theme-selector { position: relative; }
 
 .ll-theme-trigger {
   display: inline-flex;
@@ -277,10 +247,7 @@ html[data-ll-theme] [class*="divide-white/"] {
 }
 
 .ll-theme-trigger:hover,
-.ll-theme-trigger[aria-expanded="true"] {
-  border-color: color-mix(in srgb, var(--ll-primary-soft) 28%, transparent);
-  background: rgb(255 255 255 / 0.05);
-}
+.ll-theme-trigger[aria-expanded="true"] { border-color: color-mix(in srgb, var(--ll-primary-soft) 28%, transparent); background: rgb(255 255 255 / 0.05); }
 
 .ll-theme-swatch {
   display: inline-flex;
@@ -306,22 +273,9 @@ html[data-ll-theme] [class*="divide-white/"] {
   backdrop-filter: blur(20px);
 }
 
-.ll-theme-menu-header {
-  padding: 0.625rem 0.625rem 0.5rem;
-}
-
-.ll-theme-menu-title {
-  margin: 0;
-  color: var(--ll-text);
-  font-size: 0.75rem;
-  font-weight: 700;
-}
-
-.ll-theme-menu-description {
-  margin: 0.2rem 0 0;
-  color: var(--ll-text-muted);
-  font-size: 0.6875rem;
-}
+.ll-theme-menu-header { padding: 0.625rem 0.625rem 0.5rem; }
+.ll-theme-menu-title { margin: 0; color: var(--ll-text); font-size: 0.75rem; font-weight: 700; }
+.ll-theme-menu-description { margin: 0.2rem 0 0; color: var(--ll-text-muted); font-size: 0.6875rem; }
 
 .ll-theme-option {
   display: flex;
@@ -338,57 +292,16 @@ html[data-ll-theme] [class*="divide-white/"] {
   transition: background-color 160ms ease, border-color 160ms ease;
 }
 
-.ll-theme-option:hover {
-  background: rgb(255 255 255 / 0.04);
-}
-
-.ll-theme-option-active {
-  border-color: color-mix(in srgb, var(--ll-primary-soft) 24%, transparent);
-  background: color-mix(in srgb, var(--ll-primary) 8%, transparent);
-}
-
-.ll-theme-option-copy {
-  min-width: 0;
-  flex: 1;
-}
-
-.ll-theme-option-name {
-  display: block;
-  color: var(--ll-text);
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-
-.ll-theme-option-description {
-  display: block;
-  margin-top: 0.125rem;
-  overflow: hidden;
-  color: var(--ll-text-muted);
-  font-size: 0.625rem;
-  line-height: 1rem;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.ll-theme-check {
-  display: inline-flex;
-  width: 1.5rem;
-  height: 1.5rem;
-  align-items: center;
-  justify-content: center;
-  border-radius: 9999px;
-  color: var(--ll-primary-soft);
-  background: color-mix(in srgb, var(--ll-primary) 12%, transparent);
-}
+.ll-theme-option:hover { background: rgb(255 255 255 / 0.04); }
+.ll-theme-option-active { border-color: color-mix(in srgb, var(--ll-primary-soft) 24%, transparent); background: color-mix(in srgb, var(--ll-primary) 8%, transparent); }
+.ll-theme-option-copy { min-width: 0; flex: 1; }
+.ll-theme-option-name { display: block; color: var(--ll-text); font-size: 0.75rem; font-weight: 600; }
+.ll-theme-option-description { display: block; margin-top: 0.125rem; overflow: hidden; color: var(--ll-text-muted); font-size: 0.625rem; line-height: 1rem; text-overflow: ellipsis; white-space: nowrap; }
+.ll-theme-check { display: inline-flex; width: 1.5rem; height: 1.5rem; align-items: center; justify-content: center; border-radius: 9999px; color: var(--ll-primary-soft); background: color-mix(in srgb, var(--ll-primary) 12%, transparent); }
 
 @media (max-width: 640px) {
-  .ll-theme-trigger-label {
-    display: none;
-  }
-
-  .ll-theme-menu {
-    right: -0.25rem;
-  }
+  .ll-theme-trigger-label { display: none; }
+  .ll-theme-menu { right: -0.25rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -401,8 +314,5 @@ html[data-ll-theme] [class*="divide-white/"] {
     animation-iteration-count: 1 !important;
   }
 
-  .ll-route-stage {
-    transform: none !important;
-    will-change: auto;
-  }
+  .ll-route-stage { transform: none !important; will-change: auto; }
 }
