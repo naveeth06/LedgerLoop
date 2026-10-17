@@ -40,6 +40,12 @@ const createWarehouseSchema = z.object({
   address: z.record(z.string(), z.unknown()).optional(),
 }).strict();
 
+const updateWarehouseSchema = z.object({
+  name: z.string().trim().min(1).max(160),
+  branchId: z.string().uuid().optional(),
+  address: z.record(z.string(), z.unknown()),
+}).strict();
+
 @Controller('companies/:companyId/items')
 export class ItemsController {
   constructor(private readonly tenantAccess: TenantAccessService, private readonly audit: AuditService) {}
@@ -211,6 +217,61 @@ export class WarehousesController {
       if (isUniqueViolation(error)) throw new ConflictException('A warehouse with this code already exists in the company.');
       throw error;
     }
+  }
+
+  @Patch(':warehouseId')
+  @CompanyRoles('owner', 'admin', 'accountant')
+  async updateWarehouse(@Param('companyId') companyId: string, @Param('warehouseId') warehouseId: string,
+    @Body() body: unknown, @Req() request: AuthenticatedRequest) {
+    const userId = request.user?.sub;
+    if (!userId) throw new BadRequestException('Authenticated user is required.');
+    const parsed = updateWarehouseSchema.safeParse(body);
+    if (!parsed.success) throw new BadRequestException('Warehouse details are invalid.');
+    return this.tenantAccess.withCompanyTransaction(userId, companyId, async (client) => {
+      if (parsed.data.branchId) {
+        const branch = await client.query('SELECT id FROM branches WHERE company_id = $1 AND id = $2 LIMIT 1', [companyId, parsed.data.branchId]);
+        if (!branch.rows[0]) throw new BadRequestException('Branch must belong to this company.');
+      }
+      const updated = await client.query(
+        `UPDATE company_warehouses
+            SET name = $3, branch_id = $4, address = $5::jsonb, updated_at = NOW()
+          WHERE company_id = $1 AND id = $2
+        RETURNING id, company_id, branch_id, warehouse_code, name, address, is_active, created_at, updated_at`,
+        [companyId, warehouseId, parsed.data.name, parsed.data.branchId ?? null, JSON.stringify(parsed.data.address)],
+      );
+      const warehouse = updated.rows[0];
+      if (!warehouse) throw new BadRequestException('Warehouse was not found in this company.');
+      await this.audit.record(client, {
+        actorUserId: userId, action: 'COMPANY_WAREHOUSE_UPDATED', entityType: 'company_warehouse', entityId: warehouse.id,
+        metadata: { companyId, warehouseCode: warehouse.warehouse_code, branchId: warehouse.branch_id },
+      });
+      return { warehouse };
+    });
+  }
+
+  @Patch(':warehouseId/status')
+  @CompanyRoles('owner', 'admin', 'accountant')
+  async updateWarehouseStatus(@Param('companyId') companyId: string, @Param('warehouseId') warehouseId: string,
+    @Body() body: unknown, @Req() request: AuthenticatedRequest) {
+    const userId = request.user?.sub;
+    if (!userId) throw new BadRequestException('Authenticated user is required.');
+    const parsed = z.object({ isActive: z.boolean() }).strict().safeParse(body);
+    if (!parsed.success) throw new BadRequestException('Warehouse status is invalid.');
+    return this.tenantAccess.withCompanyTransaction(userId, companyId, async (client) => {
+      const updated = await client.query(
+        `UPDATE company_warehouses SET is_active = $3, updated_at = NOW()
+          WHERE company_id = $1 AND id = $2
+        RETURNING id, company_id, branch_id, warehouse_code, name, address, is_active, created_at, updated_at`,
+        [companyId, warehouseId, parsed.data.isActive],
+      );
+      const warehouse = updated.rows[0];
+      if (!warehouse) throw new BadRequestException('Warehouse was not found in this company.');
+      await this.audit.record(client, {
+        actorUserId: userId, action: 'COMPANY_WAREHOUSE_STATUS_UPDATED', entityType: 'company_warehouse', entityId: warehouse.id,
+        metadata: { companyId, warehouseCode: warehouse.warehouse_code, isActive: warehouse.is_active },
+      });
+      return { warehouse };
+    });
   }
 }
 
