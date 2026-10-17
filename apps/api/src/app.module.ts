@@ -14,6 +14,7 @@ import { JournalReversalsController } from './companies/journal-reversals.contro
 import { OpeningBalancesController } from './companies/opening-balances.controller';
 import { PartiesController } from './companies/parties.controller';
 import { SalesDocumentsController } from './companies/sales-documents.controller';
+import { SalesInvoiceDetailsController } from './companies/sales-invoice-details.controller';
 import { SalesInvoicePostingV2Controller } from './companies/sales-invoice-posting-v2.controller';
 import { SalesReceiptsController } from './companies/sales-receipts.controller';
 import { PurchaseDocumentsController } from './companies/purchase-documents.controller';
@@ -38,8 +39,8 @@ import { SalesGstService } from './companies/sales-gst.service';
   controllers: [
     AppController, CompaniesController, AccountsController, CompanySettingsController,
     PartiesController, ItemsController, WarehousesController, JournalEntriesController,
-    JournalReversalsController, OpeningBalancesController, SalesDocumentsController, SalesInvoicePostingV2Controller,
-    SalesReceiptsController, PurchaseDocumentsController, PurchaseBillPostingV2Controller,
+    JournalReversalsController, OpeningBalancesController, SalesDocumentsController, SalesInvoiceDetailsController,
+    SalesInvoicePostingV2Controller, SalesReceiptsController, PurchaseDocumentsController, PurchaseBillPostingV2Controller,
     SupplierPaymentsController, InventoryController, InventoryValuationController, BankAccountsController,
     BankStatementImportsController, BankReconciliationController, ReportsController,
     FinancialReportsController, ReceivablesGstReportsController, ExpensesDebitNotesController,

@@ -26,6 +26,7 @@ LedgerLoop is a multi-tenant accounting application for Indian businesses. The w
 
 ### Sales
 - Sales invoice creation, numbering, GST totals and posting.
+- Tenant-scoped sales invoice detail with line-level GST/totals and linked posting journal metadata.
 - Customer receipts with bank/cash selection and partial/multi-invoice allocation.
 - Outstanding-balance validation and receipt immutability.
 
@@ -61,7 +62,7 @@ LedgerLoop is a multi-tenant accounting application for Indian businesses. The w
 
 ### Web application
 - Dashboard, Chart of Accounts, Customers & Suppliers, Items & Warehouses.
-- Sales Invoices and Sales Receipts.
+- Sales Invoices and Sales Receipts, including invoice detail/view workflow.
 - Purchase Bills and Supplier Payments.
 - Banking & Reconciliation.
 - Inventory and Reports workspaces.
@@ -77,6 +78,7 @@ LedgerLoop is a multi-tenant accounting application for Indian businesses. The w
 3. **Items & Warehouses — implemented foundation**
 4. **Sales — implemented foundation**
    - Invoices and receipts with partial/multi-invoice allocation.
+   - Invoice detail/view with line-level tax and posting metadata.
 5. **Purchases — implemented foundation**
    - Bills and supplier payments with explicit posting.
 6. **Frontend motion — implemented foundation**
@@ -92,13 +94,7 @@ LedgerLoop is a multi-tenant accounting application for Indian businesses. The w
 
 ## Next priorities
 
-12. **Master-data completion**
-   - Item edit and active/inactive workflow.
-   - Warehouse edit and active/inactive workflow.
-   - Chart of Accounts edit/deactivation with accounting safety restrictions.
-   - Bank-account edit/deactivation.
-13. **Sales completion**
-   - Invoice detail/view workflow backed by existing APIs.
+12. **Sales completion**
    - Sales posting-account setup UX where configuration is required.
    - Remaining sales document workflows.
 14. **Purchase completion**
