@@ -71,6 +71,7 @@ LedgerLoop is a multi-tenant accounting application for Indian businesses. The w
 - Inventory and Reports workspaces.
 - Reminders workspace with policy controls, overdue event monitoring, acknowledgement and delivery-status monitoring.
 - Shared GSAP motion system with route transitions, ScrollTrigger reveals, micro-interactions, reduced-motion handling and lifecycle cleanup.
+- Application-wide theme customization with five persistent dual-color palettes and a shared CSS-variable theme system.
 - Customer/supplier edit and active/inactive controls.
 - Item edit and active/inactive controls.
 - Warehouse edit and active/inactive controls; warehouse codes remain immutable and inactive warehouses remain available for historical references.
@@ -94,11 +95,16 @@ LedgerLoop is a multi-tenant accounting application for Indian businesses. The w
 5. **Purchases — implemented foundation**
    - Bills and supplier payments with explicit posting.
 6. **Frontend motion — implemented foundation**
-7. **Banking — implemented foundation**
-8. **Inventory — implemented foundation**
-9. **Reports — implemented foundation**
-10. **Supplier payments — implemented**
-11. **Reminders — implemented foundation**
+7. **Application theming — implemented**
+   - Five professional dual-color palettes.
+   - Runtime switching without reload.
+   - Local persistence of the selected palette.
+   - Shared theme mapping for existing Tailwind UI colors and data-visualization bars.
+8. **Banking — implemented foundation**
+9. **Inventory — implemented foundation**
+10. **Reports — implemented foundation**
+11. **Supplier payments — implemented**
+12. **Reminders — implemented foundation**
    - Reminder policy settings.
    - Overdue event browser and acknowledgement.
    - Delivery status summary.
@@ -106,17 +112,17 @@ LedgerLoop is a multi-tenant accounting application for Indian businesses. The w
 
 ## Next priorities
 
-12. **Master-data completion**
+13. **Master-data completion**
    - Bank-account edit/deactivation.
    - GST registration management UX.
-13. **Sales completion**
+14. **Sales completion**
    - Sales posting-account setup UX where configuration is required.
    - Remaining sales document workflows.
-14. **Purchase completion**
+15. **Purchase completion**
    - Purchase-order browser/create workflow using the existing API foundation.
    - Supplier payment history/detail workflow.
    - Remaining supplier adjustment workflows.
-15. **Application hardening**
+16. **Application hardening**
    - Consistent loading, empty, error and offline states.
    - Responsive validation at 640/1024/1440px.
    - Keyboard and screen-reader review.
