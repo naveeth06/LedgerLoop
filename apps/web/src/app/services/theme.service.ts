@@ -12,6 +12,12 @@ export interface LedgerLoopTheme {
   primarySoft: string;
   secondarySoft: string;
   focus: string;
+  background: string;
+  surface: string;
+  surfaceElevated: string;
+  text: string;
+  textMuted: string;
+  border: string;
 }
 
 const STORAGE_KEY = 'ledgerloop-theme';
@@ -26,6 +32,12 @@ export const LEDGERLOOP_THEMES: readonly LedgerLoopTheme[] = [
     primarySoft: '#a78bfa',
     secondarySoft: '#f0abfc',
     focus: '#c4b5fd',
+    background: '#09090d',
+    surface: '#101017',
+    surfaceElevated: '#15151d',
+    text: '#f4f4f5',
+    textMuted: '#9a9aa7',
+    border: 'rgba(255, 255, 255, 0.08)',
   },
   {
     id: 'ocean',
@@ -36,6 +48,12 @@ export const LEDGERLOOP_THEMES: readonly LedgerLoopTheme[] = [
     primarySoft: '#7dd3fc',
     secondarySoft: '#5eead4',
     focus: '#67e8f9',
+    background: '#06131b',
+    surface: '#0a1c26',
+    surfaceElevated: '#102833',
+    text: '#ecfeff',
+    textMuted: '#8aa9b3',
+    border: 'rgba(103, 232, 249, 0.13)',
   },
   {
     id: 'emerald',
@@ -46,6 +64,12 @@ export const LEDGERLOOP_THEMES: readonly LedgerLoopTheme[] = [
     primarySoft: '#6ee7b7',
     secondarySoft: '#5eead4',
     focus: '#6ee7b7',
+    background: '#06130f',
+    surface: '#0a1e17',
+    surfaceElevated: '#0f2a20',
+    text: '#ecfdf5',
+    textMuted: '#88a99b',
+    border: 'rgba(110, 231, 183, 0.13)',
   },
   {
     id: 'sunset',
@@ -56,6 +80,12 @@ export const LEDGERLOOP_THEMES: readonly LedgerLoopTheme[] = [
     primarySoft: '#fcd34d',
     secondarySoft: '#fda4af',
     focus: '#fde68a',
+    background: '#160d08',
+    surface: '#21120c',
+    surfaceElevated: '#2b1710',
+    text: '#fff7ed',
+    textMuted: '#b99b88',
+    border: 'rgba(253, 211, 77, 0.14)',
   },
   {
     id: 'indigo',
@@ -66,6 +96,12 @@ export const LEDGERLOOP_THEMES: readonly LedgerLoopTheme[] = [
     primarySoft: '#93c5fd',
     secondarySoft: '#a5b4fc',
     focus: '#bfdbfe',
+    background: '#080d1c',
+    surface: '#0e1530',
+    surfaceElevated: '#151d3d',
+    text: '#eff6ff',
+    textMuted: '#91a0bd',
+    border: 'rgba(147, 197, 253, 0.13)',
   },
 ] as const;
 
@@ -97,6 +133,12 @@ export class ThemeService {
   private applyTheme(theme: LedgerLoopTheme, persist: boolean): void {
     const root = this.document.documentElement;
     root.dataset['llTheme'] = theme.id;
+    root.style.setProperty('--ll-bg', theme.background);
+    root.style.setProperty('--ll-surface', theme.surface);
+    root.style.setProperty('--ll-surface-elevated', theme.surfaceElevated);
+    root.style.setProperty('--ll-text', theme.text);
+    root.style.setProperty('--ll-text-muted', theme.textMuted);
+    root.style.setProperty('--ll-border', theme.border);
     root.style.setProperty('--ll-primary', theme.primary);
     root.style.setProperty('--ll-secondary', theme.secondary);
     root.style.setProperty('--ll-primary-soft', theme.primarySoft);
