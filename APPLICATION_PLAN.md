@@ -29,7 +29,7 @@ LedgerLoop is a multi-tenant accounting application for Indian businesses. The w
 
 ### Sales
 - Sales invoice creation, numbering, GST totals and posting.
-- Tenant-scoped sales invoice detail with line-level tax/totals and linked posting journal metadata.
+- Tenant-scoped sales invoice detail with line-level GST/totals and linked posting journal metadata.
 - Customer receipts with bank/cash selection and partial/multi-invoice allocation.
 - Outstanding-balance validation and receipt immutability.
 
