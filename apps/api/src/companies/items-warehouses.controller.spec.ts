@@ -88,4 +88,40 @@ describe('WarehousesController', () => {
     expect(result.warehouse).toEqual(warehouse);
     expect(audit.record).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ actorUserId: userId, action: 'COMPANY_WAREHOUSE_CREATED', entityType: 'company_warehouse', entityId: warehouse.id, metadata: { companyId, warehouseCode: 'MAIN', branchId: null } }));
   });
+  it('updates warehouse master data and keeps the warehouse code immutable', async () => {
+    const warehouse = { id: 'warehouse-1', company_id: companyId, branch_id: null, warehouse_code: 'MAIN', name: 'Updated warehouse', address: { line1: '12 Market Road' }, is_active: true };
+    const query = vi.fn()
+      .mockResolvedValueOnce({ rows: [warehouse] })
+      .mockResolvedValueOnce({ rows: [warehouse] });
+    const { controller, tenantAccess, audit } = makeController(WarehousesController, async (callback) => callback({ query }));
+    const result = await (controller as WarehousesController).updateWarehouse(companyId, 'warehouse-1', {
+      name: 'Updated warehouse', address: { line1: '12 Market Road' },
+    }, { user: { sub: userId } } as never);
+    expect(result.warehouse).toEqual(warehouse);
+    expect(tenantAccess.withCompanyTransaction).toHaveBeenCalledWith(userId, companyId, expect.any(Function));
+    expect(query).toHaveBeenCalledWith(expect.stringContaining('UPDATE company_warehouses'), expect.any(Array));
+    expect(audit.record).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ actorUserId: userId, action: 'COMPANY_WAREHOUSE_UPDATED', entityType: 'company_warehouse', entityId: 'warehouse-1' }));
+  });
+  it('rejects a warehouse update with a cross-company branch before updating', async () => {
+    const query = vi.fn().mockResolvedValue({ rows: [] });
+    const { controller, audit } = makeController(WarehousesController, async (callback) => callback({ query }));
+    await expect((controller as WarehousesController).updateWarehouse(companyId, 'warehouse-1', {
+      name: 'Updated warehouse', branchId: 'a20e6a9d-03f7-4d43-84cb-cb2d8d97b0b2', address: {},
+    }, { user: { sub: userId } } as never)).rejects.toThrow('Branch must belong to this company.');
+    expect(query).toHaveBeenCalledTimes(1);
+    expect(audit.record).not.toHaveBeenCalled();
+  });
+  it('updates warehouse active status and records an audit event', async () => {
+    const warehouse = { id: 'warehouse-1', company_id: companyId, warehouse_code: 'MAIN', name: 'Main warehouse', is_active: false };
+    const { controller, audit } = makeController(WarehousesController, async (callback) => callback({ query: vi.fn(async () => ({ rows: [warehouse] })) }));
+    expect(await (controller as WarehousesController).updateWarehouseStatus(companyId, 'warehouse-1', { isActive: false }, { user: { sub: userId } } as never)).toEqual({ warehouse });
+    expect(audit.record).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ actorUserId: userId, action: 'COMPANY_WAREHOUSE_STATUS_UPDATED', entityType: 'company_warehouse', entityId: 'warehouse-1' }));
+  });
+  it('rejects malformed warehouse updates before opening a transaction', async () => {
+    const { controller, tenantAccess } = makeController(WarehousesController, async () => { throw new Error('should not run'); });
+    await expect((controller as WarehousesController).updateWarehouse(companyId, 'warehouse-1', {
+      name: '', address: {},
+    }, { user: { sub: userId } } as never)).rejects.toThrow('Warehouse details are invalid.');
+    expect(tenantAccess.withCompanyTransaction).not.toHaveBeenCalled();
+  });
 });

@@ -24,6 +24,7 @@ LedgerLoop is a multi-tenant accounting application for Indian businesses. The w
 - Items/services, HSN/SAC, GST rates, prices and inventory tracking.
 - Item create, edit and active/inactive status workflow; item codes remain immutable during edits.
 - Warehouses with optional branch assignment and active/inactive state.
+- Warehouse edit and active/inactive status workflow; warehouse codes remain immutable during edits.
 - Chart of Accounts custom-account edit and active/inactive workflow; system accounts remain protected.
 
 ### Sales
@@ -72,6 +73,7 @@ LedgerLoop is a multi-tenant accounting application for Indian businesses. The w
 - Shared GSAP motion system with route transitions, ScrollTrigger reveals, micro-interactions, reduced-motion handling and lifecycle cleanup.
 - Customer/supplier edit and active/inactive controls.
 - Item edit and active/inactive controls.
+- Warehouse edit and active/inactive controls; warehouse codes remain immutable and inactive warehouses remain available for historical references.
 - Chart of Accounts edit and active/inactive controls for custom accounts; system accounts are visibly protected.
 
 ## Current application plan
@@ -83,9 +85,9 @@ LedgerLoop is a multi-tenant accounting application for Indian businesses. The w
    - System accounts remain protected from edits and deactivation.
 2. **Parties — implemented**
    - Create, edit and active/inactive status.
-3. **Items & Warehouses — implemented foundation**
+3. **Items & Warehouses — implemented**
    - Items: create, edit and active/inactive status.
-   - Warehouses: create/list foundation; edit/deactivation remains a follow-up increment.
+   - Warehouses: create, edit and active/inactive status; warehouse codes remain immutable.
 4. **Sales — implemented foundation**
    - Invoices and receipts with partial/multi-invoice allocation.
    - Invoice detail/view with line-level tax and posting metadata.
@@ -105,7 +107,6 @@ LedgerLoop is a multi-tenant accounting application for Indian businesses. The w
 ## Next priorities
 
 12. **Master-data completion**
-   - Warehouse edit and active/inactive workflow.
    - Bank-account edit/deactivation.
    - GST registration management UX.
 13. **Sales completion**
