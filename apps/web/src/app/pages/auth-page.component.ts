@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
@@ -60,8 +60,8 @@ type AuthMode = 'signin' | 'signup';
                   <h2 class="mt-2 text-2xl font-semibold text-white">Create your company</h2>
                   <p class="mt-2 text-sm leading-6 text-[var(--ll-text-muted)]">Your account is ready. Create the first company workspace to open the dashboard.</p>
                   <form class="mt-7 space-y-5" (ngSubmit)="createCompany()">
-                    <label class="block"><span class="mb-2 block text-xs font-medium text-zinc-300">Legal name</span><input class="ll-auth-input" name="legalName" [(ngModel)]="legalName" required maxlength="200" autocomplete="organization" placeholder="Your legal business name"></label>
-                    <label class="block"><span class="mb-2 block text-xs font-medium text-zinc-300">Display name</span><input class="ll-auth-input" name="companyDisplayName" [(ngModel)]="companyDisplayName" required maxlength="120" autocomplete="organization" placeholder="How the company appears in LedgerLoop"></label>
+                    <label class="block"><span class="mb-2 block text-xs font-medium text-zinc-300">Legal name</span><input class="ll-auth-input" name="legalName" [(ngModel)]="legalName" required maxlength="200" autocomplete="organization" placeholder="e.g. Acme Technologies Private Limited"></label>
+                    <label class="block"><span class="mb-2 block text-xs font-medium text-zinc-300">Display name</span><input class="ll-auth-input" name="companyDisplayName" [(ngModel)]="companyDisplayName" required maxlength="120" autocomplete="organization" placeholder="e.g. Acme Technologies"></label>
                     @if (errorMessage) { <p class="rounded-xl border border-rose-400/20 bg-rose-400/[0.06] px-3 py-2.5 text-xs leading-5 text-rose-200">{{ errorMessage }}</p> }
                     <button class="ll-button-primary w-full" type="submit" [disabled]="loading || !legalName.trim() || !companyDisplayName.trim()">
                       @if (loading) { <svg class="animate-spin" lucideLoaderCircle [size]="16"></svg> } @else { <svg lucideArrowRight [size]="16"></svg> }
@@ -81,14 +81,14 @@ type AuthMode = 'signin' | 'signup';
                   </div>
                   <form class="mt-6 space-y-4" (ngSubmit)="submitAuth()">
                     @if (mode === 'signup') {
-                      <label class="block"><span class="mb-2 block text-xs font-medium text-zinc-300">Display name</span><input class="ll-auth-input" name="displayName" [(ngModel)]="displayName" required maxlength="120" autocomplete="name" placeholder="Your name"></label>
+                      <label class="block"><span class="mb-2 block text-xs font-medium text-zinc-300">Display name</span><input class="ll-auth-input" name="displayName" [(ngModel)]="displayName" required maxlength="120" autocomplete="name" placeholder="e.g. Naveeth Imran"></label>
                     }
-                    <label class="block"><span class="mb-2 block text-xs font-medium text-zinc-300">Email</span><input class="ll-auth-input" type="email" name="email" [(ngModel)]="email" required maxlength="254" autocomplete="email" placeholder="you@company.com"></label>
-                    <label class="block"><span class="mb-2 block text-xs font-medium text-zinc-300">Password</span><input class="ll-auth-input" type="password" name="password" [(ngModel)]="password" required [minlength]="mode === 'signup' ? 12 : 1" maxlength="128" [autocomplete]="mode === 'signup' ? 'new-password' : 'current-password'" placeholder="{{ mode === 'signup' ? 'At least 12 characters' : 'Your password' }}"></label>
+                    <label class="block"><span class="mb-2 block text-xs font-medium text-zinc-300">Email</span><input class="ll-auth-input" type="email" name="email" [(ngModel)]="email" required maxlength="254" autocomplete="email" placeholder="name@company.com"></label>
+                    <label class="block"><span class="mb-2 block text-xs font-medium text-zinc-300">Password</span><input class="ll-auth-input" type="password" name="password" [(ngModel)]="password" required [minlength]="mode === 'signup' ? 12 : 1" maxlength="128" [autocomplete]="mode === 'signup' ? 'new-password' : 'current-password'" [placeholder]="mode === 'signup' ? 'At least 12 characters' : 'Enter your password'"></label>
                     @if (errorMessage) { <p class="rounded-xl border border-rose-400/20 bg-rose-400/[0.06] px-3 py-2.5 text-xs leading-5 text-rose-200">{{ errorMessage }}</p> }
                     <button class="ll-button-primary mt-2 w-full" type="submit" [disabled]="loading || !email.trim() || !password">
                       @if (loading) { <svg class="animate-spin" lucideLoaderCircle [size]="16"></svg> } @else { <svg lucideArrowRight [size]="16"></svg> }
-                      <span>{{ loading ? 'Signing you in…' : mode === 'signin' ? 'Sign in' : 'Create account' }}</span>
+                      <span>{{ loading ? (mode === 'signup' ? 'Creating account…' : 'Signing you in…') : mode === 'signin' ? 'Sign in' : 'Create account' }}</span>
                     </button>
                   </form>
                   <div class="mt-6 flex items-center gap-2 text-[11px] text-[var(--ll-text-muted)]"><svg lucideShieldCheck [size]="14"></svg><span>Sessions use short-lived access tokens and protected refresh cookies.</span></div>
@@ -111,10 +111,10 @@ type AuthMode = 'signin' | 'signup';
               }
             </div>
             @if (showCreateCompany) {
-              <form class="mt-6 border-t border-white/8 pt-6 space-y-4" (ngSubmit)="createCompany()">
-                <label class="block"><span class="mb-2 block text-xs font-medium text-zinc-300">Legal name</span><input class="ll-auth-input" name="multiLegalName" [(ngModel)]="legalName" required maxlength="200" autocomplete="organization" placeholder="Legal business name"></label>
-                <label class="block"><span class="mb-2 block text-xs font-medium text-zinc-300">Display name</span><input class="ll-auth-input" name="multiDisplayName" [(ngModel)]="companyDisplayName" required maxlength="120" autocomplete="organization" placeholder="Workspace name"></label>
-                <button class="ll-button-primary w-full" type="submit" [disabled]="loading || !legalName.trim() || !companyDisplayName.trim()">{{ loading ? 'Creating…' : 'Create company' }}</button>
+              <form class="mt-6 space-y-4 border-t border-white/8 pt-6" (ngSubmit)="createCompany()">
+                <label class="block"><span class="mb-2 block text-xs font-medium text-zinc-300">Legal name</span><input class="ll-auth-input" name="multiLegalName" [(ngModel)]="legalName" required maxlength="200" autocomplete="organization" placeholder="e.g. Acme Technologies Private Limited"></label>
+                <label class="block"><span class="mb-2 block text-xs font-medium text-zinc-300">Display name</span><input class="ll-auth-input" name="multiDisplayName" [(ngModel)]="companyDisplayName" required maxlength="120" autocomplete="organization" placeholder="e.g. Acme Technologies"></label>
+                <button class="ll-button-primary w-full" type="submit" [disabled]="loading || !legalName.trim() || !companyDisplayName.trim()">{{ loading ? 'Creating company…' : 'Create company' }}</button>
               </form>
             }
           </div>
@@ -128,6 +128,7 @@ type AuthMode = 'signin' | 'signup';
 export class AuthPageComponent implements OnInit {
   protected readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   protected mode: AuthMode = 'signin';
   protected loading = false;
@@ -151,16 +152,19 @@ export class AuthPageComponent implements OnInit {
   ngOnInit(): void {
     this.authenticated = this.auth.isAuthenticated();
     if (this.authenticated) this.loadWorkspace();
+    this.cdr.markForCheck();
   }
 
   protected setMode(mode: AuthMode): void {
     this.mode = mode;
     this.errorMessage = '';
+    this.cdr.markForCheck();
   }
 
   protected submitAuth(): void {
     this.loading = true;
     this.errorMessage = '';
+    this.cdr.markForCheck();
     const request$ = this.mode === 'signin'
       ? this.auth.signIn(this.email.trim(), this.password)
       : this.auth.signUp(this.email.trim(), this.password, this.displayName.trim());
@@ -168,11 +172,13 @@ export class AuthPageComponent implements OnInit {
     request$.subscribe({
       next: () => {
         this.authenticated = true;
+        this.cdr.markForCheck();
         this.loadWorkspace();
       },
       error: (error: unknown) => {
         this.loading = false;
         this.errorMessage = this.readError(error, 'Unable to authenticate with LedgerLoop.');
+        this.cdr.markForCheck();
       },
     });
   }
@@ -185,14 +191,17 @@ export class AuthPageComponent implements OnInit {
   protected createCompany(): void {
     this.loading = true;
     this.errorMessage = '';
+    this.cdr.markForCheck();
     this.auth.createCompany(this.legalName.trim(), this.companyDisplayName.trim()).subscribe({
       next: () => {
         this.loading = false;
+        this.cdr.markForCheck();
         void this.router.navigateByUrl('/dashboard');
       },
       error: (error: unknown) => {
         this.loading = false;
         this.errorMessage = this.readError(error, 'Unable to create the company workspace.');
+        this.cdr.markForCheck();
       },
     });
   }
@@ -204,15 +213,18 @@ export class AuthPageComponent implements OnInit {
         this.authenticated = true;
         if (companies.length === 0) {
           this.setupRequired = true;
+          this.cdr.markForCheck();
           return;
         }
         this.setupRequired = false;
+        this.cdr.markForCheck();
         if (this.auth.selectedCompany()) void this.router.navigateByUrl('/dashboard');
       },
       error: (error: unknown) => {
         this.loading = false;
         this.authenticated = this.auth.isAuthenticated();
         this.errorMessage = this.readError(error, 'Unable to load your company workspaces.');
+        this.cdr.markForCheck();
       },
     });
   }
