@@ -1,181 +1,35 @@
-# LedgerLoop Application Plan
+# LedgerLoop Application UI Polish Plan
 
-## Purpose
-LedgerLoop is a multi-tenant accounting application for Indian businesses. The web application exposes accounting APIs through coherent browser workflows while preserving tenant isolation, auditability, integer-paise money, balanced journals, and immutable posted accounting history.
+## Scope
 
-## Implemented foundation
+This document records the dedicated frontend visual-polish work for LedgerLoop. It does not introduce business functionality or change accounting, API, authentication, authorization, tenant isolation, database behavior, or routing semantics.
 
-### Platform and identity
-- Angular standalone web application with responsive dark application shell.
-- NestJS/Express API, PostgreSQL 16, Redis/BullMQ infrastructure.
-- Company/membership context, authorization guards, tenant-scoped audit logging, validation, CSRF/origin, CORS and throttling foundations.
-- Global Angular bearer-token attachment for authenticated API requests.
+## Completed in the premium motion polish PR
 
-### Accounting
-- Chart of Accounts, opening balances and opening inventory.
-- Deterministic CGST/SGST/IGST calculation and integer-paise rounding.
-- Balanced journal entries, atomic posting, posted-entry immutability and reversal workflow.
-- Tenant-boundary and accounting-integrity tests.
+- Refined the existing GSAP/MotionService architecture instead of introducing a second animation framework.
+- Tuned route leave/enter motion for calm, deliberate fade and translate transitions.
+- Added restrained staggered page-content reveals.
+- Added viewport-based reveals for useful content surfaces while avoiding per-row table animation.
+- Refined button, icon-button and navigation micro-interactions.
+- Refined dialog entrance motion and lifecycle cleanup.
+- Polished sidebar movement, shell resizing and mobile navigation scrim behavior.
+- Added lightweight route-progress feedback during navigation without changing navigation behavior.
+- Refined theme/menu transitions and global theme-aware elevation, borders and focus treatment.
+- Removed forced global smooth scrolling in favor of native scrolling.
+- Preserved and strengthened `prefers-reduced-motion` behavior across CSS and GSAP.
+- Kept motion GPU-friendly by favoring opacity and transform changes.
 
-### Master data
-- Customers, suppliers and combined parties.
-- Party create, edit and active/inactive status workflow.
-- GST/contact/address party data and credit limits.
-- Items/services, HSN/SAC, GST rates, prices and inventory tracking.
-- Item create, edit and active/inactive status workflow; item codes remain immutable during edits.
-- Warehouses with optional branch assignment and active/inactive state.
-- Warehouse edit and active/inactive status workflow; warehouse codes remain immutable during edits.
-- Chart of Accounts custom-account edit and active/inactive workflow; system accounts remain protected.
+## Validation
 
-### Sales
-- Sales invoice creation, numbering, GST totals and posting.
-- Tenant-scoped sales invoice detail with line-level GST/totals and linked posting journal metadata.
-- Customer receipts with bank/cash selection and partial/multi-invoice allocation.
-- Outstanding-balance validation and receipt immutability.
+Validation is performed through the repository CI workflow. Local execution is unavailable in this session, so no local command is represented as passed unless GitHub Actions reports it.
 
-### Purchases
-- Purchase-order API foundation.
-- Purchase bills, deterministic GST, payables posting, inventory capitalization/expense posting and input GST.
-- Supplier payments with partial/multi-bill allocation and explicit bank/cash posting.
-- Supplier debit-note and expense API foundations.
+## Out of scope
 
-### Inventory
-- Immutable inventory movements and weighted-average valuation.
-- Warehouse/account configuration.
-- Purchase capitalization and sales COGS/inventory relief.
-- Tenant-scoped stock adjustments and reversal-safe corrections.
-- Responsive inventory tables, tabs, forms and action controls.
-
-### Banking and reconciliation
-- Tenant-scoped bank accounts and statement imports.
-- External-ID duplicate protection and secure JSON import validation.
-- Reconciliation suggestions, confidence bands and explicit user-approved matching.
-- One-match-per-journal-line protection and immutable reconciled state.
-
-### Reporting
-- Trial Balance, Profit & Loss, Balance Sheet, receivables/payables ageing, GST summary and inventory valuation.
-- Dashboard KPIs/charts and financial period filtering.
-- Report-specific data-backed visual comparisons and accounting-flow explanations.
-
-### Reminders and email
-- Overdue reminder settings and idempotent events.
-- BullMQ scheduling and tenant-scoped delivery records.
-- Party reminder opt-out.
-- Provider-neutral email delivery abstraction with retry/backoff and audit metadata.
-
-### Web application
-- Dashboard, Chart of Accounts, Customers & Suppliers, Items & Warehouses.
-- Sales Invoices and Sales Receipts, including invoice detail/view workflow.
-- Purchase Bills and Supplier Payments.
-- Banking & Reconciliation.
-- Inventory and Reports workspaces.
-- Reminders workspace with policy controls, overdue event monitoring, acknowledgement and delivery-status monitoring.
-- Shared GSAP motion system with route transitions, ScrollTrigger reveals, micro-interactions, reduced-motion handling and lifecycle cleanup.
-- Application-wide theme customization with five persistent dual-color palettes and a shared CSS-variable theme system.
-- Customer/supplier edit and active/inactive controls.
-- Item edit and active/inactive controls.
-- Warehouse edit and active/inactive controls; warehouse codes remain immutable and inactive warehouses remain available for historical references.
-- Chart of Accounts edit and active/inactive controls for custom accounts; system accounts are visibly protected.
-
-## Current application plan
-
-1. **Chart of Accounts — implemented**
-   - Create custom accounts.
-   - Edit custom account name, parent and description.
-   - Activate/deactivate custom accounts.
-   - System accounts remain protected from edits and deactivation.
-2. **Parties — implemented**
-   - Create, edit and active/inactive status.
-3. **Items & Warehouses — implemented**
-   - Items: create, edit and active/inactive status.
-   - Warehouses: create, edit and active/inactive status; warehouse codes remain immutable.
-4. **Sales — implemented foundation**
-   - Invoices and receipts with partial/multi-invoice allocation.
-   - Invoice detail/view with line-level tax and posting metadata.
-5. **Purchases — implemented foundation**
-   - Bills and supplier payments with explicit posting.
-6. **Frontend motion — implemented foundation**
-7. **Application theming — implemented**
-   - Five professional dual-color palettes.
-   - Runtime switching without reload.
-   - Local persistence of the selected palette.
-   - Shared theme mapping for existing Tailwind UI colors and data-visualization bars.
-8. **Banking — implemented foundation**
-9. **Inventory — implemented foundation**
-10. **Reports — implemented foundation**
-11. **Supplier payments — implemented**
-12. **Reminders — implemented foundation**
-   - Reminder policy settings.
-   - Overdue event browser and acknowledgement.
-   - Delivery status summary.
-   - Provider-neutral monitoring only; no invented provider integration.
-
-## Next priorities
-
-13. **Master-data completion**
-   - Bank-account edit/deactivation.
-   - GST registration management UX.
-14. **Sales completion**
-   - Sales posting-account setup UX where configuration is required.
-   - Remaining sales document workflows.
-15. **Purchase completion**
-   - Purchase-order browser/create workflow using the existing API foundation.
-   - Supplier payment history/detail workflow.
-   - Remaining supplier adjustment workflows.
-16. **Application hardening**
-   - Consistent loading, empty, error and offline states.
-   - Responsive validation at 640/1024/1440px.
-   - Keyboard and screen-reader review.
-   - Ctrl+K/application command experience.
-   - End-to-end browser coverage.
-   - Motion regression testing across supported breakpoints and reduced-motion settings.
-
-## Future plans
-
-### Security and compliance
-- Email verification.
-- Password reset.
-- Optional Google sign-in if product scope requires it.
-- Distributed rate limiting and security monitoring.
-- Full authentication integration coverage.
-- WCAG 2.2 AA review.
-
-### AI capabilities
-AI remains advisory rather than authoritative:
-- Transaction categorisation suggestions.
-- Receipt extraction and reconciliation suggestions.
-- Explicit validation and human approval before accounting mutation.
-- Prompt-injection defenses, sensitive-data redaction, quotas, confidence thresholds and AI audit metadata.
-
-### Provider-specific integrations
-Provider-specific email webhooks/bounce handling will only be implemented after a provider/API is explicitly selected. The existing provider-neutral foundation must not be replaced with an invented external contract.
-
-### Release readiness
-- Final environment validation.
-- Lockfile/linting policy.
-- Seed/demo tooling where appropriate.
-- Docker/deployment artifacts when requirements are finalized.
-- OpenAPI documentation.
-- Full CI, API integration and Playwright coverage.
-- Production operational documentation.
-
-## Engineering rules
-- CI is the source of truth; never claim a check passed unless CI reports it passed.
-- Build one focused increment per PR.
-- Preserve forced RLS and tenant transaction context.
-- Never bypass accounting constraints or manually alter migration history.
-- Store money as integer paise.
-- Post vouchers atomically.
-- Posted accounting documents remain immutable; corrections use explicit reversals.
-- Never fabricate dashboard/report metrics in the frontend.
-- AI output is untrusted until explicitly approved.
-- Avoid unselected external providers/APIs.
-- Motion is presentation-only and must not change accounting state.
-- Respect reduced motion and clean up GSAP contexts, ScrollTriggers, observers and listeners.
-
-## Definition of application completeness
-A normal browser workflow should be possible end-to-end:
-
-**Company setup → Masters → Quote/Order → Invoice/Bill → Posting → Receipt/Payment → Bank reconciliation → Inventory → Reports → Reminders**
-
-with tenant isolation, auditability, accounting integrity, responsive UX, accessible motion and automated verification preserved throughout.
+- Backend/API changes
+- Database/schema/migration changes
+- Accounting or journal behavior
+- Authentication/authorization behavior
+- Tenant isolation/RLS
+- New business features
+- Route naming or navigation semantics
+- Additional animation frameworks or unnecessary dependencies
