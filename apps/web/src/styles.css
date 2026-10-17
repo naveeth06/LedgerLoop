@@ -65,7 +65,7 @@ a {
 .ll-card {
   border: 1px solid var(--ll-border);
   border-radius: 1rem;
-  background: linear-gradient(145deg, rgb(255 255 255 / 0.045), rgb(255 255 255 / 0.018));
+  background: var(--ll-surface);
   box-shadow: 0 20px 60px rgb(0 0 0 / 0.18);
   backdrop-filter: blur(18px);
 }
@@ -81,7 +81,7 @@ a {
 
 .ll-nav-label {
   margin: 0 0 0.5rem 0.75rem;
-  color: #6f6f7d;
+  color: var(--ll-text-muted);
   font-size: 0.625rem;
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -96,7 +96,7 @@ a {
   padding: 0.625rem 0.75rem;
   border: 1px solid transparent;
   border-radius: 0.75rem;
-  color: #9a9aa7;
+  color: var(--ll-text-muted);
   font-size: 0.8125rem;
   font-weight: 500;
   text-decoration: none;
@@ -104,12 +104,12 @@ a {
 }
 
 .ll-nav-item:hover {
-  color: #f4f4f5;
-  background: rgb(255 255 255 / 0.04);
+  color: var(--ll-text);
+  background: color-mix(in srgb, var(--ll-text) 4%, transparent);
 }
 
 .ll-nav-active {
-  color: #fff;
+  color: var(--ll-text);
   border-color: color-mix(in srgb, var(--ll-primary) 18%, transparent);
   background: linear-gradient(90deg, color-mix(in srgb, var(--ll-primary) 16%, transparent), color-mix(in srgb, var(--ll-secondary) 6%, transparent));
 }
@@ -122,16 +122,16 @@ a {
   height: 2.25rem;
   border: 1px solid var(--ll-border);
   border-radius: 0.75rem;
-  color: #a1a1aa;
-  background: rgb(255 255 255 / 0.025);
+  color: var(--ll-text-muted);
+  background: color-mix(in srgb, var(--ll-text) 2.5%, transparent);
   cursor: pointer;
   transition: color 160ms ease, background-color 160ms ease, border-color 160ms ease;
 }
 
 .ll-icon-button:hover {
-  color: #fff;
+  color: var(--ll-text);
   border-color: color-mix(in srgb, var(--ll-primary-soft) 22%, transparent);
-  background: rgb(255 255 255 / 0.05);
+  background: color-mix(in srgb, var(--ll-text) 5%, transparent);
 }
 
 .ll-button-primary,
@@ -151,7 +151,7 @@ a {
 
 .ll-button-primary {
   border: 1px solid color-mix(in srgb, var(--ll-primary-soft) 30%, transparent);
-  color: #fff;
+  color: var(--ll-text);
   background: linear-gradient(135deg, var(--ll-primary), var(--ll-secondary));
   box-shadow: 0 8px 28px color-mix(in srgb, var(--ll-primary) 22%, transparent);
 }
@@ -162,14 +162,14 @@ a {
 
 .ll-button-secondary {
   border: 1px solid var(--ll-border);
-  color: #c4c4cc;
-  background: rgb(255 255 255 / 0.025);
+  color: var(--ll-text-muted);
+  background: color-mix(in srgb, var(--ll-text) 2.5%, transparent);
 }
 
 .ll-button-secondary:hover {
   border-color: color-mix(in srgb, var(--ll-primary-soft) 20%, transparent);
-  color: #fff;
-  background: rgb(255 255 255 / 0.05);
+  color: var(--ll-text);
+  background: color-mix(in srgb, var(--ll-text) 5%, transparent);
 }
 
 .ll-ambient {
@@ -196,10 +196,25 @@ a {
   mask-image: linear-gradient(to bottom, black, transparent 55%);
 }
 
-/* Existing Tailwind color utilities are mapped to the active palette. */
+.ll-sidebar {
+  background: color-mix(in srgb, var(--ll-surface) 94%, var(--ll-bg)) !important;
+  border-color: var(--ll-border) !important;
+}
+
+.ll-sidebar-content {
+  margin-left: 0;
+  transition: margin-left 200ms ease;
+}
+
+@media (min-width: 1024px) {
+  .ll-sidebar-content.ll-sidebar-open {
+    margin-left: 16rem;
+  }
+}
+
+/* Existing Tailwind color utilities consume the active theme instead of keeping the original palette. */
 html[data-ll-theme] [class*="text-violet-"] { color: var(--ll-primary-soft) !important; }
 html[data-ll-theme] [class*="text-fuchsia-"] { color: var(--ll-secondary-soft) !important; }
-
 html[data-ll-theme] [class*="bg-violet-"] { background-color: color-mix(in srgb, var(--ll-primary) 78%, transparent) !important; }
 html[data-ll-theme] [class*="bg-fuchsia-"] { background-color: color-mix(in srgb, var(--ll-secondary) 70%, transparent) !important; }
 html[data-ll-theme] [class*="bg-violet-500\/10"] { background-color: color-mix(in srgb, var(--ll-primary) 10%, transparent) !important; }
@@ -209,10 +224,8 @@ html[data-ll-theme] [class*="bg-violet-500\/75"] { background-color: color-mix(i
 html[data-ll-theme] [class*="bg-violet-500\/80"] { background-color: color-mix(in srgb, var(--ll-primary) 80%, transparent) !important; }
 html[data-ll-theme] [class*="bg-fuchsia-400\/60"] { background-color: color-mix(in srgb, var(--ll-secondary) 60%, transparent) !important; }
 html[data-ll-theme] [class*="bg-fuchsia-400\/70"] { background-color: color-mix(in srgb, var(--ll-secondary) 70%, transparent) !important; }
-
 html[data-ll-theme] [class*="border-violet-"] { border-color: color-mix(in srgb, var(--ll-primary-soft) 30%, transparent) !important; }
 html[data-ll-theme] [class*="border-fuchsia-"] { border-color: color-mix(in srgb, var(--ll-secondary-soft) 30%, transparent) !important; }
-
 html[data-ll-theme] [class*="from-violet-"] {
   --tw-gradient-from: var(--ll-primary) var(--tw-gradient-from-position) !important;
   --tw-gradient-to: color-mix(in srgb, var(--ll-primary) 0%, transparent) var(--tw-gradient-to-position) !important;
@@ -221,11 +234,26 @@ html[data-ll-theme] [class*="to-fuchsia-"] { --tw-gradient-to: var(--ll-secondar
 html[data-ll-theme] [class*="from-violet-500\/80"] { --tw-gradient-from: color-mix(in srgb, var(--ll-primary) 80%, transparent) var(--tw-gradient-from-position) !important; }
 html[data-ll-theme] [class*="to-fuchsia-500\/70"] { --tw-gradient-to: color-mix(in srgb, var(--ll-secondary) 70%, transparent) var(--tw-gradient-to-position) !important; }
 
-html[data-ll-theme] [class*="text-white"] { color: var(--ll-text) !important; }
+html[data-ll-theme] [class~="bg-zinc-950"],
+html[data-ll-theme] [class~="bg-slate-950"],
+html[data-ll-theme] [class~="bg-black"] { background-color: var(--ll-bg) !important; }
+html[data-ll-theme] [class~="bg-zinc-900"],
+html[data-ll-theme] [class~="bg-slate-900"] { background-color: var(--ll-surface) !important; }
+html[data-ll-theme] [class~="bg-zinc-800"],
+html[data-ll-theme] [class~="bg-slate-800"] { background-color: var(--ll-surface-elevated) !important; }
+html[data-ll-theme] [class*="border-zinc-"],
+html[data-ll-theme] [class*="border-slate-"] { border-color: var(--ll-border) !important; }
 html[data-ll-theme] [class*="text-zinc-300"],
 html[data-ll-theme] [class*="text-zinc-400"],
 html[data-ll-theme] [class*="text-zinc-500"],
-html[data-ll-theme] [class*="text-zinc-600"] { color: var(--ll-text-muted) !important; }
+html[data-ll-theme] [class*="text-zinc-600"],
+html[data-ll-theme] [class*="text-slate-300"],
+html[data-ll-theme] [class*="text-slate-400"],
+html[data-ll-theme] [class*="text-slate-500"],
+html[data-ll-theme] [class*="text-slate-600"] { color: var(--ll-text-muted) !important; }
+html[data-ll-theme] [class*="text-white"],
+html[data-ll-theme] [class*="text-gray-100"],
+html[data-ll-theme] [class*="text-gray-200"] { color: var(--ll-text) !important; }
 html[data-ll-theme] [class*="bg-white/"] { background-color: color-mix(in srgb, var(--ll-text) 4%, transparent) !important; }
 html[data-ll-theme] [class*="border-white/"] { border-color: var(--ll-border) !important; }
 html[data-ll-theme] [class*="divide-white/"] { border-color: var(--ll-border) !important; }
@@ -237,17 +265,17 @@ html[data-ll-theme] [class*="divide-white/"] { border-color: var(--ll-border) !i
   align-items: center;
   gap: 0.625rem;
   min-height: 2.5rem;
-  padding: 0.375rem 0.625rem;
+  padding: 0.375rem 0.75rem;
   border: 1px solid var(--ll-border);
   border-radius: 0.75rem;
   color: var(--ll-text);
-  background: rgb(255 255 255 / 0.025);
+  background: color-mix(in srgb, var(--ll-text) 2.5%, transparent);
   cursor: pointer;
   transition: border-color 160ms ease, background-color 160ms ease;
 }
 
 .ll-theme-trigger:hover,
-.ll-theme-trigger[aria-expanded="true"] { border-color: color-mix(in srgb, var(--ll-primary-soft) 28%, transparent); background: rgb(255 255 255 / 0.05); }
+.ll-theme-trigger[aria-expanded="true"] { border-color: color-mix(in srgb, var(--ll-primary-soft) 28%, transparent); background: color-mix(in srgb, var(--ll-text) 5%, transparent); }
 
 .ll-theme-swatch {
   display: inline-flex;
@@ -268,7 +296,7 @@ html[data-ll-theme] [class*="divide-white/"] { border-color: var(--ll-border) !i
   padding: 0.5rem;
   border: 1px solid var(--ll-border);
   border-radius: 1rem;
-  background: color-mix(in srgb, var(--ll-surface-elevated) 96%, black);
+  background: color-mix(in srgb, var(--ll-surface-elevated) 96%, var(--ll-bg));
   box-shadow: 0 24px 70px rgb(0 0 0 / 0.35);
   backdrop-filter: blur(20px);
 }
@@ -292,7 +320,7 @@ html[data-ll-theme] [class*="divide-white/"] { border-color: var(--ll-border) !i
   transition: background-color 160ms ease, border-color 160ms ease;
 }
 
-.ll-theme-option:hover { background: rgb(255 255 255 / 0.04); }
+.ll-theme-option:hover { background: color-mix(in srgb, var(--ll-text) 4%, transparent); }
 .ll-theme-option-active { border-color: color-mix(in srgb, var(--ll-primary-soft) 24%, transparent); background: color-mix(in srgb, var(--ll-primary) 8%, transparent); }
 .ll-theme-option-copy { min-width: 0; flex: 1; }
 .ll-theme-option-name { display: block; color: var(--ll-text); font-size: 0.75rem; font-weight: 600; }
