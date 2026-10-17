@@ -26,6 +26,7 @@ LedgerLoop is a multi-tenant accounting application for Indian businesses. The w
 - Warehouses with optional branch assignment and active/inactive state.
 - Warehouse edit and active/inactive status workflow; warehouse codes remain immutable during edits.
 - Chart of Accounts custom-account edit and active/inactive workflow; system accounts remain protected.
+- Master-data form UX standardized with clearer labels, practical examples, consistent placeholder language, inline validation and server-error feedback.
 
 ### Sales
 - Sales invoice creation, numbering, GST totals and posting.
@@ -80,6 +81,9 @@ LedgerLoop is a multi-tenant accounting application for Indian businesses. The w
 - Item edit and active/inactive controls.
 - Warehouse edit and active/inactive controls; warehouse codes remain immutable and inactive warehouses remain available for historical references.
 - Chart of Accounts edit and active/inactive controls for custom accounts; system accounts are visibly protected.
+- Authentication onboarding state now updates immediately after account creation without requiring a browser refresh.
+- Items & Warehouses presentation restored to the shared application visual language with responsive tables and consistent form controls.
+- Customer/supplier creation now provides generated starter party codes, practical placeholders and actionable API validation feedback.
 
 ## Current application plan
 
@@ -90,9 +94,11 @@ LedgerLoop is a multi-tenant accounting application for Indian businesses. The w
    - System accounts remain protected from edits and deactivation.
 2. **Parties — implemented**
    - Create, edit and active/inactive status.
+   - Consistent creation guidance and actionable validation feedback.
 3. **Items & Warehouses — implemented**
    - Items: create, edit and active/inactive status.
    - Warehouses: create, edit and active/inactive status; warehouse codes remain immutable.
+   - Responsive master-data UI and consistent form language.
 4. **Sales — implemented foundation**
    - Invoices and receipts with partial/multi-invoice allocation.
    - Invoice detail/view with line-level tax and posting metadata.
