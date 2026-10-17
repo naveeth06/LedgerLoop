@@ -2,128 +2,80 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, inject }
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
-import {
-  LucideArrowRight,
-  LucideBuilding2,
-  LucideCheck,
-  LucideLoaderCircle,
-  LucideLogIn,
-  LucidePlus,
-  LucideShieldCheck,
-} from '@lucide/angular';
+import { LucideArrowRight, LucideCheck, LucideCircleDollarSign, LucideLoaderCircle, LucideShieldCheck } from '@lucide/angular';
 import { AuthService } from '../services/auth.service';
 
 type AuthMode = 'signin' | 'signup';
 
 @Component({
+  selector: 'll-auth-page',
   standalone: true,
-  imports: [
-    FormsModule,
-    LucideArrowRight,
-    LucideBuilding2,
-    LucideCheck,
-    LucideLoaderCircle,
-    LucideLogIn,
-    LucidePlus,
-    LucideShieldCheck,
-  ],
+  imports: [FormsModule, LucideArrowRight, LucideCheck, LucideCircleDollarSign, LucideLoaderCircle, LucideShieldCheck],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <main class="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-10 sm:px-6">
-      <div class="pointer-events-none absolute inset-0" aria-hidden="true">
-        <div class="absolute left-1/2 top-[-18rem] h-[38rem] w-[38rem] -translate-x-1/2 rounded-full bg-violet-600/10 blur-[100px]"></div>
-        <div class="absolute inset-0 opacity-[0.055]" style="background-image: linear-gradient(rgb(167 139 250 / 0.45) 1px, transparent 1px), linear-gradient(90deg, rgb(167 139 250 / 0.45) 1px, transparent 1px); background-size: 48px 48px; mask-image: linear-gradient(to bottom, black, transparent 60%);"></div>
-      </div>
-
-      <section class="relative z-10 w-full max-w-5xl">
-        <div class="mb-8 flex items-center justify-center gap-3">
-          <span class="flex h-10 w-10 items-center justify-center rounded-xl border border-violet-400/30 bg-violet-500/10 text-violet-300"><svg lucideBuilding2 [size]="19"></svg></span>
-          <span class="text-base font-semibold tracking-wide text-white">LedgerLoop</span>
-        </div>
-
-        @if (!authenticated || setupRequired) {
-          <div class="grid overflow-hidden rounded-3xl border border-white/8 bg-[var(--ll-surface)]/90 shadow-2xl shadow-black/30 lg:grid-cols-[1fr_0.85fr]">
-            <div class="hidden border-r border-white/8 bg-white/[0.018] p-10 lg:block xl:p-12">
-              <p class="ll-eyebrow">Accounting workspace</p>
-              <h1 class="mt-4 max-w-md text-4xl font-semibold tracking-tight text-white">Run your business from one financial workspace.</h1>
-              <p class="mt-5 max-w-md text-sm leading-6 text-[var(--ll-text-muted)]">LedgerLoop brings sales, purchases, inventory, receivables, payables and accounting activity into a single workspace.</p>
-              <div class="mt-9 space-y-4">
-                @for (item of benefits; track item) {
-                  <div class="flex items-center gap-3 text-sm text-zinc-300"><span class="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-400/10 text-emerald-300"><svg lucideCheck [size]="14"></svg></span>{{ item }}</div>
-                }
-              </div>
-            </div>
-
-            <div class="p-6 sm:p-8 xl:p-10">
-              @if (setupRequired) {
-                <div>
-                  <p class="ll-eyebrow">Workspace setup</p>
-                  <h2 class="mt-2 text-2xl font-semibold text-white">Create your company</h2>
-                  <p class="mt-2 text-sm leading-6 text-[var(--ll-text-muted)]">Your account is ready. Create the first company workspace to open the dashboard.</p>
-                  <form class="mt-7 space-y-5" (ngSubmit)="createCompany()">
-                    <label class="block"><span class="mb-2 block text-xs font-medium text-zinc-300">Legal name</span><input class="ll-auth-input" name="legalName" [(ngModel)]="legalName" required maxlength="200" autocomplete="organization" placeholder="e.g. Acme Technologies Private Limited"></label>
-                    <label class="block"><span class="mb-2 block text-xs font-medium text-zinc-300">Display name</span><input class="ll-auth-input" name="companyDisplayName" [(ngModel)]="companyDisplayName" required maxlength="120" autocomplete="organization" placeholder="e.g. Acme Technologies"></label>
-                    @if (errorMessage) { <p class="rounded-xl border border-rose-400/20 bg-rose-400/[0.06] px-3 py-2.5 text-xs leading-5 text-rose-200">{{ errorMessage }}</p> }
-                    <button class="ll-button-primary w-full" type="submit" [disabled]="loading || !legalName.trim() || !companyDisplayName.trim()">
-                      @if (loading) { <svg class="animate-spin" lucideLoaderCircle [size]="16"></svg> } @else { <svg lucideArrowRight [size]="16"></svg> }
-                      <span>{{ loading ? 'Creating workspace…' : 'Create company workspace' }}</span>
-                    </button>
-                  </form>
-                </div>
-              } @else {
-                <div>
-                  <div class="flex items-center justify-between gap-4">
-                    <div><p class="ll-eyebrow">{{ mode === 'signin' ? 'Welcome back' : 'Get started' }}</p><h2 class="mt-2 text-2xl font-semibold text-white">{{ mode === 'signin' ? 'Sign in to LedgerLoop' : 'Create your account' }}</h2></div>
-                    <span class="hidden h-10 w-10 items-center justify-center rounded-xl bg-violet-500/10 text-violet-300 sm:flex"><svg lucideLogIn [size]="18"></svg></span>
-                  </div>
-                  <div class="mt-6 grid grid-cols-2 rounded-xl border border-white/8 bg-white/[0.025] p-1">
-                    <button type="button" class="rounded-lg px-3 py-2 text-xs font-semibold text-white transition" [style.background]="mode === 'signin' ? 'rgb(255 255 255 / 0.08)' : 'transparent'" (click)="setMode('signin')">Sign in</button>
-                    <button type="button" class="rounded-lg px-3 py-2 text-xs font-semibold transition" [style.background]="mode === 'signup' ? 'rgb(255 255 255 / 0.08)' : 'transparent'" [style.color]="mode === 'signup' ? '#fff' : 'var(--ll-text-muted)'" (click)="setMode('signup')">Create account</button>
-                  </div>
-                  <form class="mt-6 space-y-4" (ngSubmit)="submitAuth()">
-                    @if (mode === 'signup') {
-                      <label class="block"><span class="mb-2 block text-xs font-medium text-zinc-300">Display name</span><input class="ll-auth-input" name="displayName" [(ngModel)]="displayName" required maxlength="120" autocomplete="name" placeholder="e.g. Naveeth Imran"></label>
-                    }
-                    <label class="block"><span class="mb-2 block text-xs font-medium text-zinc-300">Email</span><input class="ll-auth-input" type="email" name="email" [(ngModel)]="email" required maxlength="254" autocomplete="email" placeholder="name@company.com"></label>
-                    <label class="block"><span class="mb-2 block text-xs font-medium text-zinc-300">Password</span><input class="ll-auth-input" type="password" name="password" [(ngModel)]="password" required [minlength]="mode === 'signup' ? 12 : 1" maxlength="128" [autocomplete]="mode === 'signup' ? 'new-password' : 'current-password'" [placeholder]="mode === 'signup' ? 'At least 12 characters' : 'Enter your password'"></label>
-                    @if (errorMessage) { <p class="rounded-xl border border-rose-400/20 bg-rose-400/[0.06] px-3 py-2.5 text-xs leading-5 text-rose-200">{{ errorMessage }}</p> }
-                    <button class="ll-button-primary mt-2 w-full" type="submit" [disabled]="loading || !email.trim() || !password">
-                      @if (loading) { <svg class="animate-spin" lucideLoaderCircle [size]="16"></svg> } @else { <svg lucideArrowRight [size]="16"></svg> }
-                      <span>{{ loading ? (mode === 'signup' ? 'Creating account…' : 'Signing you in…') : mode === 'signin' ? 'Sign in' : 'Create account' }}</span>
-                    </button>
-                  </form>
-                  <div class="mt-6 flex items-center gap-2 text-[11px] text-[var(--ll-text-muted)]"><svg lucideShieldCheck [size]="14"></svg><span>Sessions use short-lived access tokens and protected refresh cookies.</span></div>
-                </div>
-              }
-            </div>
+    <main class="min-h-screen bg-[var(--ll-bg)] text-[var(--ll-text)]">
+      <div class="mx-auto grid min-h-screen max-w-7xl lg:grid-cols-[1.05fr_.95fr]">
+        <section class="hidden flex-col justify-center px-10 py-12 lg:flex xl:px-16">
+          <div class="max-w-xl">
+            <div class="flex items-center gap-3"><span class="flex h-11 w-11 items-center justify-center rounded-2xl border border-violet-400/20 bg-violet-500/10 text-violet-300"><svg lucideCircleDollarSign [size]="22"></svg></span><span class="text-sm font-semibold tracking-tight text-white">LedgerLoop</span></div>
+            <p class="mt-10 text-xs font-semibold uppercase tracking-[0.18em] text-violet-300">Accounting, without the friction</p>
+            <h1 class="mt-4 text-5xl font-semibold leading-[1.05] tracking-[-0.04em] text-white xl:text-6xl">Run your business from one financial workspace.</h1>
+            <p class="mt-6 max-w-lg text-base leading-7 text-[var(--ll-text-muted)]">Invoices, purchases, inventory, banking and reports stay connected to the same accounting truth.</p>
+            <div class="mt-10 space-y-4">@for (benefit of benefits; track benefit) { <div class="flex items-center gap-3 text-sm text-zinc-300"><span class="flex h-6 w-6 items-center justify-center rounded-full border border-emerald-400/20 bg-emerald-400/10 text-emerald-300"><svg lucideCheck [size]="13"></svg></span>{{ benefit }}</div> }</div>
           </div>
-        } @else {
-          <div class="mx-auto max-w-2xl rounded-3xl border border-white/8 bg-[var(--ll-surface)]/90 p-6 shadow-2xl shadow-black/30 sm:p-8">
-            <p class="ll-eyebrow">Company workspace</p>
-            <div class="mt-2 flex items-end justify-between gap-4"><div><h1 class="text-2xl font-semibold text-white">Choose a company</h1><p class="mt-2 text-sm text-[var(--ll-text-muted)]">Select the workspace you want to open.</p></div><button class="ll-button-secondary" type="button" (click)="showCreateCompany = !showCreateCompany"><svg lucidePlus [size]="15"></svg>New company</button></div>
-            @if (errorMessage) { <p class="mt-5 rounded-xl border border-rose-400/20 bg-rose-400/[0.06] px-3 py-2.5 text-xs leading-5 text-rose-200">{{ errorMessage }}</p> }
-            <div class="mt-6 space-y-3">
-              @for (company of auth.companies(); track company.id) {
-                <button type="button" class="flex w-full items-center gap-4 rounded-2xl border border-white/8 bg-white/[0.025] p-4 text-left transition hover:border-violet-400/25 hover:bg-violet-500/[0.05]" (click)="chooseCompany(company.id)">
-                  <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-500/10 text-violet-300"><svg lucideBuilding2 [size]="18"></svg></span>
-                  <span class="min-w-0 flex-1"><span class="block truncate text-sm font-semibold text-white">{{ company.display_name }}</span><span class="mt-1 block truncate text-xs text-[var(--ll-text-muted)]">{{ company.legal_name }} · {{ company.base_currency }}</span></span>
-                  <svg class="shrink-0 text-[var(--ll-text-muted)]" lucideArrowRight [size]="16"></svg>
+        </section>
+
+        <section class="flex min-h-screen items-center justify-center border-l border-white/6 px-4 py-8 sm:px-8">
+          <div class="w-full max-w-md rounded-3xl border border-white/8 bg-[var(--ll-surface)]/85 p-6 shadow-2xl shadow-black/20 backdrop-blur-xl sm:p-8">
+            @if (setupRequired) {
+              <div class="flex h-10 w-10 items-center justify-center rounded-xl border border-violet-400/20 bg-violet-500/10 text-violet-300"><svg lucideCircleDollarSign [size]="19"></svg></div>
+              <p class="mt-6 text-xs font-semibold uppercase tracking-[0.16em] text-violet-300">Workspace setup</p>
+              <h2 class="mt-2 text-2xl font-semibold text-white">Create your company</h2>
+              <p class="mt-2 text-sm leading-6 text-[var(--ll-text-muted)]">Your account is ready. Create the first company workspace to open the dashboard.</p>
+              <form class="mt-7 space-y-5" (ngSubmit)="createCompany()">
+                <label class="block"><span class="mb-2 block text-xs font-medium text-zinc-300">Legal name</span><input class="ll-auth-input" name="legalName" [(ngModel)]="legalName" required maxlength="200" autocomplete="organization" placeholder="e.g. Acme Technologies Private Limited"></label>
+                <label class="block"><span class="mb-2 block text-xs font-medium text-zinc-300">Display name</span><input class="ll-auth-input" name="companyDisplayName" [(ngModel)]="companyDisplayName" required maxlength="120" autocomplete="organization" placeholder="e.g. Acme Technologies"></label>
+                @if (errorMessage) { <p class="rounded-xl border border-rose-400/20 bg-rose-400/[0.06] px-3 py-2.5 text-xs leading-5 text-rose-200" role="alert">{{ errorMessage }}</p> }
+                <button class="ll-button-primary w-full" type="submit" [disabled]="loading || !legalName.trim() || !companyDisplayName.trim()">
+                  @if (loading) { <svg class="animate-spin" lucideLoaderCircle [size]="16"></svg> } @else { <svg lucideArrowRight [size]="16"></svg> }
+                  <span>{{ loading ? 'Creating company…' : 'Create company' }}</span>
                 </button>
-              }
-            </div>
-            @if (showCreateCompany) {
-              <form class="mt-6 space-y-4 border-t border-white/8 pt-6" (ngSubmit)="createCompany()">
-                <label class="block"><span class="mb-2 block text-xs font-medium text-zinc-300">Legal name</span><input class="ll-auth-input" name="multiLegalName" [(ngModel)]="legalName" required maxlength="200" autocomplete="organization" placeholder="e.g. Acme Technologies Private Limited"></label>
-                <label class="block"><span class="mb-2 block text-xs font-medium text-zinc-300">Display name</span><input class="ll-auth-input" name="multiDisplayName" [(ngModel)]="companyDisplayName" required maxlength="120" autocomplete="organization" placeholder="e.g. Acme Technologies"></label>
-                <button class="ll-button-primary w-full" type="submit" [disabled]="loading || !legalName.trim() || !companyDisplayName.trim()">{{ loading ? 'Creating company…' : 'Create company' }}</button>
               </form>
+            } @else if (authenticated && companies.length > 0) {
+              <div class="flex h-10 w-10 items-center justify-center rounded-xl border border-violet-400/20 bg-violet-500/10 text-violet-300"><svg lucideCircleDollarSign [size]="19"></svg></div>
+              <p class="mt-6 text-xs font-semibold uppercase tracking-[0.16em] text-violet-300">Your workspaces</p>
+              <h2 class="mt-2 text-2xl font-semibold text-white">Choose a company</h2>
+              <p class="mt-2 text-sm leading-6 text-[var(--ll-text-muted)]">Select the workspace you want to open.</p>
+              <div class="mt-6 space-y-2">@for (company of companies; track company.id) { <button type="button" class="flex w-full items-center justify-between rounded-xl border border-white/8 bg-white/[0.02] px-4 py-3 text-left transition hover:border-violet-400/25 hover:bg-violet-400/[0.05]" (click)="chooseCompany(company.id)"><span><span class="block text-sm font-medium text-white">{{ company.display_name }}</span><span class="mt-1 block text-xs text-zinc-500">{{ company.legal_name }}</span></span><svg lucideArrowRight [size]="15" class="text-zinc-500"></svg></button> }</div>
+            } @else {
+              <div class="flex h-10 w-10 items-center justify-center rounded-xl border border-violet-400/20 bg-violet-500/10 text-violet-300"><svg lucideCircleDollarSign [size]="19"></svg></div>
+              <p class="mt-6 text-xs font-semibold uppercase tracking-[0.16em] text-violet-300">{{ mode === 'signup' ? 'Get started' : 'Welcome back' }}</p>
+              <h2 class="mt-2 text-2xl font-semibold text-white">{{ mode === 'signup' ? 'Create your account' : 'Sign in to LedgerLoop' }}</h2>
+              <p class="mt-2 text-sm leading-6 text-[var(--ll-text-muted)]">{{ mode === 'signup' ? 'Create your account, then set up your first company workspace.' : 'Continue to your accounting workspace.' }}</p>
+              <form class="mt-6 space-y-4" (ngSubmit)="submitAuth()">
+                @if (mode === 'signup') { <label class="block"><span class="mb-2 block text-xs font-medium text-zinc-300">Display name</span><input class="ll-auth-input" name="displayName" [(ngModel)]="displayName" required maxlength="120" autocomplete="name" placeholder="e.g. Naveeth Imran"></label> }
+                <label class="block"><span class="mb-2 block text-xs font-medium text-zinc-300">Email</span><input class="ll-auth-input" type="email" name="email" [(ngModel)]="email" required maxlength="254" autocomplete="email" placeholder="name@company.com"></label>
+                <label class="block"><span class="mb-2 block text-xs font-medium text-zinc-300">Password</span><input class="ll-auth-input" type="password" name="password" [(ngModel)]="password" required [minlength]="mode === 'signup' ? 12 : 1" maxlength="128" [autocomplete]="mode === 'signup' ? 'new-password' : 'current-password'" [placeholder]="mode === 'signup' ? 'At least 12 characters' : 'Enter your password'"></label>
+                @if (errorMessage) { <p class="rounded-xl border border-rose-400/20 bg-rose-400/[0.06] px-3 py-2.5 text-xs leading-5 text-rose-200" role="alert">{{ errorMessage }}</p> }
+                <button class="ll-button-primary mt-2 w-full" type="submit" [disabled]="loading || !email.trim() || !password">
+                  @if (loading) { <svg class="animate-spin" lucideLoaderCircle [size]="16"></svg> } @else { <svg lucideArrowRight [size]="16"></svg> }
+                  <span>{{ loading ? (mode === 'signup' ? 'Creating account…' : 'Signing you in…') : mode === 'signin' ? 'Sign in' : 'Create account' }}</span>
+                </button>
+              </form>
+              <div class="mt-6 flex items-center gap-2 text-[11px] text-[var(--ll-text-muted)]"><svg lucideShieldCheck [size]="14"></svg><span>Sessions use short-lived access tokens and protected refresh cookies.</span></div>
+              <button type="button" class="mt-5 w-full text-xs font-medium text-zinc-400 hover:text-white" (click)="setMode(mode === 'signin' ? 'signup' : 'signin')">{{ mode === 'signin' ? 'Create a new account' : 'Already have an account? Sign in' }}</button>
             }
           </div>
-        }
-      </section>
+        </section>
+      </div>
     </main>
   `,
-  styles: [`:host { display: block; } .ll-auth-input { width: 100%; min-height: 44px; border: 1px solid var(--ll-border); border-radius: 0.75rem; background: rgb(255 255 255 / 0.025); color: #fff; padding: 0.65rem 0.8rem; font-size: 0.8125rem; outline: none; transition: border-color 160ms ease, background-color 160ms ease, box-shadow 160ms ease; } .ll-auth-input::placeholder { color: #62626e; } .ll-auth-input:focus { border-color: rgb(167 139 250 / 0.45); background: rgb(255 255 255 / 0.04); box-shadow: 0 0 0 3px rgb(139 92 246 / 0.08); }`],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  styles: [`
+    :host { display:block; }
+    .ll-auth-input { min-height:2.75rem; width:100%; border:1px solid var(--ll-border); border-radius:.8rem; background:color-mix(in srgb,var(--ll-text) 2.5%,transparent); color:var(--ll-text); padding:.7rem .8rem; outline:none; font-size:.8rem; transition:border-color 180ms ease,background-color 180ms ease,box-shadow 180ms ease; }
+    .ll-auth-input::placeholder { color:#6f6f7b; opacity:1; }
+    .ll-auth-input:focus { border-color:color-mix(in srgb,var(--ll-primary-soft) 45%,transparent); background:color-mix(in srgb,var(--ll-text) 4%,transparent); box-shadow:0 0 0 3px color-mix(in srgb,var(--ll-primary) 9%,transparent); }
+  `],
 })
 export class AuthPageComponent implements OnInit {
   protected readonly auth = inject(AuthService);
@@ -134,20 +86,14 @@ export class AuthPageComponent implements OnInit {
   protected loading = false;
   protected authenticated = false;
   protected setupRequired = false;
-  protected showCreateCompany = false;
-  protected errorMessage = '';
-
+  protected companies = [] as Array<{ id: string; legal_name: string; display_name: string; base_currency: string; created_at: string }>;
   protected email = '';
   protected password = '';
   protected displayName = '';
   protected legalName = '';
   protected companyDisplayName = '';
 
-  protected readonly benefits = [
-    'Tenant-isolated company workspaces',
-    'Accounting-aware financial reporting',
-    'Receivables, payables and inventory visibility',
-  ];
+  protected readonly benefits = ['Tenant-isolated company workspaces', 'Accounting-aware financial reporting', 'Receivables, payables and inventory visibility'];
 
   ngOnInit(): void {
     this.authenticated = this.auth.isAuthenticated();
@@ -155,24 +101,34 @@ export class AuthPageComponent implements OnInit {
     this.cdr.markForCheck();
   }
 
-  protected setMode(mode: AuthMode): void {
-    this.mode = mode;
-    this.errorMessage = '';
-    this.cdr.markForCheck();
-  }
+  protected setMode(mode: AuthMode): void { this.mode = mode; this.errorMessage = ''; this.cdr.markForCheck(); }
+  protected errorMessage = '';
 
   protected submitAuth(): void {
     this.loading = true;
     this.errorMessage = '';
     this.cdr.markForCheck();
-    const request$ = this.mode === 'signin'
-      ? this.auth.signIn(this.email.trim(), this.password)
-      : this.auth.signUp(this.email.trim(), this.password, this.displayName.trim());
+    if (this.mode === 'signup') {
+      this.auth.signUp(this.email.trim(), this.password, this.displayName.trim()).subscribe({
+        next: () => {
+          this.loading = false;
+          this.authenticated = true;
+          this.setupRequired = true;
+          this.companies = [];
+          this.cdr.markForCheck();
+        },
+        error: (error: unknown) => {
+          this.loading = false;
+          this.errorMessage = this.readError(error, 'Unable to create your account.');
+          this.cdr.markForCheck();
+        },
+      });
+      return;
+    }
 
-    request$.subscribe({
+    this.auth.signIn(this.email.trim(), this.password).subscribe({
       next: () => {
         this.authenticated = true;
-        this.cdr.markForCheck();
         this.loadWorkspace();
       },
       error: (error: unknown) => {
@@ -183,10 +139,7 @@ export class AuthPageComponent implements OnInit {
     });
   }
 
-  protected chooseCompany(companyId: string): void {
-    this.auth.selectCompany(companyId);
-    void this.router.navigateByUrl('/dashboard');
-  }
+  protected chooseCompany(companyId: string): void { this.auth.selectCompany(companyId); void this.router.navigateByUrl('/dashboard'); }
 
   protected createCompany(): void {
     this.loading = true;
@@ -211,12 +164,8 @@ export class AuthPageComponent implements OnInit {
       next: (companies) => {
         this.loading = false;
         this.authenticated = true;
-        if (companies.length === 0) {
-          this.setupRequired = true;
-          this.cdr.markForCheck();
-          return;
-        }
-        this.setupRequired = false;
+        this.companies = companies;
+        this.setupRequired = companies.length === 0;
         this.cdr.markForCheck();
         if (this.auth.selectedCompany()) void this.router.navigateByUrl('/dashboard');
       },
@@ -233,8 +182,7 @@ export class AuthPageComponent implements OnInit {
     if (error instanceof HttpErrorResponse) {
       const message = error.error?.message;
       if (typeof message === 'string') return message;
-      if (Array.isArray(message) && message.every((item) => typeof item === 'string')) return message.join(', ');
-      if (error.status === 0) return 'LedgerLoop API is unreachable. Make sure the API is running on port 3000.';
+      if (Array.isArray(message)) return message.join(', ');
     }
     return fallback;
   }
