@@ -22,7 +22,8 @@ LedgerLoop is a multi-tenant accounting application for Indian businesses. The w
 - Party create, edit and active/inactive status workflow.
 - GST/contact/address party data and credit limits.
 - Items/services, HSN/SAC, GST rates, prices and inventory tracking.
-- Warehouses.
+- Item create, edit and active/inactive status workflow; item codes remain immutable during edits.
+- Warehouses with optional branch assignment and active/inactive state.
 
 ### Sales
 - Sales invoice creation, numbering, GST totals and posting.
@@ -69,6 +70,7 @@ LedgerLoop is a multi-tenant accounting application for Indian businesses. The w
 - Reminders workspace with policy controls, overdue event monitoring, acknowledgement and delivery-status monitoring.
 - Shared GSAP motion system with route transitions, ScrollTrigger reveals, micro-interactions, reduced-motion handling and lifecycle cleanup.
 - Customer/supplier edit and active/inactive controls.
+- Item edit and active/inactive controls.
 
 ## Current application plan
 
@@ -76,6 +78,8 @@ LedgerLoop is a multi-tenant accounting application for Indian businesses. The w
 2. **Parties — implemented**
    - Create, edit and active/inactive status.
 3. **Items & Warehouses — implemented foundation**
+   - Items: create, edit and active/inactive status.
+   - Warehouses: create/list foundation; edit/deactivation remains a follow-up increment.
 4. **Sales — implemented foundation**
    - Invoices and receipts with partial/multi-invoice allocation.
    - Invoice detail/view with line-level tax and posting metadata.
@@ -94,7 +98,12 @@ LedgerLoop is a multi-tenant accounting application for Indian businesses. The w
 
 ## Next priorities
 
-12. **Sales completion**
+12. **Master-data completion**
+   - Warehouse edit and active/inactive workflow.
+   - Chart of Accounts edit/activate/deactivate where accounting safety permits.
+   - Bank-account edit/deactivation.
+   - GST registration management UX.
+13. **Sales completion**
    - Sales posting-account setup UX where configuration is required.
    - Remaining sales document workflows.
 14. **Purchase completion**
